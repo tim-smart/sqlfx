@@ -48,7 +48,7 @@ class Person extends SchemaClass({
   updatedAt: Schema.DateFromSelf,
 }) {}
 
-const CreatePersonSchema = pipe(
+const InsertPersonSchema = pipe(
   Person.structSchema(),
   Schema.omit("id", "createdAt", "updatedAt"),
 )
@@ -56,9 +56,9 @@ const CreatePersonSchema = pipe(
 export const makePersonService = Effect.gen(function* (_) {
   const sql = yield* _(Pg.tag)
 
-  const createResolver = sql.resolver(
-    "CreatePerson",
-    CreatePersonSchema,
+  const insert = sql.resolver(
+    "InsertPerson",
+    InsertPersonSchema,
     Person.schema(),
     requests =>
       sql<
@@ -73,11 +73,9 @@ export const makePersonService = Effect.gen(function* (_) {
         ${sql(requests)}
         RETURNING people.*
       `,
-  )
+  ).execute
 
-  const create = createResolver.execute
-
-  return { create }
+  return { insert }
 })
 ```
 
