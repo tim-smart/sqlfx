@@ -45,8 +45,8 @@ import * as Pg from "pgfx"
 class Person extends SchemaClass({
   id: Schema.number,
   name: Schema.string,
-  createdAt: Schema.Date,
-  updatedAt: Schema.Date,
+  createdAt: Schema.DateFromSelf,
+  updatedAt: Schema.DateFromSelf,
 }) {}
 
 const CreatePersonSchema = pipe(
@@ -71,8 +71,8 @@ export const makePersonService = Effect.gen(function* (_) {
         ReadonlyArray<{
           readonly id: number
           readonly name: string
-          readonly createdAt: string
-          readonly updatedAt: string
+          readonly createdAt: Date
+          readonly updatedAt: Date
         }>
       >`INSERT INTO people ${sql(
         requests.map(_ => _.person),
@@ -104,8 +104,8 @@ import * as Pg from "pgfx"
 class Person extends SchemaClass({
   id: Schema.number,
   name: Schema.string,
-  createdAt: Schema.Date,
-  updatedAt: Schema.Date,
+  createdAt: Schema.DateFromSelf,
+  updatedAt: Schema.DateFromSelf,
 }) {}
 
 // request
@@ -124,8 +124,8 @@ export const makePersonService = Effect.gen(function* (_) {
         ReadonlyArray<{
           readonly id: number
           readonly name: string
-          readonly createdAt: string
-          readonly updatedAt: string
+          readonly createdAt: Date
+          readonly updatedAt: Date
         }>
       >`SELECT * FROM people WHERE id IN ${sql(requests.map(_ => _.id))}`,
     Person.schema(),
