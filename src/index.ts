@@ -349,3 +349,7 @@ export const makeLayer = (
   config: Config.Config.Wrap<postgres.Options<{}>>,
 ): Layer.Layer<never, ConfigError, PgFx> =>
   Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
+
+// === export postgres helpers
+export const { fromKebab, fromCamel, fromPascal, toCamel, toKebab, toPascal } =
+  postgres
