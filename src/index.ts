@@ -129,6 +129,8 @@ export interface PgFx {
   <T, K extends Rest<T>>(first: T & First<T, K, {}>, ...rest: K): Return<T, K>
 
   readonly safe: PgFx
+  readonly array: postgres.Sql["array"]
+  readonly json: postgres.Sql["json"]
 
   describe(
     template: TemplateStringsArray,
@@ -239,6 +241,8 @@ export const make = (
     }) as any
 
     ;(sql as any).safe = sql
+    ;(sql as any).array = pgSql.array
+    ;(sql as any).json = pgSql.json
 
     sql.describe = function describe(
       template: TemplateStringsArray,
