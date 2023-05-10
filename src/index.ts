@@ -4,10 +4,12 @@ import { Tag } from "@effect/data/Context"
 import * as Data from "@effect/data/Data"
 import { pipe } from "@effect/data/Function"
 import * as Option from "@effect/data/Option"
+import * as Chunk from "@effect/data/Chunk"
 import * as Config from "@effect/io/Config"
 import type { ConfigError } from "@effect/io/Config/Error"
 import * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
+import * as ROA from "@effect/data/ReadonlyArray"
 import * as Layer from "@effect/io/Layer"
 import * as request from "@effect/io/Request"
 import * as RequestResolver from "@effect/io/RequestResolver"
@@ -15,6 +17,7 @@ import type { Scope } from "@effect/io/Scope"
 import { ParseError } from "@effect/schema/ParseResult"
 import * as Schema from "@effect/schema/Schema"
 import postgres, { ParameterOrFragment } from "postgres"
+import { NoSuchElementException } from "@effect/io/Cause"
 
 type Rest<T> = T extends TemplateStringsArray
   ? never // force fallback to the tagged template function overload
@@ -82,6 +85,15 @@ export interface PostgresError extends Data.Case {
 }
 export const PostgresError = Data.tagged<PostgresError>("PostgresError")
 
+export interface ResultLengthMismatch extends Data.Case {
+  readonly _tag: "ResultLengthMismatch"
+  readonly expected: number
+  readonly actual: number
+}
+export const ResultLengthMismatch = Data.tagged<ResultLengthMismatch>(
+  "ResultLengthMismatch",
+)
+
 export type RequestError = ParseError | PostgresError
 
 export interface Request<T extends string, I, E, A>
@@ -127,6 +139,24 @@ export interface PgFx {
     self: Effect.Effect<R, E, A>,
   ): Effect.Effect<R, E | PostgresError, A>
 
+  schema<II, IA, AI, A, R, E>(
+    requestSchema: Schema.Schema<II, IA>,
+    resultSchema: Schema.Schema<AI, A>,
+    run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+  ): (_: IA) => Effect.Effect<R, E | ParseError, Chunk.Chunk<A>>
+
+  singleSchema<II, IA, AI, A, R, E>(
+    requestSchema: Schema.Schema<II, IA>,
+    resultSchema: Schema.Schema<AI, A>,
+    run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+  ): (_: IA) => Effect.Effect<R, E | ParseError | NoSuchElementException, A>
+
+  singleSchemaOption<II, IA, AI, A, R, E>(
+    requestSchema: Schema.Schema<II, IA>,
+    resultSchema: Schema.Schema<AI, A>,
+    run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+  ): (_: IA) => Effect.Effect<R, E | ParseError, Option.Option<A>>
+
   resolver<T extends string, II, IA, AI, A, E>(
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
@@ -134,7 +164,16 @@ export interface PgFx {
     run: (
       requests: ReadonlyArray<IA>,
     ) => Effect.Effect<never, RequestError | E, ReadonlyArray<AI>>,
-  ): Resolver<T, IA, A, E>
+  ): Resolver<T, IA, A, E | ResultLengthMismatch>
+
+  singleResolverOption<T extends string, II, IA, AI, A, E>(
+    tag: T,
+    requestSchema: Schema.Schema<II, IA>,
+    resultSchema: Schema.Schema<AI, A>,
+    run: (
+      request: IA,
+    ) => Effect.Effect<never, RequestError | E, ReadonlyArray<AI>>,
+  ): Resolver<T, IA, Option.Option<A>, E>
 
   singleResolver<T extends string, II, IA, AI, A, E>(
     tag: T,
@@ -143,7 +182,7 @@ export interface PgFx {
     run: (
       request: IA,
     ) => Effect.Effect<never, RequestError | E, ReadonlyArray<AI>>,
-  ): Resolver<T, IA, A, E>
+  ): Resolver<T, IA, A, E | NoSuchElementException>
 
   voidResolver<T extends string, II, IA, E, X>(
     tag: T,
@@ -164,7 +203,7 @@ export interface PgFx {
   ): Resolver<T, Id, Option.Option<A>, E>
 }
 
-const PgSql = Tag<postgres.Sql<{}>>()
+export const PgSql = Tag<postgres.Sql<{}>>()
 
 export const make = (
   options: postgres.Options<{}>,
@@ -249,6 +288,37 @@ export const make = (
       )
     }
 
+    sql.schema = function makeSchema<II, IA, AI, A, R, E>(
+      requestSchema: Schema.Schema<II, IA>,
+      resultSchema: Schema.Schema<AI, A>,
+      run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+    ) {
+      const decode = Schema.decodeEffect(Schema.chunk(resultSchema))
+      const validate = Schema.validateEffect(requestSchema)
+
+      return (_: IA): Effect.Effect<R, ParseError | E, Chunk.Chunk<A>> =>
+        pipe(validate(_), Effect.flatMap(run), Effect.flatMap(decode))
+    }
+
+    sql.singleSchema = function makeScgema<II, IA, AI, A, R, E>(
+      requestSchema: Schema.Schema<II, IA>,
+      resultSchema: Schema.Schema<AI, A>,
+      run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+    ) {
+      const decode = Schema.decodeEffect(resultSchema)
+      const validate = Schema.validateEffect(requestSchema)
+
+      return (
+        _: IA,
+      ): Effect.Effect<R, ParseError | NoSuchElementException | E, A> =>
+        pipe(
+          validate(_),
+          Effect.flatMap(run),
+          Effect.flatMap(ROA.head),
+          Effect.flatMap(decode),
+        )
+    }
+
     sql.resolver = function makeResolver<T extends string, II, IA, AI, A, E>(
       tag: T,
       requestSchema: Schema.Schema<II, IA>,
@@ -256,16 +326,23 @@ export const make = (
       run: (
         requests: ReadonlyArray<IA>,
       ) => Effect.Effect<never, RequestError | E, ReadonlyArray<AI>>,
-    ): Resolver<T, IA, A, E> {
-      const Request = request.tagged<Request<T, IA, E, A>>(tag)
+    ): Resolver<T, IA, A, E | ResultLengthMismatch> {
+      const Request =
+        request.tagged<Request<T, IA, E | ResultLengthMismatch, A>>(tag)
       const decode = Schema.decodeEffect(resultSchema)
       const Resolver = RequestResolver.makeBatched(
-        (requests: Request<T, IA, E, A>[]) =>
+        (requests: Request<T, IA, E | ResultLengthMismatch, A>[]) =>
           pipe(
             run(requests.map(_ => _.i0)),
-            Effect.filterOrDie(
+            Effect.filterOrElseWith(
               results => results.length === requests.length,
-              () => "sql.resolver requests to results length mismatch",
+              _ =>
+                Effect.fail(
+                  ResultLengthMismatch({
+                    expected: requests.length,
+                    actual: _.length,
+                  }),
+                ),
             ),
             Effect.flatMap(results =>
               Effect.forEachWithIndex(results, (result, i) =>
@@ -294,6 +371,45 @@ export const make = (
       return { Request, Resolver, execute }
     }
 
+    sql.singleResolverOption = function makeSingleResolver<
+      T extends string,
+      II,
+      IA,
+      AI,
+      A,
+      E,
+    >(
+      tag: T,
+      requestSchema: Schema.Schema<II, IA>,
+      resultSchema: Schema.Schema<AI, A>,
+      run: (
+        request: IA,
+      ) => Effect.Effect<never, RequestError | E, ReadonlyArray<AI>>,
+    ): Resolver<T, IA, Option.Option<A>, E> {
+      const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
+      const decode = Schema.decodeEffect(resultSchema)
+      const Resolver = RequestResolver.fromFunctionEffect(
+        (req: Request<T, IA, E, Option.Option<A>>) =>
+          pipe(
+            run(req.i0),
+            Effect.map(ROA.head),
+            Effect.flatMap(
+              Option.match(
+                () => Effect.succeedNone(),
+                result => Effect.asSome(decode(result)),
+              ),
+            ),
+          ),
+      )
+      const validate = Schema.validateEffect(requestSchema)
+      const execute = (_: IA) =>
+        Effect.flatMap(validate(_), i0 =>
+          Effect.request(Request({ i0 }), Resolver),
+        )
+
+      return { Request, Resolver, execute }
+    }
+
     sql.singleResolver = function makeSingleResolver<
       T extends string,
       II,
@@ -308,19 +424,13 @@ export const make = (
       run: (
         request: IA,
       ) => Effect.Effect<never, RequestError | E, ReadonlyArray<AI>>,
-    ): Resolver<T, IA, A, E> {
-      const Request = request.tagged<Request<T, IA, E, A>>(tag)
+    ): Resolver<T, IA, A, E | NoSuchElementException> {
+      const Request =
+        request.tagged<Request<T, IA, E | NoSuchElementException, A>>(tag)
       const decode = Schema.decodeEffect(resultSchema)
       const Resolver = RequestResolver.fromFunctionEffect(
-        (req: Request<T, IA, E, A>) =>
-          pipe(
-            run(req.i0),
-            Effect.filterOrDieMessage(
-              _ => _.length === 1,
-              "resolverSingle did not get one result",
-            ),
-            Effect.flatMap(result => decode(result[0])),
-          ),
+        (req: Request<T, IA, E | NoSuchElementException, A>) =>
+          pipe(run(req.i0), Effect.flatMap(ROA.head), Effect.flatMap(decode)),
       )
       const validate = Schema.validateEffect(requestSchema)
       const execute = (_: IA) =>
