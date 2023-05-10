@@ -107,6 +107,11 @@ export interface PgFx {
 
   readonly safe: PgFx
 
+  describe(
+    template: TemplateStringsArray,
+    ...parameters: readonly ParameterOrFragment<{}>[]
+  ): Effect.Effect<never, PostgresError, postgres.Statement>
+
   withTransaction<R, E, A>(
     self: Effect.Effect<R, E, A>,
   ): Effect.Effect<R, E | PostgresError, A>
@@ -177,6 +182,21 @@ export const make = (
     }) as any
 
     ;(sql as any).safe = sql
+
+    sql.describe = function describe(
+      template: TemplateStringsArray,
+      ...params: readonly ParameterOrFragment<{}>[]
+    ) {
+      return Effect.flatMap(getSql, pgSql =>
+        Effect.async<never, PostgresError, postgres.Statement>(resume => {
+          const query = pgSql(template, ...(params as any)).describe()
+
+          query
+            .then(_ => resume(Effect.succeed(_)))
+            .catch(error => resume(Effect.fail(PostgresError({ error }))))
+        }),
+      )
+    }
 
     sql.withTransaction = function withTransaction<R, E, A>(
       self: Effect.Effect<R, E, A>,
