@@ -19,7 +19,7 @@ import { PostgresError, ResultLengthMismatch, SchemaError } from "pgfx/Error"
 import * as PgSchema from "pgfx/Schema"
 import postgres, { ParameterOrFragment } from "postgres"
 
-export const PgSql = Tag<postgres.Sql<{}>>()
+export const PgSql = Tag<postgres.TransactionSql<{}>>()
 
 export const make = (
   options: postgres.Options<{}>,
@@ -78,26 +78,31 @@ export const make = (
     ): Effect.Effect<R, E | PostgresError, A> {
       return Effect.acquireUseRelease(
         pipe(
-          Effect.all(getSql, Deferred.make<E, A>()),
+          Effect.all(Effect.serviceOption(PgSql), Deferred.make<E, A>()),
           Effect.flatMap(([sql, deferred]) =>
             Effect.async<
               never,
               PostgresError,
-              readonly [postgres.Sql<{}>, Deferred.Deferred<E, A>]
+              readonly [postgres.TransactionSql<{}>, Deferred.Deferred<E, A>]
             >(resume => {
               let done = false
-              sql
-                .begin(tSql => {
-                  if (done) return
-                  done = true
-                  resume(Effect.succeed([tSql, deferred]))
-                  return Effect.runPromise(Deferred.await(deferred))
-                })
-                .catch(error => {
-                  if (done) return
-                  done = true
-                  resume(Effect.fail(PostgresError(error)))
-                })
+
+              const begin = Option.match(
+                sql,
+                () => pgSql.begin.bind(pgSql),
+                pgSql => pgSql.savepoint.bind(pgSql),
+              )
+
+              begin(tSql => {
+                if (done) return
+                done = true
+                resume(Effect.succeed([tSql, deferred]))
+                return Effect.runPromise(Deferred.await(deferred))
+              }).catch(error => {
+                if (done) return
+                done = true
+                resume(Effect.fail(PostgresError(error)))
+              })
             }),
           ),
         ),
