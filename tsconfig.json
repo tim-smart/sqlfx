@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": "src",
+    "outDir": "dist",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "allowSyntheticDefaultImports": true,
+    "lib": ["ESNext", "DOM"],
+    "sourceMap": true,
+    "strict": true,
+    "target": "ES2022",
+    "incremental": true,
+    "paths": {
+      "effect-pg": ["./src/index.js"],
+      "effect-pg/*": ["./src/*.js"]
+    },
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
+  },
+  "include": ["src/**/*"]
+}
