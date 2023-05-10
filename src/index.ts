@@ -323,6 +323,28 @@ export const make = (
         )
     }
 
+    sql.singleSchemaOption = function makeScgema<II, IA, AI, A, R, E>(
+      requestSchema: Schema.Schema<II, IA>,
+      resultSchema: Schema.Schema<AI, A>,
+      run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+    ) {
+      const decode = Schema.decodeEffect(resultSchema)
+      const validate = Schema.validateEffect(requestSchema)
+
+      return (_: IA): Effect.Effect<R, ParseError | E, Option.Option<A>> =>
+        pipe(
+          validate(_),
+          Effect.flatMap(run),
+          Effect.map(ROA.head),
+          Effect.flatMap(
+            Option.match(
+              () => Effect.succeedNone(),
+              result => Effect.asSome(decode(result)),
+            ),
+          ),
+        )
+    }
+
     sql.resolver = function makeResolver<T extends string, II, IA, AI, A, E>(
       tag: T,
       requestSchema: Schema.Schema<II, IA>,
