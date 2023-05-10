@@ -1,6 +1,6 @@
 {
-  "name": "effect-pg",
-  "version": "1.0.0",
+  "name": "pgfx",
+  "version": "0.0.0",
   "description": "",
   "type": "module",
   "exports": {
@@ -8,7 +8,9 @@
     "./*": "./dist/*.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist && tsc",
+    "prepublishOnly": "pnpm run build"
   },
   "keywords": [],
   "author": "",

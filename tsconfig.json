@@ -14,8 +14,8 @@
     "target": "ES2022",
     "incremental": true,
     "paths": {
-      "effect-pg": ["./src/index.js"],
-      "effect-pg/*": ["./src/*.js"]
+      "pgfx": ["./src/index.js"],
+      "pgfx/*": ["./src/*.js"]
     },
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
     "plugins": [{ "name": "@effect/language-service" }]
