@@ -17,7 +17,8 @@
       "effect-pg": ["./src/index.js"],
       "effect-pg/*": ["./src/*.js"]
     },
-    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
+    "plugins": [{ "name": "@effect/language-service" }]
   },
   "include": ["src/**/*"]
 }

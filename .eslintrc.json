@@ -11,21 +11,5 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint", "@ts-safeql/eslint-plugin"],
-  "rules": {
-    "@ts-safeql/check-sql": [
-      "error",
-      {
-        "connections": {
-          "databaseUrl": "postgresql://localhost/effect_pg_dev",
-          "targets": [
-            {
-              "tag": "sql.safe",
-              "transform": "{type}[]"
-            }
-          ]
-        }
-      }
-    ]
-  }
+  "plugins": ["@typescript-eslint"]
 }

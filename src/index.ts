@@ -6,11 +6,13 @@ import { pipe } from "@effect/data/Function"
 import * as Option from "@effect/data/Option"
 import { NoSuchElementException } from "@effect/io/Cause"
 import * as Config from "@effect/io/Config"
+import type { ConfigError } from "@effect/io/Config/Error"
 import * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Request from "@effect/io/Request"
 import * as RequestResolver from "@effect/io/RequestResolver"
+import type { Scope } from "@effect/io/Scope"
 import { ParseError } from "@effect/schema/ParseResult"
 import * as Schema from "@effect/schema/Schema"
 import postgres, { ParameterOrFragment } from "postgres"
@@ -144,7 +146,9 @@ export interface EffectPg {
 
 const PgSql = Tag<postgres.Sql<{}>>()
 
-export const make = (options: postgres.Options<{}>) =>
+export const make = (
+  options: postgres.Options<{}>,
+): Effect.Effect<Scope, never, EffectPg> =>
   Effect.gen(function* (_) {
     const pgSql = postgres(options)
     const getSql = Effect.map(
@@ -337,7 +341,9 @@ export const make = (options: postgres.Options<{}>) =>
     return sql
   })
 
-export const tag = Tag<EffectPg>()
+export const tag: Tag<EffectPg, EffectPg> = Tag<EffectPg>()
 
-export const makeLayer = (config: Config.Config.Wrap<postgres.Options<{}>>) =>
+export const makeLayer = (
+  config: Config.Config.Wrap<postgres.Options<{}>>,
+): Layer.Layer<never, ConfigError, EffectPg> =>
   Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
