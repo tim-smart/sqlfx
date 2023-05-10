@@ -17,7 +17,7 @@ import {
   ResultLengthMismatch,
   SchemaError,
 } from "pgfx/Error"
-import * as internal from "pgfx/internal/pgfx"
+import * as internal from "pgfx/internal_effect_untraced/pgfx"
 import postgres, { ParameterOrFragment } from "postgres"
 
 type Rest<T> = T extends TemplateStringsArray
