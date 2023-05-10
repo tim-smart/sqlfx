@@ -27,7 +27,9 @@ export interface PostgresError extends Data.Case {
 export const PostgresError = (error: postgres.Error) =>
   Data.tagged<PostgresError>("PostgresError")({
     [PgFxErrorId]: PgFxErrorId,
-    ...error,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...(error as any).__proto__,
+    message: error.message,
   })
 
 export interface ResultLengthMismatch extends Data.Case {
