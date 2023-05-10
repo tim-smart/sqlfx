@@ -25,8 +25,8 @@ devDependencies:
     specifier: ^5.59.5
     version: 5.59.5(eslint@8.40.0)(typescript@5.0.4)
   effect-schema-class:
-    specifier: ^0.1.2
-    version: 0.1.2
+    specifier: ^0.1.3
+    version: 0.1.3
   eslint:
     specifier: ^8.40.0
     version: 8.40.0
@@ -54,14 +54,6 @@ packages:
     dependencies:
       '@fp-ts/core': 0.0.11
       '@fp-ts/data': 0.0.41
-    dev: true
-
-  /@effect/schema@0.17.5:
-    resolution: {integrity: sha512-I9NJ/Zwx605hdMT5G1OZ1jlo95WC4KvfXFY2zHYTJNAkdv6f31GF5qylrcd32pUm6/EM73HdjxrEZMMKnpEeUQ==}
-    dependencies:
-      '@effect/data': 0.12.2
-      '@effect/io': 0.25.9
-      fast-check: 3.8.1
     dev: true
 
   /@effect/schema@0.18.0:
@@ -427,11 +419,11 @@ packages:
       esutils: 2.0.3
     dev: true
 
-  /effect-schema-class@0.1.2:
-    resolution: {integrity: sha512-OVTovJoZJwPz+aUBxbgP7TLk3Ig/yqXX39GrMtGzX/zXcg1va2g/9A5aXmIjILM1wNdFvQbHe4crHhIwbNu23g==}
+  /effect-schema-class@0.1.3:
+    resolution: {integrity: sha512-mOC1Z5NDIaNjeB5Ba6jrWSLa4PcJGTB4vmV0n8bxLq+3EaL1oQYL3WO5ehKyvlrdnMlxrHeQd2ffu6nGwIKdtg==}
     dependencies:
       '@effect/data': 0.12.2
-      '@effect/schema': 0.17.5
+      '@effect/schema': 0.18.0
     dev: true
 
   /escape-string-regexp@4.0.0:
