@@ -3,7 +3,6 @@
 import * as Chunk from "@effect/data/Chunk"
 import { Tag } from "@effect/data/Context"
 import * as Option from "@effect/data/Option"
-import { NoSuchElementException } from "@effect/io/Cause"
 import * as Config from "@effect/io/Config"
 import type { ConfigError } from "@effect/io/Config/Error"
 import * as Effect from "@effect/io/Effect"
@@ -136,7 +135,7 @@ export interface PgFx {
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
     run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
-  ): (_: IA) => Effect.Effect<R, E | SchemaError | NoSuchElementException, A>
+  ): (_: IA) => Effect.Effect<R, E | SchemaError, A>
 
   singleSchemaOption<II, IA, AI, A, R, E>(
     requestSchema: Schema.Schema<II, IA>,
@@ -169,7 +168,7 @@ export interface PgFx {
     run: (
       request: IA,
     ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
-  ): Resolver<T, IA, A, E | NoSuchElementException>
+  ): Resolver<T, IA, A, E>
 
   voidResolver<T extends string, II, IA, E, X>(
     tag: T,

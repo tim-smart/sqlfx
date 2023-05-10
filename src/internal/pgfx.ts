@@ -5,7 +5,6 @@ import { Tag } from "@effect/data/Context"
 import { pipe } from "@effect/data/Function"
 import * as Option from "@effect/data/Option"
 import * as ROA from "@effect/data/ReadonlyArray"
-import { NoSuchElementException } from "@effect/io/Cause"
 import * as Config from "@effect/io/Config"
 import type { ConfigError } from "@effect/io/Config/Error"
 import * as Deferred from "@effect/io/Deferred"
@@ -16,12 +15,7 @@ import * as RequestResolver from "@effect/io/RequestResolver"
 import type { Scope } from "@effect/io/Scope"
 import * as Schema from "@effect/schema/Schema"
 import type { PgFx, Request, Resolver } from "pgfx"
-import {
-  PostgresError,
-  RequestError,
-  ResultLengthMismatch,
-  SchemaError,
-} from "pgfx/Error"
+import { PostgresError, ResultLengthMismatch, SchemaError } from "pgfx/Error"
 import * as PgSchema from "pgfx/Schema"
 import postgres, { ParameterOrFragment } from "postgres"
 
@@ -132,13 +126,11 @@ export const make = (
       const decode = PgSchema.decode(resultSchema)
       const validate = PgSchema.validate(requestSchema)
 
-      return (
-        _: IA,
-      ): Effect.Effect<R, SchemaError | NoSuchElementException | E, A> =>
+      return (_: IA): Effect.Effect<R, SchemaError | E, A> =>
         pipe(
           validate(_),
           Effect.flatMap(run),
-          Effect.flatMap(ROA.head),
+          Effect.flatMap(_ => Effect.orDie(ROA.head(_))),
           Effect.flatMap(decode),
         )
     }
@@ -171,7 +163,7 @@ export const make = (
       resultSchema: Schema.Schema<AI, A>,
       run: (
         requests: ReadonlyArray<IA>,
-      ) => Effect.Effect<never, RequestError | E, ReadonlyArray<AI>>,
+      ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
     ): Resolver<T, IA, A, E | ResultLengthMismatch> {
       const Request =
         request.tagged<Request<T, IA, E | ResultLengthMismatch, A>>(tag)
@@ -224,7 +216,7 @@ export const make = (
       resultSchema: Schema.Schema<AI, A>,
       run: (
         request: IA,
-      ) => Effect.Effect<never, RequestError | E, ReadonlyArray<AI>>,
+      ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
     ): Resolver<T, IA, Option.Option<A>, E> {
       const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
       const decode = PgSchema.decode(resultSchema)
@@ -263,14 +255,17 @@ export const make = (
       resultSchema: Schema.Schema<AI, A>,
       run: (
         request: IA,
-      ) => Effect.Effect<never, RequestError | E, ReadonlyArray<AI>>,
-    ): Resolver<T, IA, A, E | NoSuchElementException> {
-      const Request =
-        request.tagged<Request<T, IA, E | NoSuchElementException, A>>(tag)
+      ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+    ): Resolver<T, IA, A, E> {
+      const Request = request.tagged<Request<T, IA, E, A>>(tag)
       const decode = PgSchema.decode(resultSchema)
       const Resolver = RequestResolver.fromFunctionEffect(
-        (req: Request<T, IA, E | NoSuchElementException, A>) =>
-          pipe(run(req.i0), Effect.flatMap(ROA.head), Effect.flatMap(decode)),
+        (req: Request<T, IA, E, A>) =>
+          pipe(
+            run(req.i0),
+            Effect.flatMap(_ => Effect.orDie(ROA.head(_))),
+            Effect.flatMap(decode),
+          ),
       )
       const validate = PgSchema.validate(requestSchema)
       const execute = (_: IA) =>
@@ -292,7 +287,7 @@ export const make = (
       requestSchema: Schema.Schema<II, IA>,
       run: (
         requests: ReadonlyArray<IA>,
-      ) => Effect.Effect<never, RequestError | E, ReadonlyArray<X>>,
+      ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<X>>,
     ): Resolver<T, IA, void, E> {
       const Request = request.tagged<Request<T, IA, E, void>>(tag)
       const Resolver = RequestResolver.makeBatched(
@@ -332,7 +327,7 @@ export const make = (
       resultId: (_: AI) => Id,
       run: (
         requests: ReadonlyArray<Id>,
-      ) => Effect.Effect<never, RequestError | E, ReadonlyArray<AI>>,
+      ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
     ): Resolver<T, Id, Option.Option<A>, E> {
       const Request = request.tagged<Request<T, Id, E, Option.Option<A>>>(tag)
       const decode = PgSchema.decode(resultSchema)
