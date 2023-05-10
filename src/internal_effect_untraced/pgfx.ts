@@ -18,6 +18,7 @@ import type { PgFx, Request, Resolver } from "pgfx"
 import { PostgresError, ResultLengthMismatch, SchemaError } from "pgfx/Error"
 import * as PgSchema from "pgfx/Schema"
 import postgres, { ParameterOrFragment } from "postgres"
+import * as Debug from "@effect/data/Debug"
 
 export const PgSql = Tag<postgres.TransactionSql<{}>>()
 
@@ -33,83 +34,95 @@ export const make = (
 
     yield* _(Effect.addFinalizer(() => Effect.promise(() => pgSql.end())))
 
-    const sql: PgFx = ((
-      template: TemplateStringsArray,
-      ...params: readonly ParameterOrFragment<{}>[]
-    ) => {
-      if (!("raw" in template && Array.isArray(template.raw))) {
-        return pgSql(template, ...(params as any))
-      }
+    const sql: PgFx = Debug.methodWithTrace(
+      trace =>
+        ((
+          template: TemplateStringsArray,
+          ...params: readonly ParameterOrFragment<{}>[]
+        ) => {
+          if (!("raw" in template && Array.isArray(template.raw))) {
+            return pgSql(template, ...(params as any))
+          }
 
-      return Effect.flatMap(getSql, pgSql =>
-        Effect.asyncInterrupt<never, PostgresError, unknown>(resume => {
-          const query = pgSql(template, ...(params as any)).execute()
+          return Effect.flatMap(getSql, pgSql =>
+            Effect.asyncInterrupt<never, PostgresError, unknown>(resume => {
+              const query = pgSql(template, ...(params as any)).execute()
 
-          query
-            .then(_ => resume(Effect.succeed(_ as any)))
-            .catch(error => resume(Effect.fail(PostgresError(error))))
+              query
+                .then(_ => resume(Effect.succeed(_ as any)))
+                .catch(error => resume(Effect.fail(PostgresError(error))))
 
-          return Effect.sync(() => query.cancel())
-        }),
-      )
-    }) as any
+              return Effect.sync(() => query.cancel())
+            }),
+          ).traced(trace)
+        }) as any,
+    )
 
     ;(sql as any).safe = sql
     ;(sql as any).array = pgSql.array
     ;(sql as any).json = pgSql.json
 
-    sql.describe = function describe(
-      template: TemplateStringsArray,
-      ...params: readonly ParameterOrFragment<{}>[]
-    ) {
-      return Effect.flatMap(getSql, pgSql =>
-        Effect.async<never, PostgresError, postgres.Statement>(resume => {
-          const query = pgSql(template, ...(params as any)).describe()
+    sql.describe = Debug.methodWithTrace(
+      trace =>
+        function describe(
+          template: TemplateStringsArray,
+          ...params: readonly ParameterOrFragment<{}>[]
+        ) {
+          return Effect.flatMap(getSql, pgSql =>
+            Effect.async<never, PostgresError, postgres.Statement>(resume => {
+              const query = pgSql(template, ...(params as any)).describe()
 
-          query
-            .then(_ => resume(Effect.succeed(_)))
-            .catch(error => resume(Effect.fail(PostgresError(error))))
-        }),
-      )
-    }
-
-    sql.withTransaction = function withTransaction<R, E, A>(
-      self: Effect.Effect<R, E, A>,
-    ): Effect.Effect<R, E | PostgresError, A> {
-      return Effect.acquireUseRelease(
-        pipe(
-          Effect.all(Effect.serviceOption(PgSql), Deferred.make<E, A>()),
-          Effect.flatMap(([sql, deferred]) =>
-            Effect.async<
-              never,
-              PostgresError,
-              readonly [postgres.TransactionSql<{}>, Deferred.Deferred<E, A>]
-            >(resume => {
-              let done = false
-
-              const begin = Option.match(
-                sql,
-                () => pgSql.begin.bind(pgSql),
-                pgSql => pgSql.savepoint.bind(pgSql),
-              )
-
-              begin(tSql => {
-                if (done) return
-                done = true
-                resume(Effect.succeed([tSql, deferred]))
-                return Effect.runPromise(Deferred.await(deferred))
-              }).catch(error => {
-                if (done) return
-                done = true
-                resume(Effect.fail(PostgresError(error)))
-              })
+              query
+                .then(_ => resume(Effect.succeed(_)))
+                .catch(error => resume(Effect.fail(PostgresError(error))))
             }),
-          ),
-        ),
-        ([sql]) => Effect.provideService(self, PgSql, sql),
-        ([, deferred], exit) => Deferred.complete(deferred, exit),
-      )
-    }
+          ).traced(trace)
+        },
+    )
+
+    sql.withTransaction = Debug.methodWithTrace(
+      trace =>
+        function withTransaction<R, E, A>(
+          self: Effect.Effect<R, E, A>,
+        ): Effect.Effect<R, E | PostgresError, A> {
+          return Effect.acquireUseRelease(
+            pipe(
+              Effect.all(Effect.serviceOption(PgSql), Deferred.make<E, A>()),
+              Effect.flatMap(([sql, deferred]) =>
+                Effect.async<
+                  never,
+                  PostgresError,
+                  readonly [
+                    postgres.TransactionSql<{}>,
+                    Deferred.Deferred<E, A>,
+                  ]
+                >(resume => {
+                  let done = false
+
+                  const begin = Option.match(
+                    sql,
+                    () => pgSql.begin.bind(pgSql),
+                    pgSql => pgSql.savepoint.bind(pgSql),
+                  )
+
+                  begin(tSql => {
+                    if (done) return
+                    done = true
+                    resume(Effect.succeed([tSql, deferred]))
+                    return Effect.runPromise(Deferred.await(deferred))
+                  }).catch(error => {
+                    if (done) return
+                    done = true
+                    resume(Effect.fail(PostgresError(error)))
+                  })
+                }),
+              ),
+            ),
+            ([sql]) => Effect.provideService(self, PgSql, sql),
+            ([, deferred], exit) => Deferred.complete(deferred, exit),
+          ).traced(trace)
+        },
+    )
 
     sql.schema = function makeSchema<II, IA, AI, A, R, E>(
       requestSchema: Schema.Schema<II, IA>,
@@ -119,12 +132,15 @@ export const make = (
       const decodeResult = PgSchema.decode(Schema.chunk(resultSchema), "result")
       const decodeRequest = PgSchema.decode(requestSchema, "request")
 
-      return (_: II): Effect.Effect<R, SchemaError | E, Chunk.Chunk<A>> =>
-        pipe(
-          decodeRequest(_),
-          Effect.flatMap(run),
-          Effect.flatMap(decodeResult),
-        )
+      return Debug.methodWithTrace(
+        trace =>
+          (_: II): Effect.Effect<R, SchemaError | E, Chunk.Chunk<A>> =>
+            pipe(
+              decodeRequest(_),
+              Effect.flatMap(run),
+              Effect.flatMap(decodeResult),
+            ).traced(trace),
+      )
     }
 
     sql.singleSchema = function makeSingleSchema<II, IA, AI, A, R, E>(
@@ -135,13 +151,16 @@ export const make = (
       const decodeResult = PgSchema.decode(resultSchema, "result")
       const decodeRequest = PgSchema.decode(requestSchema, "request")
 
-      return (_: II): Effect.Effect<R, SchemaError | E, A> =>
-        pipe(
-          decodeRequest(_),
-          Effect.flatMap(run),
-          Effect.flatMap(_ => Effect.orDie(ROA.head(_))),
-          Effect.flatMap(decodeResult),
-        )
+      return Debug.methodWithTrace(
+        trace =>
+          (_: II): Effect.Effect<R, SchemaError | E, A> =>
+            pipe(
+              decodeRequest(_),
+              Effect.flatMap(run),
+              Effect.flatMap(_ => Effect.orDie(ROA.head(_))),
+              Effect.flatMap(decodeResult),
+            ).traced(trace),
+      )
     }
 
     sql.singleSchemaOption = function makeSingleSchemaOption<
@@ -159,18 +178,21 @@ export const make = (
       const decodeResult = PgSchema.decode(resultSchema, "result")
       const decodeRequest = PgSchema.decode(requestSchema, "request")
 
-      return (_: II): Effect.Effect<R, SchemaError | E, Option.Option<A>> =>
-        pipe(
-          decodeRequest(_),
-          Effect.flatMap(run),
-          Effect.map(ROA.head),
-          Effect.flatMap(
-            Option.match(
-              () => Effect.succeedNone(),
-              result => Effect.asSome(decodeResult(result)),
-            ),
-          ),
-        )
+      return Debug.methodWithTrace(
+        trace =>
+          (_: II): Effect.Effect<R, SchemaError | E, Option.Option<A>> =>
+            pipe(
+              decodeRequest(_),
+              Effect.flatMap(run),
+              Effect.map(ROA.head),
+              Effect.flatMap(
+                Option.match(
+                  () => Effect.succeedNone(),
+                  result => Effect.asSome(decodeResult(result)),
+                ),
+              ),
+            ).traced(trace),
+      )
     }
 
     sql.resolver = function makeResolver<T extends string, II, IA, AI, A, E>(
@@ -211,10 +233,12 @@ export const make = (
           ),
       )
       const decodeRequest = PgSchema.decode(requestSchema, "request")
-      const execute = (_: II) =>
-        Effect.flatMap(decodeRequest(_), i0 =>
-          Effect.request(Request({ i0 }), Resolver),
-        )
+      const execute = Debug.methodWithTrace(
+        trace => (_: II) =>
+          Effect.flatMap(decodeRequest(_), i0 =>
+            Effect.request(Request({ i0 }), Resolver),
+          ).traced(trace),
+      )
 
       return { Request, Resolver, execute }
     }
@@ -250,10 +274,12 @@ export const make = (
           ),
       )
       const decodeRequest = PgSchema.decode(requestSchema, "request")
-      const execute = (_: II) =>
-        Effect.flatMap(decodeRequest(_), i0 =>
-          Effect.request(Request({ i0 }), Resolver),
-        )
+      const execute = Debug.methodWithTrace(
+        trace => (_: II) =>
+          Effect.flatMap(decodeRequest(_), i0 =>
+            Effect.request(Request({ i0 }), Resolver),
+          ).traced(trace),
+      )
 
       return { Request, Resolver, execute }
     }
@@ -284,10 +310,12 @@ export const make = (
           ),
       )
       const decodeRequest = PgSchema.decode(requestSchema, "request")
-      const execute = (_: II) =>
-        Effect.flatMap(decodeRequest(_), i0 =>
-          Effect.request(Request({ i0 }), Resolver),
-        )
+      const execute = Debug.methodWithTrace(
+        trace => (_: II) =>
+          Effect.flatMap(decodeRequest(_), i0 =>
+            Effect.request(Request({ i0 }), Resolver),
+          ).traced(trace),
+      )
 
       return { Request, Resolver, execute }
     }
@@ -321,10 +349,12 @@ export const make = (
           ),
       )
       const decodeRequest = PgSchema.decode(requestSchema, "request")
-      const execute = (_: II) =>
-        Effect.flatMap(decodeRequest(_), i0 =>
-          Effect.request(Request({ i0 }), Resolver),
-        )
+      const execute = Debug.methodWithTrace(
+        trace => (_: II) =>
+          Effect.flatMap(decodeRequest(_), i0 =>
+            Effect.request(Request({ i0 }), Resolver),
+          ).traced(trace),
+      )
 
       return { Request, Resolver, execute }
     }
@@ -392,10 +422,12 @@ export const make = (
           ),
       )
       const decodeRequest = PgSchema.decode(requestSchema, "request")
-      const execute = (_: II) =>
-        Effect.flatMap(decodeRequest(_), i0 =>
-          Effect.request(Request({ i0 }), Resolver),
-        )
+      const execute = Debug.methodWithTrace(
+        trace => (_: II) =>
+          Effect.flatMap(decodeRequest(_), i0 =>
+            Effect.request(Request({ i0 }), Resolver),
+          ).traced(trace),
+      )
 
       return { Request, Resolver, execute }
     }
