@@ -77,13 +77,13 @@ type Return<T, K extends readonly any[]> = [T] extends [TemplateStringsArray]
     : postgres.Helper<T, K>
   : postgres.Helper<T, K>
 
-export interface EffectPgError extends Data.Case {
-  readonly _tag: "EffectPgError"
-  readonly error: unknown
+export interface PostgresError extends Data.Case {
+  readonly _tag: "PostgresError"
+  readonly error: postgres.Error
 }
-export const EffectPgError = Data.tagged<EffectPgError>("EffectPgError")
+export const PostgresError = Data.tagged<PostgresError>("PostgresError")
 
-export interface EffectPg {
+export interface PgFx {
   /**
    * Execute the SQL query passed as a template string. Can only be used as template string tag.
    * @param template The template generated from the template string
@@ -93,7 +93,7 @@ export interface EffectPg {
   <T extends readonly (object | undefined)[] = Record<string, any>[]>(
     template: TemplateStringsArray,
     ...parameters: readonly ParameterOrFragment<{}>[]
-  ): Effect.Effect<never, EffectPgError, T>
+  ): Effect.Effect<never, PostgresError, T>
 
   /**
    * Query helper
@@ -103,15 +103,15 @@ export interface EffectPg {
    */
   <T, K extends Rest<T>>(first: T & First<T, K, {}>, ...rest: K): Return<T, K>
 
-  readonly safe: EffectPg
+  readonly safe: PgFx
 
   withTransaction<R, E, A>(
     self: Effect.Effect<R, E, A>,
-  ): Effect.Effect<R, E | EffectPgError, A>
+  ): Effect.Effect<R, E | PostgresError, A>
 
   resolver<
     R,
-    A extends Request.Request<EffectPgError | ParseError, any>,
+    A extends Request.Request<PostgresError | ParseError, any>,
     I extends Record<string, any>,
   >(
     run: (
@@ -122,7 +122,7 @@ export interface EffectPg {
 
   voidResolver<
     R,
-    A extends Request.Request<EffectPgError | ParseError, void>,
+    A extends Request.Request<PostgresError | ParseError, void>,
     X,
   >(
     run: (requests: A[]) => Effect.Effect<R, Request.Request.Error<A>, X>,
@@ -131,7 +131,7 @@ export interface EffectPg {
   idResolver<
     R,
     A extends Request.Request<
-      EffectPgError | ParseError | NoSuchElementException,
+      PostgresError | ParseError | NoSuchElementException,
       any
     >,
     I extends Record<string, any>,
@@ -150,7 +150,7 @@ const PgSql = Tag<postgres.Sql<{}>>()
 
 export const make = (
   options: postgres.Options<{}>,
-): Effect.Effect<Scope, never, EffectPg> =>
+): Effect.Effect<Scope, never, PgFx> =>
   Effect.gen(function* (_) {
     const pgSql = postgres(options)
     const getSql = Effect.map(
@@ -160,7 +160,7 @@ export const make = (
 
     yield* _(Effect.addFinalizer(() => Effect.promise(() => pgSql.end())))
 
-    const sql: EffectPg = ((
+    const sql: PgFx = ((
       template: TemplateStringsArray,
       ...params: readonly ParameterOrFragment<{}>[]
     ) => {
@@ -169,12 +169,12 @@ export const make = (
       }
 
       return Effect.flatMap(getSql, pgSql =>
-        Effect.asyncInterrupt<never, EffectPgError, unknown>(resume => {
+        Effect.asyncInterrupt<never, PostgresError, unknown>(resume => {
           const query = pgSql(template, ...(params as any)).execute()
 
           query
             .then(_ => resume(Effect.succeed(_ as any)))
-            .catch(error => resume(Effect.fail(EffectPgError({ error }))))
+            .catch(error => resume(Effect.fail(PostgresError({ error }))))
 
           return Effect.sync(() => query.cancel())
         }),
@@ -185,14 +185,14 @@ export const make = (
 
     sql.withTransaction = function withTransaction<R, E, A>(
       self: Effect.Effect<R, E, A>,
-    ): Effect.Effect<R, E | EffectPgError, A> {
+    ): Effect.Effect<R, E | PostgresError, A> {
       return Effect.acquireUseRelease(
         pipe(
           Effect.all(getSql, Deferred.make<E, A>()),
           Effect.flatMap(([sql, deferred]) =>
             Effect.async<
               never,
-              EffectPgError,
+              PostgresError,
               readonly [postgres.Sql<{}>, Deferred.Deferred<E, A>]
             >(resume => {
               let done = false
@@ -206,7 +206,7 @@ export const make = (
                 .catch(error => {
                   if (done) return
                   done = true
-                  resume(Effect.fail(EffectPgError({ error })))
+                  resume(Effect.fail(PostgresError({ error })))
                 })
             }),
           ),
@@ -218,7 +218,7 @@ export const make = (
 
     sql.resolver = function makePgResolver<
       R,
-      A extends Request.Request<EffectPgError | ParseError, any>,
+      A extends Request.Request<PostgresError | ParseError, any>,
       I extends Record<string, any>,
     >(
       run: (
@@ -256,7 +256,7 @@ export const make = (
 
     sql.voidResolver = function makePgVoidResolver<
       R,
-      A extends Request.Request<EffectPgError | ParseError, void>,
+      A extends Request.Request<PostgresError | ParseError, void>,
     >(
       run: (
         requests: Array<A>,
@@ -282,7 +282,7 @@ export const make = (
     sql.idResolver = function makePgIdResolver<
       R,
       A extends Request.Request<
-        EffectPgError | ParseError | NoSuchElementException,
+        PostgresError | ParseError | NoSuchElementException,
         any
       >,
       I extends Record<string, any>,
@@ -343,9 +343,9 @@ export const make = (
     return sql
   })
 
-export const tag: Tag<EffectPg, EffectPg> = Tag<EffectPg>()
+export const tag: Tag<PgFx, PgFx> = Tag<PgFx>()
 
 export const makeLayer = (
   config: Config.Config.Wrap<postgres.Options<{}>>,
-): Layer.Layer<never, ConfigError, EffectPg> =>
+): Layer.Layer<never, ConfigError, PgFx> =>
   Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
