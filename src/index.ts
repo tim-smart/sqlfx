@@ -90,12 +90,7 @@ export interface Request<T extends string, I, E, A>
   readonly i0: I
 }
 
-export interface Resolver<
-  T extends string,
-  I extends Record<string, any>,
-  A,
-  E,
-> {
+export interface Resolver<T extends string, I, A, E> {
   readonly Request: request.Request.Constructor<Request<T, I, E, A>>
   readonly Resolver: RequestResolver.RequestResolver<Request<T, I, E, A>>
   execute(_: I): Effect.Effect<never, RequestError | E, A>
@@ -132,7 +127,7 @@ export interface PgFx {
     self: Effect.Effect<R, E, A>,
   ): Effect.Effect<R, E | PostgresError, A>
 
-  resolver<T extends string, II, IA extends Record<string, any>, AI, A, E>(
+  resolver<T extends string, II, IA, AI, A, E>(
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
@@ -141,14 +136,7 @@ export interface PgFx {
     ) => Effect.Effect<never, RequestError | E, ReadonlyArray<AI>>,
   ): Resolver<T, IA, A, E>
 
-  singleResolver<
-    T extends string,
-    II,
-    IA extends Record<string, any>,
-    AI,
-    A,
-    E,
-  >(
+  singleResolver<T extends string, II, IA, AI, A, E>(
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
@@ -157,7 +145,7 @@ export interface PgFx {
     ) => Effect.Effect<never, RequestError | E, ReadonlyArray<AI>>,
   ): Resolver<T, IA, A, E>
 
-  voidResolver<T extends string, II, IA extends Record<string, any>, E, X>(
+  voidResolver<T extends string, II, IA, E, X>(
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     run: (
@@ -165,24 +153,15 @@ export interface PgFx {
     ) => Effect.Effect<never, RequestError | E, ReadonlyArray<X>>,
   ): Resolver<T, IA, void, E>
 
-  idResolver<
-    T extends string,
-    II,
-    IA extends Record<string, any>,
-    Id,
-    AI,
-    A,
-    E,
-  >(
+  idResolver<T extends string, II, Id, AI, A, E>(
     tag: T,
-    requestSchema: Schema.Schema<II, IA>,
-    requestId: (_: IA) => Id,
+    requestSchema: Schema.Schema<II, Id>,
     resultSchema: Schema.Schema<AI, A>,
     resultId: (_: AI) => Id,
     run: (
-      requests: ReadonlyArray<IA>,
+      requests: ReadonlyArray<Id>,
     ) => Effect.Effect<never, RequestError | E, ReadonlyArray<AI>>,
-  ): Resolver<T, IA, Option.Option<A>, E>
+  ): Resolver<T, Id, Option.Option<A>, E>
 }
 
 const PgSql = Tag<postgres.Sql<{}>>()
@@ -270,14 +249,7 @@ export const make = (
       )
     }
 
-    sql.resolver = function makeResolver<
-      T extends string,
-      II,
-      IA extends Record<string, any>,
-      AI,
-      A,
-      E,
-    >(
+    sql.resolver = function makeResolver<T extends string, II, IA, AI, A, E>(
       tag: T,
       requestSchema: Schema.Schema<II, IA>,
       resultSchema: Schema.Schema<AI, A>,
@@ -325,7 +297,7 @@ export const make = (
     sql.singleResolver = function makeSingleResolver<
       T extends string,
       II,
-      IA extends Record<string, any>,
+      IA,
       AI,
       A,
       E,
@@ -362,7 +334,7 @@ export const make = (
     sql.voidResolver = function makeVoidResolver<
       T extends string,
       II,
-      IA extends Record<string, any>,
+      IA,
       E,
       X,
     >(
@@ -399,32 +371,30 @@ export const make = (
     sql.idResolver = function makeIdResolver<
       T extends string,
       II,
-      IA extends Record<string, any>,
       Id,
       AI,
       A,
       E,
     >(
       tag: T,
-      requestSchema: Schema.Schema<II, IA>,
-      requestId: (_: IA) => Id,
+      requestSchema: Schema.Schema<II, Id>,
       resultSchema: Schema.Schema<AI, A>,
       resultId: (_: AI) => Id,
       run: (
-        requests: ReadonlyArray<IA>,
+        requests: ReadonlyArray<Id>,
       ) => Effect.Effect<never, RequestError | E, ReadonlyArray<AI>>,
-    ): Resolver<T, IA, Option.Option<A>, E> {
-      const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
+    ): Resolver<T, Id, Option.Option<A>, E> {
+      const Request = request.tagged<Request<T, Id, E, Option.Option<A>>>(tag)
       const decode = Schema.decodeEffect(resultSchema)
       const Resolver = RequestResolver.makeBatched(
-        (requests: Request<T, IA, E, Option.Option<A>>[]) =>
+        (requests: Request<T, Id, E, Option.Option<A>>[]) =>
           pipe(
             Effect.all({
               results: run(requests.map(_ => _.i0)),
               requestsMap: Effect.sync(() =>
                 requests.reduce(
-                  (acc, request) => acc.set(requestId(request.i0), request),
-                  new Map<Id, Request<T, IA, E, Option.Option<A>>>(),
+                  (acc, request) => acc.set(request.i0, request),
+                  new Map<Id, Request<T, Id, E, Option.Option<A>>>(),
                 ),
               ),
             }),
@@ -461,7 +431,7 @@ export const make = (
           ),
       )
       const validate = Schema.validateEffect(requestSchema)
-      const execute = (_: IA) =>
+      const execute = (_: Id) =>
         Effect.flatMap(validate(_), i0 =>
           Effect.request(Request({ i0 }), Resolver),
         )
