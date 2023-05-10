@@ -1,5 +1,10 @@
 lockfileVersion: '6.0'
 
+dependencies:
+  postgres:
+    specifier: ^3.3.4
+    version: 3.3.4
+
 devDependencies:
   '@effect/data':
     specifier: ^0.12.2
@@ -25,9 +30,6 @@ devDependencies:
   eslint:
     specifier: ^8.40.0
     version: 8.40.0
-  postgres:
-    specifier: ^3.3.4
-    version: 3.3.4
   prettier:
     specifier: ^2.8.8
     version: 2.8.8
@@ -861,7 +863,7 @@ packages:
 
   /postgres@3.3.4:
     resolution: {integrity: sha512-XVu0+d/Y56pl2lSaf0c7V19AhAEfpVrhID1IENWN8nf0xch6hFq6dAov5dtUX6ZD46wfr1TxvLhxLtV8WnNsOg==}
-    dev: true
+    dev: false
 
   /prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}

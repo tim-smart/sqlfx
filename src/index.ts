@@ -4,7 +4,6 @@ import { Tag } from "@effect/data/Context"
 import * as Data from "@effect/data/Data"
 import { pipe } from "@effect/data/Function"
 import * as Option from "@effect/data/Option"
-import { NoSuchElementException } from "@effect/io/Cause"
 import * as Config from "@effect/io/Config"
 import type { ConfigError } from "@effect/io/Config/Error"
 import * as Deferred from "@effect/io/Deferred"
@@ -127,20 +126,34 @@ export interface PgFx {
     schema: Schema.Schema<I, Request.Request.Success<A>>,
   ): RequestResolver.RequestResolver<A, R>
 
+  resolverSingle<
+    R,
+    A extends Request.Request<RequestError, any>,
+    I extends Record<string, any>,
+  >(
+    run: (
+      requests: A,
+    ) => Effect.Effect<R, Request.Request.Error<A>, ReadonlyArray<I>>,
+    schema: Schema.Schema<I, Request.Request.Success<A>>,
+  ): RequestResolver.RequestResolver<A, R>
+
   voidResolver<R, A extends Request.Request<RequestError, void>, X>(
     run: (requests: A[]) => Effect.Effect<R, Request.Request.Error<A>, X>,
   ): RequestResolver.RequestResolver<A, R>
 
   idResolver<
     R,
-    A extends Request.Request<RequestError | NoSuchElementException, any>,
+    A extends Request.Request<RequestError, Option.Option<any>>,
     I extends Record<string, any>,
     Id extends string | number,
   >(
     run: (
       requests: A[],
     ) => Effect.Effect<R, Request.Request.Error<A>, ReadonlyArray<I>>,
-    schema: Schema.Schema<I, Request.Request.Success<A>>,
+    schema: Schema.Schema<
+      I,
+      Request.Request.Success<A> extends Option.Option<infer T> ? T : never
+    >,
     requestId: (_: A) => Id,
     resultId: (_: I) => Id,
   ): RequestResolver.RequestResolver<A, R>
@@ -269,6 +282,29 @@ export const make = (
       )
     }
 
+    sql.resolverSingle = function makePgResolverSingle<
+      R,
+      A extends Request.Request<RequestError, any>,
+      I extends Record<string, any>,
+    >(
+      run: (
+        request: A,
+      ) => Effect.Effect<R, Request.Request.Error<A>, ReadonlyArray<I>>,
+      schema: Schema.Schema<I, Request.Request.Success<A>>,
+    ): RequestResolver.RequestResolver<A, R> {
+      const decode = Schema.decodeEffect(schema)
+      return RequestResolver.fromFunctionEffect(request =>
+        pipe(
+          run(request as any),
+          Effect.filterOrDieMessage(
+            _ => _.length === 1,
+            "resolverSingle did not get one result",
+          ),
+          Effect.flatMap(result => decode(result[0])),
+        ),
+      ) as any
+    }
+
     sql.voidResolver = function makePgVoidResolver<
       R,
       A extends Request.Request<RequestError, void>,
@@ -296,14 +332,17 @@ export const make = (
 
     sql.idResolver = function makePgIdResolver<
       R,
-      A extends Request.Request<RequestError | NoSuchElementException, any>,
+      A extends Request.Request<RequestError, Option.Option<any>>,
       I extends Record<string, any>,
       Id extends string | number,
     >(
       run: (
         requests: Array<A>,
       ) => Effect.Effect<R, Request.Request.Error<A>, ReadonlyArray<I>>,
-      schema: Schema.Schema<I, Request.Request.Success<A>>,
+      schema: Schema.Schema<
+        I,
+        Request.Request.Success<A> extends Option.Option<infer T> ? T : never
+      >,
       requestId: (_: A) => Id,
       resultId: (_: I) => Id,
     ): RequestResolver.RequestResolver<A, R> {
@@ -333,14 +372,16 @@ export const make = (
 
               return pipe(
                 decode(result),
-                Effect.flatMap(result => Request.succeed(request, result)),
+                Effect.flatMap(result =>
+                  Request.succeed(request, Option.some(result) as any),
+                ),
                 Effect.catchAll(error => Request.fail(request, error as any)),
               )
             }),
           ),
           Effect.tap(({ requestsMap }) =>
             Effect.forEachDiscard(requestsMap.values(), request =>
-              Request.fail(request, NoSuchElementException() as any),
+              Request.succeed(request, Option.none() as any),
             ),
           ),
           Effect.catchAll(error =>
