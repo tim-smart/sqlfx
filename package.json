@@ -1,12 +1,19 @@
 {
   "name": "pgfx",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": "./dist/index.js",
     "./*": "./dist/*.js"
   },
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf dist && tsc",
