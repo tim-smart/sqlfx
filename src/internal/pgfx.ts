@@ -116,11 +116,15 @@ export const make = (
       resultSchema: Schema.Schema<AI, A>,
       run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
     ) {
-      const decode = PgSchema.decode(Schema.chunk(resultSchema))
-      const validate = PgSchema.validate(requestSchema)
+      const decodeResult = PgSchema.decode(Schema.chunk(resultSchema), "result")
+      const decodeRequest = PgSchema.decode(requestSchema, "request")
 
-      return (_: IA): Effect.Effect<R, SchemaError | E, Chunk.Chunk<A>> =>
-        pipe(validate(_), Effect.flatMap(run), Effect.flatMap(decode))
+      return (_: II): Effect.Effect<R, SchemaError | E, Chunk.Chunk<A>> =>
+        pipe(
+          decodeRequest(_),
+          Effect.flatMap(run),
+          Effect.flatMap(decodeResult),
+        )
     }
 
     sql.singleSchema = function makeSingleSchema<II, IA, AI, A, R, E>(
@@ -128,35 +132,42 @@ export const make = (
       resultSchema: Schema.Schema<AI, A>,
       run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
     ) {
-      const decode = PgSchema.decode(resultSchema)
-      const validate = PgSchema.validate(requestSchema)
+      const decodeResult = PgSchema.decode(resultSchema, "result")
+      const decodeRequest = PgSchema.decode(requestSchema, "request")
 
-      return (_: IA): Effect.Effect<R, SchemaError | E, A> =>
+      return (_: II): Effect.Effect<R, SchemaError | E, A> =>
         pipe(
-          validate(_),
+          decodeRequest(_),
           Effect.flatMap(run),
           Effect.flatMap(_ => Effect.orDie(ROA.head(_))),
-          Effect.flatMap(decode),
+          Effect.flatMap(decodeResult),
         )
     }
 
-    sql.singleSchemaOption = function makeScgema<II, IA, AI, A, R, E>(
+    sql.singleSchemaOption = function makeSingleSchemaOption<
+      II,
+      IA,
+      AI,
+      A,
+      R,
+      E,
+    >(
       requestSchema: Schema.Schema<II, IA>,
       resultSchema: Schema.Schema<AI, A>,
       run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
     ) {
-      const decode = PgSchema.decode(resultSchema)
-      const validate = PgSchema.validate(requestSchema)
+      const decodeResult = PgSchema.decode(resultSchema, "result")
+      const decodeRequest = PgSchema.decode(requestSchema, "request")
 
-      return (_: IA): Effect.Effect<R, SchemaError | E, Option.Option<A>> =>
+      return (_: II): Effect.Effect<R, SchemaError | E, Option.Option<A>> =>
         pipe(
-          validate(_),
+          decodeRequest(_),
           Effect.flatMap(run),
           Effect.map(ROA.head),
           Effect.flatMap(
             Option.match(
               () => Effect.succeedNone(),
-              result => Effect.asSome(decode(result)),
+              result => Effect.asSome(decodeResult(result)),
             ),
           ),
         )
@@ -169,10 +180,10 @@ export const make = (
       run: (
         requests: ReadonlyArray<IA>,
       ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
-    ): Resolver<T, IA, A, E | ResultLengthMismatch> {
+    ): Resolver<T, II, IA, A, E | ResultLengthMismatch> {
       const Request =
         request.tagged<Request<T, IA, E | ResultLengthMismatch, A>>(tag)
-      const decode = PgSchema.decode(resultSchema)
+      const decodeResult = PgSchema.decode(resultSchema, "result")
       const Resolver = RequestResolver.makeBatched(
         (requests: Request<T, IA, E | ResultLengthMismatch, A>[]) =>
           pipe(
@@ -184,7 +195,7 @@ export const make = (
             Effect.flatMap(results =>
               Effect.forEachWithIndex(results, (result, i) =>
                 pipe(
-                  decode(result),
+                  decodeResult(result),
                   Effect.flatMap(result =>
                     request.succeed(requests[i], result),
                   ),
@@ -199,9 +210,9 @@ export const make = (
             ),
           ),
       )
-      const validate = PgSchema.validate(requestSchema)
-      const execute = (_: IA) =>
-        Effect.flatMap(validate(_), i0 =>
+      const decodeRequest = PgSchema.decode(requestSchema, "request")
+      const execute = (_: II) =>
+        Effect.flatMap(decodeRequest(_), i0 =>
           Effect.request(Request({ i0 }), Resolver),
         )
 
@@ -222,9 +233,9 @@ export const make = (
       run: (
         request: IA,
       ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
-    ): Resolver<T, IA, Option.Option<A>, E> {
+    ): Resolver<T, II, IA, Option.Option<A>, E> {
       const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
-      const decode = PgSchema.decode(resultSchema)
+      const decodeResult = PgSchema.decode(resultSchema, "result")
       const Resolver = RequestResolver.fromFunctionEffect(
         (req: Request<T, IA, E, Option.Option<A>>) =>
           pipe(
@@ -233,14 +244,14 @@ export const make = (
             Effect.flatMap(
               Option.match(
                 () => Effect.succeedNone(),
-                result => Effect.asSome(decode(result)),
+                result => Effect.asSome(decodeResult(result)),
               ),
             ),
           ),
       )
-      const validate = PgSchema.validate(requestSchema)
-      const execute = (_: IA) =>
-        Effect.flatMap(validate(_), i0 =>
+      const decodeRequest = PgSchema.decode(requestSchema, "request")
+      const execute = (_: II) =>
+        Effect.flatMap(decodeRequest(_), i0 =>
           Effect.request(Request({ i0 }), Resolver),
         )
 
@@ -261,20 +272,20 @@ export const make = (
       run: (
         request: IA,
       ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
-    ): Resolver<T, IA, A, E> {
+    ): Resolver<T, II, IA, A, E> {
       const Request = request.tagged<Request<T, IA, E, A>>(tag)
-      const decode = PgSchema.decode(resultSchema)
+      const decodeResult = PgSchema.decode(resultSchema, "result")
       const Resolver = RequestResolver.fromFunctionEffect(
         (req: Request<T, IA, E, A>) =>
           pipe(
             run(req.i0),
             Effect.flatMap(_ => Effect.orDie(ROA.head(_))),
-            Effect.flatMap(decode),
+            Effect.flatMap(decodeResult),
           ),
       )
-      const validate = PgSchema.validate(requestSchema)
-      const execute = (_: IA) =>
-        Effect.flatMap(validate(_), i0 =>
+      const decodeRequest = PgSchema.decode(requestSchema, "request")
+      const execute = (_: II) =>
+        Effect.flatMap(decodeRequest(_), i0 =>
           Effect.request(Request({ i0 }), Resolver),
         )
 
@@ -293,7 +304,7 @@ export const make = (
       run: (
         requests: ReadonlyArray<IA>,
       ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<X>>,
-    ): Resolver<T, IA, void, E> {
+    ): Resolver<T, II, IA, void, E> {
       const Request = request.tagged<Request<T, IA, E, void>>(tag)
       const Resolver = RequestResolver.makeBatched(
         (requests: Request<T, IA, E, void>[]) =>
@@ -309,9 +320,9 @@ export const make = (
             ),
           ),
       )
-      const validate = PgSchema.validate(requestSchema)
-      const execute = (_: IA) =>
-        Effect.flatMap(validate(_), i0 =>
+      const decodeRequest = PgSchema.decode(requestSchema, "request")
+      const execute = (_: II) =>
+        Effect.flatMap(decodeRequest(_), i0 =>
           Effect.request(Request({ i0 }), Resolver),
         )
 
@@ -321,30 +332,30 @@ export const make = (
     sql.idResolver = function makeIdResolver<
       T extends string,
       II,
-      Id,
+      IA,
       AI,
       A,
       E,
     >(
       tag: T,
-      requestSchema: Schema.Schema<II, Id>,
+      requestSchema: Schema.Schema<II, IA>,
       resultSchema: Schema.Schema<AI, A>,
-      resultId: (_: AI) => Id,
+      resultId: (_: AI) => IA,
       run: (
-        requests: ReadonlyArray<Id>,
+        requests: ReadonlyArray<IA>,
       ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
-    ): Resolver<T, Id, Option.Option<A>, E> {
-      const Request = request.tagged<Request<T, Id, E, Option.Option<A>>>(tag)
-      const decode = PgSchema.decode(resultSchema)
+    ): Resolver<T, II, IA, Option.Option<A>, E> {
+      const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
+      const decodeResult = PgSchema.decode(resultSchema, "result")
       const Resolver = RequestResolver.makeBatched(
-        (requests: Request<T, Id, E, Option.Option<A>>[]) =>
+        (requests: Request<T, IA, E, Option.Option<A>>[]) =>
           pipe(
             Effect.all({
               results: run(requests.map(_ => _.i0)),
               requestsMap: Effect.sync(() =>
                 requests.reduce(
                   (acc, request) => acc.set(request.i0, request),
-                  new Map<Id, Request<T, Id, E, Option.Option<A>>>(),
+                  new Map<IA, Request<T, IA, E, Option.Option<A>>>(),
                 ),
               ),
             }),
@@ -360,7 +371,7 @@ export const make = (
                 requestsMap.delete(id)
 
                 return pipe(
-                  decode(result),
+                  decodeResult(result),
                   Effect.flatMap(result =>
                     request.succeed(req, Option.some(result)),
                   ),
@@ -380,9 +391,9 @@ export const make = (
             ),
           ),
       )
-      const validate = PgSchema.validate(requestSchema)
-      const execute = (_: Id) =>
-        Effect.flatMap(validate(_), i0 =>
+      const decodeRequest = PgSchema.decode(requestSchema, "request")
+      const execute = (_: II) =>
+        Effect.flatMap(decodeRequest(_), i0 =>
           Effect.request(Request({ i0 }), Resolver),
         )
 

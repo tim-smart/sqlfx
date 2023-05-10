@@ -46,7 +46,7 @@ export const ResultLengthMismatch = (expected: number, actual: number) =>
 export interface SchemaError extends Data.Case {
   readonly [PgFxErrorId]: PgFxErrorId
   readonly _tag: "SchemaError"
-  readonly type: "decode" | "validate"
+  readonly type: "request" | "result"
   readonly errors: NonEmptyReadonlyArray<ParseErrors>
 }
 export const SchemaError = (
