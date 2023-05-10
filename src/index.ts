@@ -77,9 +77,11 @@ type Return<T, K extends readonly any[]> = [T] extends [TemplateStringsArray]
     : postgres.Helper<T, K>
   : postgres.Helper<T, K>
 
-export class EffectPgError extends Data.TaggedClass("EffectPgError")<{
+export interface EffectPgError extends Data.Case {
+  readonly _tag: "EffectPgError"
   readonly error: unknown
-}> {}
+}
+export const EffectPgError = Data.tagged<EffectPgError>("EffectPgError")
 
 export interface EffectPg {
   /**
@@ -172,7 +174,7 @@ export const make = (
 
           query
             .then(_ => resume(Effect.succeed(_ as any)))
-            .catch(error => resume(Effect.fail(new EffectPgError({ error }))))
+            .catch(error => resume(Effect.fail(EffectPgError({ error }))))
 
           return Effect.sync(() => query.cancel())
         }),
@@ -204,7 +206,7 @@ export const make = (
                 .catch(error => {
                   if (done) return
                   done = true
-                  resume(Effect.fail(new EffectPgError({ error })))
+                  resume(Effect.fail(EffectPgError({ error })))
                 })
             }),
           ),

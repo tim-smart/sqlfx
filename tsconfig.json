@@ -13,6 +13,7 @@
     "strict": true,
     "target": "ES2022",
     "incremental": true,
+    "declaration": true,
     "paths": {
       "pgfx": ["./src/index.js"],
       "pgfx/*": ["./src/*.js"]
