@@ -83,6 +83,8 @@ export interface PostgresError extends Data.Case {
 }
 export const PostgresError = Data.tagged<PostgresError>("PostgresError")
 
+export type RequestError = ParseError | PostgresError
+
 export interface PgFx {
   /**
    * Execute the SQL query passed as a template string. Can only be used as template string tag.
@@ -111,7 +113,7 @@ export interface PgFx {
 
   resolver<
     R,
-    A extends Request.Request<PostgresError | ParseError, any>,
+    A extends Request.Request<RequestError, any>,
     I extends Record<string, any>,
   >(
     run: (
@@ -120,20 +122,13 @@ export interface PgFx {
     schema: Schema.Schema<I, Request.Request.Success<A>>,
   ): RequestResolver.RequestResolver<A, R>
 
-  voidResolver<
-    R,
-    A extends Request.Request<PostgresError | ParseError, void>,
-    X,
-  >(
+  voidResolver<R, A extends Request.Request<RequestError, void>, X>(
     run: (requests: A[]) => Effect.Effect<R, Request.Request.Error<A>, X>,
   ): RequestResolver.RequestResolver<A, R>
 
   idResolver<
     R,
-    A extends Request.Request<
-      PostgresError | ParseError | NoSuchElementException,
-      any
-    >,
+    A extends Request.Request<RequestError | NoSuchElementException, any>,
     I extends Record<string, any>,
     Id extends string | number,
   >(
@@ -218,7 +213,7 @@ export const make = (
 
     sql.resolver = function makePgResolver<
       R,
-      A extends Request.Request<PostgresError | ParseError, any>,
+      A extends Request.Request<RequestError, any>,
       I extends Record<string, any>,
     >(
       run: (
@@ -256,7 +251,7 @@ export const make = (
 
     sql.voidResolver = function makePgVoidResolver<
       R,
-      A extends Request.Request<PostgresError | ParseError, void>,
+      A extends Request.Request<RequestError, void>,
     >(
       run: (
         requests: Array<A>,
@@ -281,10 +276,7 @@ export const make = (
 
     sql.idResolver = function makePgIdResolver<
       R,
-      A extends Request.Request<
-        PostgresError | ParseError | NoSuchElementException,
-        any
-      >,
+      A extends Request.Request<RequestError | NoSuchElementException, any>,
       I extends Record<string, any>,
       Id extends string | number,
     >(
