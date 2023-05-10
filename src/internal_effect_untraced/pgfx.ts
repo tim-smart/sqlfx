@@ -124,313 +124,331 @@ export const make = (
         },
     )
 
-    sql.schema = function makeSchema<II, IA, AI, A, R, E>(
-      requestSchema: Schema.Schema<II, IA>,
-      resultSchema: Schema.Schema<AI, A>,
-      run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
-    ) {
-      const decodeResult = PgSchema.decode(Schema.chunk(resultSchema), "result")
-      const decodeRequest = PgSchema.decode(requestSchema, "request")
+    sql.schema = Debug.methodWithTrace(
+      parentTrace =>
+        function makeSchema<II, IA, AI, A, R, E>(
+          requestSchema: Schema.Schema<II, IA>,
+          resultSchema: Schema.Schema<AI, A>,
+          run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+        ) {
+          const decodeResult = PgSchema.decode(
+            Schema.chunk(resultSchema),
+            "result",
+          )
+          const decodeRequest = PgSchema.decode(requestSchema, "request")
 
-      return Debug.methodWithTrace(
-        trace =>
-          (_: II): Effect.Effect<R, SchemaError | E, Chunk.Chunk<A>> =>
-            pipe(
-              decodeRequest(_),
-              Effect.flatMap(run),
-              Effect.flatMap(decodeResult),
-            ).traced(trace),
-      )
-    }
-
-    sql.singleSchema = function makeSingleSchema<II, IA, AI, A, R, E>(
-      requestSchema: Schema.Schema<II, IA>,
-      resultSchema: Schema.Schema<AI, A>,
-      run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
-    ) {
-      const decodeResult = PgSchema.decode(resultSchema, "result")
-      const decodeRequest = PgSchema.decode(requestSchema, "request")
-
-      return Debug.methodWithTrace(
-        trace =>
-          (_: II): Effect.Effect<R, SchemaError | E, A> =>
-            pipe(
-              decodeRequest(_),
-              Effect.flatMap(run),
-              Effect.flatMap(_ => Effect.orDie(ROA.head(_))),
-              Effect.flatMap(decodeResult),
-            ).traced(trace),
-      )
-    }
-
-    sql.singleSchemaOption = function makeSingleSchemaOption<
-      II,
-      IA,
-      AI,
-      A,
-      R,
-      E,
-    >(
-      requestSchema: Schema.Schema<II, IA>,
-      resultSchema: Schema.Schema<AI, A>,
-      run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
-    ) {
-      const decodeResult = PgSchema.decode(resultSchema, "result")
-      const decodeRequest = PgSchema.decode(requestSchema, "request")
-
-      return Debug.methodWithTrace(
-        trace =>
-          (_: II): Effect.Effect<R, SchemaError | E, Option.Option<A>> =>
-            pipe(
-              decodeRequest(_),
-              Effect.flatMap(run),
-              Effect.map(ROA.head),
-              Effect.flatMap(
-                Option.match(
-                  () => Effect.succeedNone(),
-                  result => Effect.asSome(decodeResult(result)),
-                ),
-              ),
-            ).traced(trace),
-      )
-    }
-
-    sql.resolver = function makeResolver<T extends string, II, IA, AI, A, E>(
-      tag: T,
-      requestSchema: Schema.Schema<II, IA>,
-      resultSchema: Schema.Schema<AI, A>,
-      run: (
-        requests: ReadonlyArray<IA>,
-      ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
-    ): Resolver<T, II, IA, A, E | ResultLengthMismatch> {
-      const Request =
-        request.tagged<Request<T, IA, E | ResultLengthMismatch, A>>(tag)
-      const decodeResult = PgSchema.decode(resultSchema, "result")
-      const Resolver = RequestResolver.makeBatched(
-        (requests: Request<T, IA, E | ResultLengthMismatch, A>[]) =>
-          pipe(
-            run(requests.map(_ => _.i0)),
-            Effect.filterOrElseWith(
-              results => results.length === requests.length,
-              _ => Effect.fail(ResultLengthMismatch(requests.length, _.length)),
-            ),
-            Effect.flatMap(results =>
-              Effect.forEachWithIndex(results, (result, i) =>
+          return Debug.methodWithTrace(
+            trace =>
+              (_: II): Effect.Effect<R, SchemaError | E, Chunk.Chunk<A>> =>
                 pipe(
-                  decodeResult(result),
-                  Effect.flatMap(result =>
-                    request.succeed(requests[i], result),
-                  ),
-                  Effect.catchAll(error =>
-                    request.fail(requests[i], error as any),
-                  ),
-                ),
-              ),
-            ),
-            Effect.catchAll(error =>
-              Effect.forEachDiscard(requests, req => request.fail(req, error)),
-            ),
-          ),
-      )
-      const decodeRequest = PgSchema.decode(requestSchema, "request")
-      const execute = Debug.methodWithTrace(
-        trace => (_: II) =>
-          Effect.flatMap(decodeRequest(_), i0 =>
-            Effect.request(Request({ i0 }), Resolver),
-          ).traced(trace),
-      )
-
-      return { Request, Resolver, execute }
-    }
-
-    sql.singleResolverOption = function makeSingleResolver<
-      T extends string,
-      II,
-      IA,
-      AI,
-      A,
-      E,
-    >(
-      tag: T,
-      requestSchema: Schema.Schema<II, IA>,
-      resultSchema: Schema.Schema<AI, A>,
-      run: (
-        request: IA,
-      ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
-    ): Resolver<T, II, IA, Option.Option<A>, E> {
-      const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
-      const decodeResult = PgSchema.decode(resultSchema, "result")
-      const Resolver = RequestResolver.fromFunctionEffect(
-        (req: Request<T, IA, E, Option.Option<A>>) =>
-          pipe(
-            run(req.i0),
-            Effect.map(ROA.head),
-            Effect.flatMap(
-              Option.match(
-                () => Effect.succeedNone(),
-                result => Effect.asSome(decodeResult(result)),
-              ),
-            ),
-          ),
-      )
-      const decodeRequest = PgSchema.decode(requestSchema, "request")
-      const execute = Debug.methodWithTrace(
-        trace => (_: II) =>
-          Effect.flatMap(decodeRequest(_), i0 =>
-            Effect.request(Request({ i0 }), Resolver),
-          ).traced(trace),
-      )
-
-      return { Request, Resolver, execute }
-    }
-
-    sql.singleResolver = function makeSingleResolver<
-      T extends string,
-      II,
-      IA,
-      AI,
-      A,
-      E,
-    >(
-      tag: T,
-      requestSchema: Schema.Schema<II, IA>,
-      resultSchema: Schema.Schema<AI, A>,
-      run: (
-        request: IA,
-      ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
-    ): Resolver<T, II, IA, A, E> {
-      const Request = request.tagged<Request<T, IA, E, A>>(tag)
-      const decodeResult = PgSchema.decode(resultSchema, "result")
-      const Resolver = RequestResolver.fromFunctionEffect(
-        (req: Request<T, IA, E, A>) =>
-          pipe(
-            run(req.i0),
-            Effect.flatMap(_ => Effect.orDie(ROA.head(_))),
-            Effect.flatMap(decodeResult),
-          ),
-      )
-      const decodeRequest = PgSchema.decode(requestSchema, "request")
-      const execute = Debug.methodWithTrace(
-        trace => (_: II) =>
-          Effect.flatMap(decodeRequest(_), i0 =>
-            Effect.request(Request({ i0 }), Resolver),
-          ).traced(trace),
-      )
-
-      return { Request, Resolver, execute }
-    }
-
-    sql.voidResolver = function makeVoidResolver<
-      T extends string,
-      II,
-      IA,
-      E,
-      X,
-    >(
-      tag: T,
-      requestSchema: Schema.Schema<II, IA>,
-      run: (
-        requests: ReadonlyArray<IA>,
-      ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<X>>,
-    ): Resolver<T, II, IA, void, E> {
-      const Request = request.tagged<Request<T, IA, E, void>>(tag)
-      const Resolver = RequestResolver.makeBatched(
-        (requests: Request<T, IA, E, void>[]) =>
-          pipe(
-            run(requests.map(_ => _.i0)),
-            Effect.zipRight(
-              Effect.forEachDiscard(requests, req =>
-                request.succeed(req, void 0 as any),
-              ),
-            ),
-            Effect.catchAll(error =>
-              Effect.forEachDiscard(requests, req => request.fail(req, error)),
-            ),
-          ),
-      )
-      const decodeRequest = PgSchema.decode(requestSchema, "request")
-      const execute = Debug.methodWithTrace(
-        trace => (_: II) =>
-          Effect.flatMap(decodeRequest(_), i0 =>
-            Effect.request(Request({ i0 }), Resolver),
-          ).traced(trace),
-      )
-
-      return { Request, Resolver, execute }
-    }
-
-    sql.idResolver = function makeIdResolver<
-      T extends string,
-      II,
-      IA,
-      AI,
-      A,
-      E,
-    >(
-      tag: T,
-      requestSchema: Schema.Schema<II, IA>,
-      resultSchema: Schema.Schema<AI, A>,
-      resultId: (_: AI) => IA,
-      run: (
-        requests: ReadonlyArray<IA>,
-      ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
-    ): Resolver<T, II, IA, Option.Option<A>, E> {
-      const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
-      const decodeResult = PgSchema.decode(resultSchema, "result")
-      const Resolver = RequestResolver.makeBatched(
-        (requests: Request<T, IA, E, Option.Option<A>>[]) =>
-          pipe(
-            Effect.all({
-              results: run(requests.map(_ => _.i0)),
-              requestsMap: Effect.sync(() =>
-                requests.reduce(
-                  (acc, request) => acc.set(request.i0, request),
-                  new Map<IA, Request<T, IA, E, Option.Option<A>>>(),
-                ),
-              ),
-            }),
-            Effect.tap(({ results, requestsMap }) =>
-              Effect.forEachDiscard(results, result => {
-                const id = resultId(result)
-                const req = requestsMap.get(id)
-
-                if (!req) {
-                  return Effect.unit()
-                }
-
-                requestsMap.delete(id)
-
-                return pipe(
-                  decodeResult(result),
-                  Effect.flatMap(result =>
-                    request.succeed(req, Option.some(result)),
-                  ),
-                  Effect.catchAll(error => request.fail(req, error as any)),
+                  decodeRequest(_),
+                  Effect.flatMap(run),
+                  Effect.flatMap(decodeResult),
                 )
-              }),
-            ),
-            Effect.tap(({ requestsMap }) =>
-              Effect.forEachDiscard(requestsMap.values(), req =>
-                request.succeed(req, Option.none()),
-              ),
-            ),
-            Effect.catchAll(error =>
-              Effect.forEachDiscard(requests, req =>
-                request.fail(req, error as any),
-              ),
-            ),
-          ),
-      )
-      const decodeRequest = PgSchema.decode(requestSchema, "request")
-      const execute = Debug.methodWithTrace(
-        trace => (_: II) =>
-          Effect.flatMap(decodeRequest(_), i0 =>
-            Effect.request(Request({ i0 }), Resolver),
-          ).traced(trace),
-      )
+                  .traced(trace)
+                  .traced(parentTrace),
+          )
+        },
+    )
 
-      return { Request, Resolver, execute }
-    }
+    sql.singleSchema = Debug.methodWithTrace(
+      parentTrace =>
+        function makeSingleSchema<II, IA, AI, A, R, E>(
+          requestSchema: Schema.Schema<II, IA>,
+          resultSchema: Schema.Schema<AI, A>,
+          run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+        ) {
+          const decodeResult = PgSchema.decode(resultSchema, "result")
+          const decodeRequest = PgSchema.decode(requestSchema, "request")
+
+          return Debug.methodWithTrace(
+            trace =>
+              (_: II): Effect.Effect<R, SchemaError | E, A> =>
+                pipe(
+                  decodeRequest(_),
+                  Effect.flatMap(run),
+                  Effect.flatMap(_ => Effect.orDie(ROA.head(_))),
+                  Effect.flatMap(decodeResult),
+                )
+                  .traced(trace)
+                  .traced(parentTrace),
+          )
+        },
+    )
+
+    sql.singleSchemaOption = Debug.methodWithTrace(
+      parentTrace =>
+        function makeSingleSchemaOption<II, IA, AI, A, R, E>(
+          requestSchema: Schema.Schema<II, IA>,
+          resultSchema: Schema.Schema<AI, A>,
+          run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+        ) {
+          const decodeResult = PgSchema.decode(resultSchema, "result")
+          const decodeRequest = PgSchema.decode(requestSchema, "request")
+
+          return Debug.methodWithTrace(
+            trace =>
+              (_: II): Effect.Effect<R, SchemaError | E, Option.Option<A>> =>
+                pipe(
+                  decodeRequest(_),
+                  Effect.flatMap(run),
+                  Effect.map(ROA.head),
+                  Effect.flatMap(
+                    Option.match(
+                      () => Effect.succeedNone(),
+                      result => Effect.asSome(decodeResult(result)),
+                    ),
+                  ),
+                )
+                  .traced(trace)
+                  .traced(parentTrace),
+          )
+        },
+    )
+
+    sql.resolver = Debug.methodWithTrace(
+      parentTrace =>
+        function makeResolver<T extends string, II, IA, AI, A, E>(
+          tag: T,
+          requestSchema: Schema.Schema<II, IA>,
+          resultSchema: Schema.Schema<AI, A>,
+          run: (
+            requests: ReadonlyArray<IA>,
+          ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+        ): Resolver<T, II, IA, A, E | ResultLengthMismatch> {
+          const Request =
+            request.tagged<Request<T, IA, E | ResultLengthMismatch, A>>(tag)
+          const decodeResult = PgSchema.decode(resultSchema, "result")
+          const Resolver = RequestResolver.makeBatched(
+            (requests: Request<T, IA, E | ResultLengthMismatch, A>[]) =>
+              pipe(
+                run(requests.map(_ => _.i0)),
+                Effect.filterOrElseWith(
+                  results => results.length === requests.length,
+                  _ =>
+                    Effect.fail(
+                      ResultLengthMismatch(requests.length, _.length),
+                    ),
+                ),
+                Effect.flatMap(results =>
+                  Effect.forEachWithIndex(results, (result, i) =>
+                    pipe(
+                      decodeResult(result),
+                      Effect.flatMap(result =>
+                        request.succeed(requests[i], result),
+                      ),
+                      Effect.catchAll(error =>
+                        request.fail(requests[i], error as any),
+                      ),
+                    ),
+                  ),
+                ),
+                Effect.catchAll(error =>
+                  Effect.forEachDiscard(requests, req =>
+                    request.fail(req, error),
+                  ),
+                ),
+              ),
+          )
+          const decodeRequest = PgSchema.decode(requestSchema, "request")
+          const execute = Debug.methodWithTrace(
+            trace => (_: II) =>
+              Effect.flatMap(decodeRequest(_), i0 =>
+                Effect.request(Request({ i0 }), Resolver),
+              )
+                .traced(trace)
+                .traced(parentTrace),
+          )
+
+          return { Request, Resolver, execute }
+        },
+    )
+
+    sql.singleResolverOption = Debug.methodWithTrace(
+      parentTrace =>
+        function makeSingleResolver<T extends string, II, IA, AI, A, E>(
+          tag: T,
+          requestSchema: Schema.Schema<II, IA>,
+          resultSchema: Schema.Schema<AI, A>,
+          run: (
+            request: IA,
+          ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+        ): Resolver<T, II, IA, Option.Option<A>, E> {
+          const Request =
+            request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
+          const decodeResult = PgSchema.decode(resultSchema, "result")
+          const Resolver = RequestResolver.fromFunctionEffect(
+            (req: Request<T, IA, E, Option.Option<A>>) =>
+              pipe(
+                run(req.i0),
+                Effect.map(ROA.head),
+                Effect.flatMap(
+                  Option.match(
+                    () => Effect.succeedNone(),
+                    result => Effect.asSome(decodeResult(result)),
+                  ),
+                ),
+              ),
+          )
+          const decodeRequest = PgSchema.decode(requestSchema, "request")
+          const execute = Debug.methodWithTrace(
+            trace => (_: II) =>
+              Effect.flatMap(decodeRequest(_), i0 =>
+                Effect.request(Request({ i0 }), Resolver),
+              )
+                .traced(trace)
+                .traced(parentTrace),
+          )
+
+          return { Request, Resolver, execute }
+        },
+    )
+
+    sql.singleResolver = Debug.methodWithTrace(
+      parentTrace =>
+        function makeSingleResolver<T extends string, II, IA, AI, A, E>(
+          tag: T,
+          requestSchema: Schema.Schema<II, IA>,
+          resultSchema: Schema.Schema<AI, A>,
+          run: (
+            request: IA,
+          ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+        ): Resolver<T, II, IA, A, E> {
+          const Request = request.tagged<Request<T, IA, E, A>>(tag)
+          const decodeResult = PgSchema.decode(resultSchema, "result")
+          const Resolver = RequestResolver.fromFunctionEffect(
+            (req: Request<T, IA, E, A>) =>
+              pipe(
+                run(req.i0),
+                Effect.flatMap(_ => Effect.orDie(ROA.head(_))),
+                Effect.flatMap(decodeResult),
+              ),
+          )
+          const decodeRequest = PgSchema.decode(requestSchema, "request")
+          const execute = Debug.methodWithTrace(
+            trace => (_: II) =>
+              Effect.flatMap(decodeRequest(_), i0 =>
+                Effect.request(Request({ i0 }), Resolver),
+              )
+                .traced(trace)
+                .traced(parentTrace),
+          )
+
+          return { Request, Resolver, execute }
+        },
+    )
+
+    sql.voidResolver = Debug.methodWithTrace(
+      parentTrace =>
+        function makeVoidResolver<T extends string, II, IA, E, X>(
+          tag: T,
+          requestSchema: Schema.Schema<II, IA>,
+          run: (
+            requests: ReadonlyArray<IA>,
+          ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<X>>,
+        ): Resolver<T, II, IA, void, E> {
+          const Request = request.tagged<Request<T, IA, E, void>>(tag)
+          const Resolver = RequestResolver.makeBatched(
+            (requests: Request<T, IA, E, void>[]) =>
+              pipe(
+                run(requests.map(_ => _.i0)),
+                Effect.zipRight(
+                  Effect.forEachDiscard(requests, req =>
+                    request.succeed(req, void 0 as any),
+                  ),
+                ),
+                Effect.catchAll(error =>
+                  Effect.forEachDiscard(requests, req =>
+                    request.fail(req, error),
+                  ),
+                ),
+              ),
+          )
+          const decodeRequest = PgSchema.decode(requestSchema, "request")
+          const execute = Debug.methodWithTrace(
+            trace => (_: II) =>
+              Effect.flatMap(decodeRequest(_), i0 =>
+                Effect.request(Request({ i0 }), Resolver),
+              )
+                .traced(trace)
+                .traced(parentTrace),
+          )
+
+          return { Request, Resolver, execute }
+        },
+    )
+
+    sql.idResolver = Debug.methodWithTrace(
+      parentTrace =>
+        function makeIdResolver<T extends string, II, IA, AI, A, E>(
+          tag: T,
+          requestSchema: Schema.Schema<II, IA>,
+          resultSchema: Schema.Schema<AI, A>,
+          resultId: (_: AI) => IA,
+          run: (
+            requests: ReadonlyArray<IA>,
+          ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+        ): Resolver<T, II, IA, Option.Option<A>, E> {
+          const Request =
+            request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
+          const decodeResult = PgSchema.decode(resultSchema, "result")
+          const Resolver = RequestResolver.makeBatched(
+            (requests: Request<T, IA, E, Option.Option<A>>[]) =>
+              pipe(
+                Effect.all({
+                  results: run(requests.map(_ => _.i0)),
+                  requestsMap: Effect.sync(() =>
+                    requests.reduce(
+                      (acc, request) => acc.set(request.i0, request),
+                      new Map<IA, Request<T, IA, E, Option.Option<A>>>(),
+                    ),
+                  ),
+                }),
+                Effect.tap(({ results, requestsMap }) =>
+                  Effect.forEachDiscard(results, result => {
+                    const id = resultId(result)
+                    const req = requestsMap.get(id)
+
+                    if (!req) {
+                      return Effect.unit()
+                    }
+
+                    requestsMap.delete(id)
+
+                    return pipe(
+                      decodeResult(result),
+                      Effect.flatMap(result =>
+                        request.succeed(req, Option.some(result)),
+                      ),
+                      Effect.catchAll(error => request.fail(req, error as any)),
+                    )
+                  }),
+                ),
+                Effect.tap(({ requestsMap }) =>
+                  Effect.forEachDiscard(requestsMap.values(), req =>
+                    request.succeed(req, Option.none()),
+                  ),
+                ),
+                Effect.catchAll(error =>
+                  Effect.forEachDiscard(requests, req =>
+                    request.fail(req, error as any),
+                  ),
+                ),
+              ),
+          )
+          const decodeRequest = PgSchema.decode(requestSchema, "request")
+          const execute = Debug.methodWithTrace(
+            trace => (_: II) =>
+              Effect.flatMap(decodeRequest(_), i0 =>
+                Effect.request(Request({ i0 }), Resolver),
+              )
+                .traced(trace)
+                .traced(parentTrace),
+          )
+
+          return { Request, Resolver, execute }
+        },
+    )
 
     return sql
   })
