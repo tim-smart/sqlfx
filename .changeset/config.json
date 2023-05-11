@@ -1,9 +1,6 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@1.6.4/schema.json",
-  "changelog": [
-    "@changesets/changelog-github",
-    { "repo": "tim-smart/effect-schema-class" }
-  ],
+  "changelog": ["@changesets/changelog-github", { "repo": "tim-smart/pgfx" }],
   "commit": false,
   "linked": [],
   "access": "restricted",
