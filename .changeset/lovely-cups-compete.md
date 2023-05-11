@@ -1,0 +1,5 @@
+---
+"pgfx": patch
+---
+
+simplify migrator

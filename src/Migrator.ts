@@ -76,10 +76,6 @@ export const run = ({
       )
     `
 
-    const completedMigrations = sql<Array<Migration>>`
-      SELECT * FROM ${sql(table)} ORDER BY migrationid ASC
-    `
-
     const latestMigration = Effect.map(
       sql<Array<Migration>>`
         SELECT * FROM ${sql(table)} ORDER BY migrationid DESC LIMIT 1
@@ -87,18 +83,22 @@ export const run = ({
       (_) => Option.fromNullable(_[0]),
     )
 
-    const currentMigrations = Effect.sync(() =>
-      NFS.readdirSync(directory)
-        .map((_) =>
-          Option.fromNullable(Path.basename(_).match(/^(\d+)_([^.]+)\.js$/)),
-        )
-        .flatMap(
-          Option.match(
-            () => [],
-            ([basename, id, name]) => [[Number(id), name, basename]] as const,
-          ),
-        )
-        .sort(([a], [b]) => a - b),
+    const migrationsFromDisk = Effect.catchAllDefect(
+      Effect.sync(() =>
+        NFS.readdirSync(directory)
+          .map((_) =>
+            Option.fromNullable(Path.basename(_).match(/^(\d+)_([^.]+)\.js$/)),
+          )
+          .flatMap(
+            Option.match(
+              () => [],
+              ([basename, id, name]) => [[Number(id), name, basename]] as const,
+            ),
+          )
+          .sort(([a], [b]) => a - b),
+      ),
+      (_) =>
+        Effect.as(Effect.log(`Could not load migrations from disk: ${_}`), []),
     )
 
     const loadMigration = (path: string) => {
@@ -153,11 +153,20 @@ export const run = ({
     const run = Effect.gen(function* (_) {
       yield* _(lockMigrationsTable)
 
-      const [complete, current] = yield* _(
-        Effect.all(completedMigrations, currentMigrations),
+      const [latestMigrationId, current] = yield* _(
+        Effect.all(
+          Effect.map(
+            latestMigration,
+            Option.match(
+              () => 0,
+              (_) => _.migrationid,
+            ),
+          ),
+          migrationsFromDisk,
+        ),
       )
-      const currentIds = new Set(current.map(([id]) => id))
-      if (currentIds.size !== current.length) {
+
+      if (new Set(current.map(([id]) => id)).size !== current.length) {
         yield* _(
           Effect.fail(
             MigrationError({
@@ -168,8 +177,6 @@ export const run = ({
         )
       }
 
-      const completedIds = new Set(complete.map((_) => _.migrationid))
-      const remainingCompletedIds = new Set(complete.map((_) => _.migrationid))
       const required: Array<
         readonly [
           id: number,
@@ -179,23 +186,8 @@ export const run = ({
       > = []
 
       for (const [currentId, currentName, basename] of current) {
-        if (completedIds.has(currentId)) {
-          remainingCompletedIds.delete(currentId)
-          break
-        }
-
-        if (remainingCompletedIds.size > 0) {
-          yield* _(
-            Effect.fail(
-              MigrationError({
-                reason: "bad-state",
-                message: `Could not run migration ${currentId}_${currentName},
-as the following already complete migrations would come after it: ${[
-                  ...remainingCompletedIds,
-                ].join(", ")}`,
-              }),
-            ),
-          )
+        if (currentId <= latestMigrationId) {
+          continue
         }
 
         required.push([
@@ -216,15 +208,21 @@ as the following already complete migrations would come after it: ${[
         ),
       )
 
-      const latest = yield* _(latestMigration)
-      const latestVersion = Option.match(
-        latest,
-        () => "N/A",
-        (_) => `${_.migrationid}_${_.name}`,
-      )
       yield* _(
-        Effect.logInfo(
-          `Migrations complete. Current version: ${latestVersion}`,
+        latestMigration,
+        Effect.flatMap(
+          Option.match(
+            () => Effect.logInfo(`Migrations complete`),
+            (_) =>
+              pipe(
+                Effect.logInfo(`Migrations complete`),
+                Effect.logAnnotate(
+                  "latest_migration_id",
+                  _.migrationid.toString(),
+                ),
+                Effect.logAnnotate("latest_migration_name", _.name),
+              ),
+          ),
         ),
       )
     })
