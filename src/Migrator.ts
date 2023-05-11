@@ -54,7 +54,10 @@ const make = ({ directory, table = "pgfx_migrations" }: MigratorOptions) =>
       )
     `
 
-    const completedMigrations = sql<Migration[]>`SELECT * FROM ${sql(table)}`
+    const completedMigrations = sql<Migration[]>`
+      SELECT * FROM ${sql(table)} ORDER BY migrationid ASC
+    `
+
     const latestMigration = Effect.map(
       sql<Migration[]>`
         SELECT * FROM ${sql(table)} ORDER BY migrationid DESC LIMIT 1
@@ -66,7 +69,7 @@ const make = ({ directory, table = "pgfx_migrations" }: MigratorOptions) =>
       Effect.sync(() =>
         NFS.readdirSync(directory)
           .map(_ =>
-            Option.fromNullable(Path.basename(_).match(/^(\d+)_(.+)\.js$/)),
+            Option.fromNullable(Path.basename(_).match(/^(\d+)_([^.]+)\.js$/)),
           )
           .flatMap(
             Option.match(
