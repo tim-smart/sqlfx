@@ -9,6 +9,7 @@ import * as Layer from "@effect/io/Layer"
 import * as NFS from "node:fs"
 import * as Path from "node:path"
 import * as Pg from "pgfx"
+import type { PostgresError } from "pgfx/Error"
 
 /**
  * @category model
@@ -38,7 +39,8 @@ export interface MigrationError extends Data.Case {
  * @category errors
  * @since 1.0.0
  */
-export const MigrationError = Data.tagged<MigrationError>("MigrationError")
+export const MigrationError: Data.Case.Constructor<MigrationError, "_tag"> =
+  Data.tagged<MigrationError>("MigrationError")
 
 /**
  * @category constructor
@@ -47,7 +49,11 @@ export const MigrationError = Data.tagged<MigrationError>("MigrationError")
 export const run = ({
   directory,
   table = "pgfx_migrations",
-}: MigratorOptions) =>
+}: MigratorOptions): Effect.Effect<
+  Pg.PgFx,
+  MigrationError | PostgresError,
+  void
+> =>
   Effect.gen(function* (_) {
     const sql = yield* _(Pg.tag)
 
@@ -242,5 +248,7 @@ export const run = ({
  * @category constructor
  * @since 1.0.0
  */
-export const makeLayer = (options: MigratorOptions) =>
+export const makeLayer = (
+  options: MigratorOptions,
+): Layer.Layer<Pg.PgFx, MigrationError | PostgresError, never> =>
   Layer.effectDiscard(run(options))

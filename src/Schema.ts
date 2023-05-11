@@ -11,10 +11,10 @@ import { SchemaError } from "pgfx/Error"
 export const decode = <I, A>(
   schema: Schema.Schema<I, A>,
   type: SchemaError["type"],
-) => {
+): ((input: I) => Effect.Effect<never, SchemaError, A>) => {
   const decode = Schema.decodeEffect(schema)
 
-  return (input: I) =>
+  return input =>
     Effect.mapError(decode(input), _ => SchemaError(type, _.errors))
 }
 
@@ -24,9 +24,9 @@ export const decode = <I, A>(
 export const encode = <I, A>(
   schema: Schema.Schema<I, A>,
   type: SchemaError["type"],
-) => {
+): ((input: A) => Effect.Effect<never, SchemaError, I>) => {
   const encode = Schema.encodeEffect(schema)
 
-  return (input: A) =>
+  return input =>
     Effect.mapError(encode(input), _ => SchemaError(type, _.errors))
 }

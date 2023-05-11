@@ -1,5 +1,4 @@
 /** @internal */
-import type * as Chunk from "@effect/data/Chunk"
 import { Tag } from "@effect/data/Context"
 import * as Debug from "@effect/data/Debug"
 import { pipe } from "@effect/data/Function"
@@ -147,14 +146,14 @@ export const make = (
           run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
         ) {
           const decodeResult = PgSchema.decode(
-            Schema.chunk(resultSchema),
+            Schema.array(resultSchema),
             "result",
           )
           const encodeRequest = PgSchema.encode(requestSchema, "request")
 
           return Debug.methodWithTrace(
             trace =>
-              (_: IA): Effect.Effect<R, SchemaError | E, Chunk.Chunk<A>> =>
+              (_: IA): Effect.Effect<R, SchemaError | E, ReadonlyArray<A>> =>
                 pipe(
                   encodeRequest(_),
                   Effect.flatMap(run),

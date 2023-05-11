@@ -30,7 +30,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeLayer: (options: MigratorOptions) => Layer.Layer<unknown, unknown, never>
+export declare const makeLayer: (
+  options: MigratorOptions
+) => Layer.Layer<Pg.PgFx, MigrationError | PostgresError, never>
 ```
 
 Added in v1.0.0
@@ -40,7 +42,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const run: ({ directory, table }: MigratorOptions) => Effect.Effect<unknown, unknown, void>
+export declare const run: ({
+  directory,
+  table,
+}: MigratorOptions) => Effect.Effect<Pg.PgFx, MigrationError | PostgresError, void>
 ```
 
 Added in v1.0.0

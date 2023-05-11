@@ -1,7 +1,6 @@
 /**
  * @since 1.0.0
  */
-import type * as Chunk from "@effect/data/Chunk"
 import type { Tag } from "@effect/data/Context"
 import type * as Option from "@effect/data/Option"
 import type * as Config from "@effect/io/Config"
@@ -182,7 +181,7 @@ export interface PgFx {
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
     run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
-  ): (_: IA) => Effect.Effect<R, E | SchemaError, Chunk.Chunk<A>>
+  ): (_: IA) => Effect.Effect<R, E | SchemaError, ReadonlyArray<A>>
 
   /**
    * Run a sql query with a request schema and a result schema.
