@@ -68,20 +68,18 @@ export const run = ({
       _ => Option.fromNullable(_[0]),
     )
 
-    const currentMigrations = pipe(
-      Effect.sync(() =>
-        NFS.readdirSync(directory)
-          .map(_ =>
-            Option.fromNullable(Path.basename(_).match(/^(\d+)_([^.]+)\.js$/)),
-          )
-          .flatMap(
-            Option.match(
-              () => [],
-              ([basename, id, name]) => [[Number(id), name, basename]] as const,
-            ),
-          )
-          .sort(([a], [b]) => a - b),
-      ),
+    const currentMigrations = Effect.sync(() =>
+      NFS.readdirSync(directory)
+        .map(_ =>
+          Option.fromNullable(Path.basename(_).match(/^(\d+)_([^.]+)\.js$/)),
+        )
+        .flatMap(
+          Option.match(
+            () => [],
+            ([basename, id, name]) => [[Number(id), name, basename]] as const,
+          ),
+        )
+        .sort(([a], [b]) => a - b),
     )
 
     const loadMigration = (path: string) => {

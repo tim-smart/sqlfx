@@ -119,3 +119,71 @@ export const makePersonService = Effect.gen(function* (_) {
   return { getById }
 })
 ```
+
+## Migrations
+
+A `Migrator` module is provider, for running migrations.
+
+Migrations are forwards-only, and are writting in Typescript as Effect's.
+
+Here is an example migration:
+
+```typescript
+// src/migrations/0001_add_users.ts
+
+import * as Effect from "@effect/io/Effect"
+import * as Pg from "pgfx"
+
+export default Effect.gen(function* (_) {
+  const sql = yield* _(Pg.tag)
+
+  yield* _(
+    sql`
+      CREATE TABLE users (
+        id serial PRIMARY KEY,
+        name varchar(255) NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `,
+  )
+})
+```
+
+To run your migrations:
+
+```typescript
+// src/main.ts
+
+import * as Effect from "@effect/io/Effect"
+import * as Pg from "pgfx"
+import * as Migrator from "pgfx/Migrator"
+import * as Config from "@effect/io/Config"
+import { fileURLToPath } from "node:url"
+import * as Layer from "@effect/io/Layer"
+import { pipe } from "@effect/data/Function"
+
+const program = Effect.gen(function* (_) {
+  // ...
+})
+
+const PgLive = Pg.makeLayer({
+  database: Config.succeed("example_database"),
+})
+
+const MigratorLive = Layer.provide(
+  PgLive,
+  Migrator.makeLayer({
+    directory: fileURLToPath(new URL("migrations", import.meta.url)),
+  }),
+)
+
+const EnvLive = Layer.mergeAll(PgLive, MigratorLive)
+
+pipe(
+  program,
+  Effect.provideLayer(EnvLive),
+  Effect.tapErrorCause(Effect.logErrorCause),
+  Effect.runFork,
+)
+```
