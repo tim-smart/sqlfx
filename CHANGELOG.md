@@ -1,5 +1,11 @@
 # pgfx
 
+## 0.5.3
+
+### Patch Changes
+
+- [`2501b17`](https://github.com/tim-smart/pgfx/commit/2501b172d56505ace5212895c28c4cdfb527b4bf) Thanks [@tim-smart](https://github.com/tim-smart)! - refactor resolver context
+
 ## 0.5.2
 
 ### Patch Changes
