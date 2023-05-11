@@ -89,7 +89,7 @@
     "benny": "^3.7.1",
     "concurrently": "^8.0.1",
     "cpx": "^1.5.0",
-    "docs-ts": "^0.8.0",
+    "docs-ts": "0.6.10",
     "dtslint": "github:gcanti/dtslint",
     "eslint": "^8.40.0",
     "eslint-config-prettier": "^8.8.0",
@@ -113,7 +113,8 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "@effect-ts/build-utils@0.40.3": "patches/@effect-ts__build-utils@0.40.3.patch"
+      "@effect-ts/build-utils@0.40.3": "patches/@effect-ts__build-utils@0.40.3.patch",
+      "docs-ts@0.6.10": "patches/docs-ts@0.6.10.patch"
     }
   }
 }

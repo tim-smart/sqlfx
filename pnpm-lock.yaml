@@ -4,6 +4,9 @@ patchedDependencies:
   '@effect-ts/build-utils@0.40.3':
     hash: wzvflwv62ngf22ppz3frldq37m
     path: patches/@effect-ts__build-utils@0.40.3.patch
+  docs-ts@0.6.10:
+    hash: s4abgmaxta7qbzc53hqsngvkpq
+    path: patches/docs-ts@0.6.10.patch
 
 dependencies:
   postgres:
@@ -90,8 +93,8 @@ devDependencies:
     specifier: ^1.5.0
     version: 1.5.0
   docs-ts:
-    specifier: ^0.8.0
-    version: 0.8.0(prettier@2.8.8)(typescript@5.0.4)
+    specifier: 0.6.10
+    version: 0.6.10(patch_hash=s4abgmaxta7qbzc53hqsngvkpq)(prettier@2.8.8)(typescript@5.0.4)
   dtslint:
     specifier: github:gcanti/dtslint
     version: github.com/gcanti/dtslint/1558adbeda424fec83a8d314784c18728a970cd4
@@ -2762,12 +2765,12 @@ packages:
       path-type: 4.0.0
     dev: true
 
-  /docs-ts@0.8.0(prettier@2.8.8)(typescript@5.0.4):
-    resolution: {integrity: sha512-Z++SYRAoJJnWrLZNHKkalIyroJQAppqnfrjoc8pmAr/k3wxZvl7YFd9mocVEAhIZwUEkzUl6luBaAlsJip3sdw==}
+  /docs-ts@0.6.10(patch_hash=s4abgmaxta7qbzc53hqsngvkpq)(prettier@2.8.8)(typescript@5.0.4):
+    resolution: {integrity: sha512-DTX9c5AJ92ojMOKqqvwF8t77C8Gdgs9FPB8seymHs+F+Wl6aapc3ZkHUM+p8o+jwcBmPoihxssdK903dfwQ1JQ==}
     hasBin: true
     peerDependencies:
       prettier: ^2.0.0
-      typescript: ^5.x
+      typescript: ^3.3.1 || ^4.x
     dependencies:
       chalk: 2.4.2
       doctrine: 3.0.0
@@ -2783,6 +2786,7 @@ packages:
       ts-node: 8.10.2(typescript@5.0.4)
       typescript: 5.0.4
     dev: true
+    patched: true
 
   /doctrine@2.1.0:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
