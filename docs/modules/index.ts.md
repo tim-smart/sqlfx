@@ -67,15 +67,23 @@ export interface PgFx {
   /**
    * Create an Effect from an sql query
    */
-  <T extends ReadonlyArray<object | undefined> = Array<Record<string, any>>>(
+  <T extends Record<string, any>>(
     template: TemplateStringsArray,
     ...parameters: ReadonlyArray<ParameterOrFragment<{}>>
-  ): Effect.Effect<never, PostgresError, T>
+  ): Effect.Effect<never, PostgresError, ReadonlyArray<T>>
 
   /**
    * Query helper
    */
-  <T, K extends Rest<T>>(first: T & First<T, K, {}>, ...rest: K): Return<T, K>
+  <T, K extends Rest<T>>(first: T & First<T, K, {}>, ...rest: K): SqlFragment
+
+  /**
+   * Create an Effect from an sql query, returning rows as arrays
+   */
+  readonly values: <T extends Record<string, any>>(
+    template: TemplateStringsArray,
+    ...parameters: ReadonlyArray<ParameterOrFragment<{}>>
+  ) => Effect.Effect<never, PostgresError, PgValuesResult<T>>
 
   /**
    * Copy of `sql` for use as a safeql target

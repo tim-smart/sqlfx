@@ -20,12 +20,10 @@ const program = Effect.gen(function* (_) {
   const sql = yield* _(Pg.tag)
 
   const people = yield* _(
-    sql<
-      ReadonlyArray<{
-        readonly id: number
-        readonly name: string
-      }>
-    >`SELECT id, name FROM people`,
+    sql<{
+      readonly id: number
+      readonly name: string
+    }>`SELECT id, name FROM people`,
   )
 
   yield* _(Effect.log(`Got ${people.length} results!`))
@@ -63,14 +61,12 @@ export const makePersonService = Effect.gen(function* (_) {
     InsertPersonSchema,
     Person.schema(),
     requests =>
-      sql<
-        ReadonlyArray<{
-          readonly id: number
-          readonly name: string
-          readonly createdAt: Date
-          readonly updatedAt: Date
-        }>
-      >`
+      sql<{
+        readonly id: number
+        readonly name: string
+        readonly createdAt: Date
+        readonly updatedAt: Date
+      }>`
         INSERT INTO people
         ${sql(requests)}
         RETURNING people.*
@@ -105,14 +101,12 @@ export const makePersonService = Effect.gen(function* (_) {
     Person.schema(),
     _ => _.id,
     ids =>
-      sql<
-        ReadonlyArray<{
-          readonly id: number
-          readonly name: string
-          readonly createdAt: Date
-          readonly updatedAt: Date
-        }>
-      >`SELECT * FROM people WHERE id IN ${sql(ids)}`,
+      sql<{
+        readonly id: number
+        readonly name: string
+        readonly createdAt: Date
+        readonly updatedAt: Date
+      }>`SELECT * FROM people WHERE id IN ${sql(ids)}`,
   )
 
   const getById = (id: number) =>
