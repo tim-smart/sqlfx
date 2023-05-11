@@ -15,7 +15,7 @@ import * as RequestResolver from "@effect/io/RequestResolver"
 import type { Scope } from "@effect/io/Scope"
 import * as Schema from "@effect/schema/Schema"
 import type { PgFx, Request, Resolver } from "pgfx"
-import type { SchemaError } from "pgfx/Error"
+import type { RequestError, SchemaError } from "pgfx/Error"
 import { PostgresError, ResultLengthMismatch } from "pgfx/Error"
 import * as PgSchema from "pgfx/Schema"
 import type { ParameterOrFragment } from "postgres"
@@ -32,7 +32,7 @@ export const make = (
     const pgSql = postgres(options)
     const getSql = Effect.map(
       Effect.serviceOption(PgSql),
-      Option.getOrElse(() => pgSql),
+      Option.getOrElse(() => pgSql as postgres.TransactionSql<{}>),
     )
 
     yield* _(Effect.addFinalizer(() => Effect.promise(() => pgSql.end())))
@@ -210,6 +210,32 @@ export const make = (
         },
     )
 
+    const makeExecuteRequest = <E, A, RI, RA>(
+      parentTrace: Debug.Trace,
+      Request: request.Request.Constructor<
+        request.Request<RequestError | E, A> & { i0: RA }
+      >,
+      Resolver: RequestResolver.RequestResolver<any>,
+      schema: Schema.Schema<RI, RA>,
+    ) => {
+      const decodeRequest = PgSchema.decode(schema, "request")
+      return Debug.methodWithTrace(
+        (trace) => (_: RI) =>
+          pipe(
+            decodeRequest(_),
+            Effect.flatMap((i0) =>
+              Effect.request(
+                Request({ i0 }),
+                RequestResolver.contextFromServices(PgSql)(Resolver),
+              ),
+            ),
+            Effect.provideServiceEffect(PgSql, getSql),
+          )
+            .traced(trace)
+            .traced(parentTrace),
+      )
+    }
+
     sql.resolver = Debug.methodWithTrace(
       (parentTrace) =>
         function makeResolver<T extends string, II, IA, AI, A, E>(
@@ -254,14 +280,12 @@ export const make = (
                 ),
               ),
           )
-          const decodeRequest = PgSchema.decode(requestSchema, "request")
-          const execute = Debug.methodWithTrace(
-            (trace) => (_: II) =>
-              Effect.flatMap(decodeRequest(_), (i0) =>
-                Effect.request(Request({ i0 }), Resolver),
-              )
-                .traced(trace)
-                .traced(parentTrace),
+
+          const execute = makeExecuteRequest(
+            parentTrace,
+            Request,
+            Resolver,
+            requestSchema,
           )
 
           return { Request, Resolver, execute }
@@ -294,14 +318,12 @@ export const make = (
                 ),
               ),
           )
-          const decodeRequest = PgSchema.decode(requestSchema, "request")
-          const execute = Debug.methodWithTrace(
-            (trace) => (_: II) =>
-              Effect.flatMap(decodeRequest(_), (i0) =>
-                Effect.request(Request({ i0 }), Resolver),
-              )
-                .traced(trace)
-                .traced(parentTrace),
+
+          const execute = makeExecuteRequest(
+            parentTrace,
+            Request,
+            Resolver,
+            requestSchema,
           )
 
           return { Request, Resolver, execute }
@@ -328,14 +350,12 @@ export const make = (
                 Effect.flatMap(decodeResult),
               ),
           )
-          const decodeRequest = PgSchema.decode(requestSchema, "request")
-          const execute = Debug.methodWithTrace(
-            (trace) => (_: II) =>
-              Effect.flatMap(decodeRequest(_), (i0) =>
-                Effect.request(Request({ i0 }), Resolver),
-              )
-                .traced(trace)
-                .traced(parentTrace),
+
+          const execute = makeExecuteRequest(
+            parentTrace,
+            Request,
+            Resolver,
+            requestSchema,
           )
 
           return { Request, Resolver, execute }
@@ -368,14 +388,12 @@ export const make = (
                 ),
               ),
           )
-          const decodeRequest = PgSchema.decode(requestSchema, "request")
-          const execute = Debug.methodWithTrace(
-            (trace) => (_: II) =>
-              Effect.flatMap(decodeRequest(_), (i0) =>
-                Effect.request(Request({ i0 }), Resolver),
-              )
-                .traced(trace)
-                .traced(parentTrace),
+
+          const execute = makeExecuteRequest(
+            parentTrace,
+            Request,
+            Resolver,
+            requestSchema,
           )
 
           return { Request, Resolver, execute }
@@ -442,14 +460,12 @@ export const make = (
                 ),
               ),
           )
-          const decodeRequest = PgSchema.decode(requestSchema, "request")
-          const execute = Debug.methodWithTrace(
-            (trace) => (_: II) =>
-              Effect.flatMap(decodeRequest(_), (i0) =>
-                Effect.request(Request({ i0 }), Resolver),
-              )
-                .traced(trace)
-                .traced(parentTrace),
+
+          const execute = makeExecuteRequest(
+            parentTrace,
+            Request,
+            Resolver,
+            requestSchema,
           )
 
           return { Request, Resolver, execute }
