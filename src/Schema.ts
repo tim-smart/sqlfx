@@ -15,7 +15,7 @@ export const decode = <I, A>(
   const decode = Schema.decodeEffect(schema)
 
   return (input: I) =>
-    Effect.mapError(decode(input), (_) => SchemaError(type, _.errors))
+    Effect.mapError(decode(input), _ => SchemaError(type, _.errors))
 }
 
 /**
@@ -28,5 +28,5 @@ export const encode = <I, A>(
   const encode = Schema.encodeEffect(schema)
 
   return (input: A) =>
-    Effect.mapError(encode(input), (_) => SchemaError(type, _.errors))
+    Effect.mapError(encode(input), _ => SchemaError(type, _.errors))
 }
