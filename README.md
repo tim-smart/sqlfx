@@ -4,7 +4,7 @@ A simple effect wrapper around postgres.js
 
 ## Basic example
 
-```typescript
+```ts
 import { pipe } from "@effect/data/Function"
 import * as Config from "@effect/io/Config"
 import * as Effect from "@effect/io/Effect"
@@ -34,7 +34,7 @@ pipe(program, Effect.provideLayer(PgLive), Effect.runPromise)
 
 ## INSERT resolver
 
-```typescript
+```ts
 import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
@@ -81,7 +81,7 @@ export const makePersonService = Effect.gen(function* (_) {
 
 ## SELECT resolver
 
-```typescript
+```ts
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
 import { SchemaClass } from "effect-schema-class"
@@ -128,7 +128,7 @@ Migrations are forward-only, and are written in Typescript as Effect's.
 
 Here is an example migration:
 
-```typescript
+```ts
 // src/migrations/0001_add_users.ts
 
 import * as Effect from "@effect/io/Effect"
@@ -152,7 +152,7 @@ export default Effect.gen(function* (_) {
 
 To run your migrations:
 
-```typescript
+```ts
 // src/main.ts
 
 import * as Effect from "@effect/io/Effect"
