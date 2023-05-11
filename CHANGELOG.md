@@ -1,5 +1,11 @@
 # pgfx
 
+## 0.5.4
+
+### Patch Changes
+
+- [#5](https://github.com/tim-smart/pgfx/pull/5) [`39ef65c`](https://github.com/tim-smart/pgfx/commit/39ef65c4d31f35a1593d39036bb1db1856c2d65b) Thanks [@tim-smart](https://github.com/tim-smart)! - add values() api
+
 ## 0.5.3
 
 ### Patch Changes
