@@ -440,7 +440,7 @@ export const make = (
                   ),
                 }),
                 Effect.tap(({ requestsMap, results }) =>
-                  Effect.forEachDiscard(results, result => {
+                  Effect.forEachParDiscard(results, result => {
                     const id = resultId(result)
                     const req = requestsMap.get(id)
 
