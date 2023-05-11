@@ -40,7 +40,7 @@ export const make = (
           template: TemplateStringsArray,
           ...params: readonly ParameterOrFragment<{}>[]
         ) => {
-          if (!("raw" in template && Array.isArray(template.raw))) {
+          if (!(template && Array.isArray(template.raw))) {
             return pgSql(template, ...(params as any))
           }
 

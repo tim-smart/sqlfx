@@ -35,6 +35,7 @@
     "@effect/io": "^0.25.9",
     "@effect/language-service": "^0.0.19",
     "@effect/schema": "^0.18.0",
+    "@types/node": "^20.1.2",
     "@typescript-eslint/eslint-plugin": "^5.59.5",
     "@typescript-eslint/parser": "^5.59.5",
     "effect-schema-class": "^0.1.3",
