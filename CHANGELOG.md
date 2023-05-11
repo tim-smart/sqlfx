@@ -1,5 +1,11 @@
 # pgfx
 
+## 0.5.2
+
+### Patch Changes
+
+- [`af68d75`](https://github.com/tim-smart/pgfx/commit/af68d755669e7199a54e755b7459e84356871958) Thanks [@tim-smart](https://github.com/tim-smart)! - reverse request schemas
+
 ## 0.5.1
 
 ### Patch Changes
