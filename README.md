@@ -122,9 +122,9 @@ export const makePersonService = Effect.gen(function* (_) {
 
 ## Migrations
 
-A `Migrator` module is provider, for running migrations.
+A `Migrator` module is provided, for running migrations.
 
-Migrations are forwards-only, and are writting in Typescript as Effect's.
+Migrations are forward-only, and are written in Typescript as Effect's.
 
 Here is an example migration:
 
