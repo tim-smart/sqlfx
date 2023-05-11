@@ -20,7 +20,7 @@ interface Migration {
 
 export interface MigrationError extends Data.Case {
   readonly _tag: "MigrationError"
-  readonly reason: "bad-state" | "import-error" | "failed"
+  readonly reason: "bad-state" | "import-error" | "failed" | "duplicates"
   readonly message: string
 }
 export const MigrationError = Data.tagged<MigrationError>("MigrationError")
@@ -137,6 +137,17 @@ export const run = ({
       const [complete, current] = yield* _(
         Effect.all(completedMigrations, currentMigrations),
       )
+      const currentIds = new Set(current.map(([id]) => id))
+      if (currentIds.size !== current.length) {
+        yield* _(
+          Effect.fail(
+            MigrationError({
+              reason: "duplicates",
+              message: "Found duplicate migration id's",
+            }),
+          ),
+        )
+      }
 
       const completedIds = new Set(complete.map(_ => _.migrationid))
       const remainingCompletedIds = new Set(complete.map(_ => _.migrationid))
