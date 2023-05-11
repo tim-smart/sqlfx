@@ -2,6 +2,8 @@
 
 A simple effect wrapper around postgres.js
 
+https://tim-smart.github.io/pgfx/modules/index.ts.html
+
 ## Basic example
 
 ```ts
