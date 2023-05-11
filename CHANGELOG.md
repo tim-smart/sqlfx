@@ -1,5 +1,11 @@
 # pgfx
 
+## 0.5.5
+
+### Patch Changes
+
+- [`8d52190`](https://github.com/tim-smart/pgfx/commit/8d521902bc072d5dd9bb30f5167e8c179bcd2673) Thanks [@tim-smart](https://github.com/tim-smart)! - fixes for docs
+
 ## 0.5.4
 
 ### Patch Changes
