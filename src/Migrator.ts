@@ -114,7 +114,10 @@ export const run = ({
           .sort(([a], [b]) => a - b),
       ),
       _ =>
-        Effect.as(Effect.log(`Could not load migrations from disk: ${_}`), []),
+        Effect.as(
+          Effect.logInfo(`Could not load migrations from disk: ${_}`),
+          [],
+        ),
     )
 
     const loadMigration = (path: string) => {
@@ -216,7 +219,7 @@ export const run = ({
       yield* _(
         Effect.forEachDiscard(required, ([id, name, effect]) =>
           pipe(
-            Effect.logWarning(`Running migration`),
+            Effect.logInfo(`Running migration`),
             Effect.zipRight(runMigration(id, name, effect)),
             Effect.logAnnotate("migration_id", String(id)),
             Effect.logAnnotate("migration_name", name),
