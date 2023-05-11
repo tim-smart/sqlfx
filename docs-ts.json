@@ -1,4 +1,4 @@
 {
-  "exclude": ["src/internal/**/*.ts"],
+  "exclude": ["src/internal_effect_untraced/**/*.ts"],
   "theme": "mikearnaldi/just-the-docs"
 }

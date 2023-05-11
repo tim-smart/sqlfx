@@ -1,11 +1,24 @@
+/**
+ * @since 1.0.0
+ */
 import * as Data from "@effect/data/Data"
 import type { NonEmptyReadonlyArray } from "@effect/data/ReadonlyArray"
 import type { ParseErrors } from "@effect/schema/ParseResult"
-import postgres from "postgres"
+import type postgres from "postgres"
 
+/**
+ * @since 1.0.0
+ */
 export const PgFxErrorId = Symbol.for("pgfx/PgFxErrorId")
+/**
+ * @since 1.0.0
+ */
 export type PgFxErrorId = typeof PgFxErrorId
 
+/**
+ * @category model
+ * @since 1.0.0
+ */
 export interface PostgresError extends Data.Case {
   readonly [PgFxErrorId]: PgFxErrorId
   readonly _tag: "PostgresError"
@@ -24,6 +37,10 @@ export interface PostgresError extends Data.Case {
   readonly type_name?: string | undefined
   readonly constraint_name?: string | undefined
 }
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
 export const PostgresError = (error: postgres.Error) =>
   Data.tagged<PostgresError>("PostgresError")({
     [PgFxErrorId]: PgFxErrorId,
@@ -32,12 +49,20 @@ export const PostgresError = (error: postgres.Error) =>
     message: error.message,
   })
 
+/**
+ * @category model
+ * @since 1.0.0
+ */
 export interface ResultLengthMismatch extends Data.Case {
   readonly [PgFxErrorId]: PgFxErrorId
   readonly _tag: "ResultLengthMismatch"
   readonly expected: number
   readonly actual: number
 }
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
 export const ResultLengthMismatch = (expected: number, actual: number) =>
   Data.tagged<ResultLengthMismatch>("ResultLengthMismatch")({
     [PgFxErrorId]: PgFxErrorId,
@@ -45,12 +70,20 @@ export const ResultLengthMismatch = (expected: number, actual: number) =>
     actual,
   })
 
+/**
+ * @category model
+ * @since 1.0.0
+ */
 export interface SchemaError extends Data.Case {
   readonly [PgFxErrorId]: PgFxErrorId
   readonly _tag: "SchemaError"
   readonly type: "request" | "result"
   readonly errors: NonEmptyReadonlyArray<ParseErrors>
 }
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
 export const SchemaError = (
   type: SchemaError["type"],
   errors: NonEmptyReadonlyArray<ParseErrors>,
@@ -61,4 +94,8 @@ export const SchemaError = (
     errors,
   })
 
+/**
+ * @category model
+ * @since 1.0.0
+ */
 export type RequestError = SchemaError | PostgresError

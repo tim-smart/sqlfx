@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as Data from "@effect/data/Data"
 import { pipe } from "@effect/data/Function"
 import * as Option from "@effect/data/Option"
@@ -7,6 +10,10 @@ import * as NFS from "node:fs"
 import * as Path from "node:path"
 import * as Pg from "pgfx"
 
+/**
+ * @category model
+ * @since 1.0.0
+ */
 export interface MigratorOptions {
   readonly directory: string
   readonly table?: string
@@ -18,13 +25,25 @@ interface Migration {
   readonly createdat: Date
 }
 
+/**
+ * @category errors
+ * @since 1.0.0
+ */
 export interface MigrationError extends Data.Case {
   readonly _tag: "MigrationError"
   readonly reason: "bad-state" | "import-error" | "failed" | "duplicates"
   readonly message: string
 }
+/**
+ * @category errors
+ * @since 1.0.0
+ */
 export const MigrationError = Data.tagged<MigrationError>("MigrationError")
 
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
 export const run = ({
   directory,
   table = "pgfx_migrations",
@@ -57,20 +76,20 @@ export const run = ({
       )
     `
 
-    const completedMigrations = sql<Migration[]>`
+    const completedMigrations = sql<Array<Migration>>`
       SELECT * FROM ${sql(table)} ORDER BY migrationid ASC
     `
 
     const latestMigration = Effect.map(
-      sql<Migration[]>`
+      sql<Array<Migration>>`
         SELECT * FROM ${sql(table)} ORDER BY migrationid DESC LIMIT 1
       `,
-      _ => Option.fromNullable(_[0]),
+      (_) => Option.fromNullable(_[0]),
     )
 
     const currentMigrations = Effect.sync(() =>
       NFS.readdirSync(directory)
-        .map(_ =>
+        .map((_) =>
           Option.fromNullable(Path.basename(_).match(/^(\d+)_([^.]+)\.js$/)),
         )
         .flatMap(
@@ -93,7 +112,7 @@ export const run = ({
               message: `Could not import migration: ${fullPath}`,
             }),
         ),
-        Effect.flatMap(_ =>
+        Effect.flatMap((_) =>
           _.default
             ? Effect.succeed(_.default)
             : Effect.fail(
@@ -120,7 +139,7 @@ export const run = ({
       effect: Effect.Effect<never, never, unknown>,
     ) =>
       Effect.zipRight(
-        Effect.orDieWith(effect, _ =>
+        Effect.orDieWith(effect, (_) =>
           MigrationError({
             reason: "failed",
             message: `Migration ${id}_${name} failed: ${JSON.stringify(_)}`,
@@ -149,13 +168,15 @@ export const run = ({
         )
       }
 
-      const completedIds = new Set(complete.map(_ => _.migrationid))
-      const remainingCompletedIds = new Set(complete.map(_ => _.migrationid))
-      const required: (readonly [
-        id: number,
-        name: string,
-        effect: Effect.Effect<never, never, unknown>,
-      ])[] = []
+      const completedIds = new Set(complete.map((_) => _.migrationid))
+      const remainingCompletedIds = new Set(complete.map((_) => _.migrationid))
+      const required: Array<
+        readonly [
+          id: number,
+          name: string,
+          effect: Effect.Effect<never, never, unknown>,
+        ]
+      > = []
 
       for (const [currentId, currentName, basename] of current) {
         if (completedIds.has(currentId)) {
@@ -199,7 +220,7 @@ as the following already complete migrations would come after it: ${[
       const latestVersion = Option.match(
         latest,
         () => "N/A",
-        _ => `${_.migrationid}_${_.name}`,
+        (_) => `${_.migrationid}_${_.name}`,
       )
       yield* _(
         Effect.logInfo(
@@ -212,5 +233,9 @@ as the following already complete migrations would come after it: ${[
     yield* _(sql.withTransaction(run))
   })
 
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
 export const makeLayer = (options: MigratorOptions) =>
   Layer.effectDiscard(run(options))

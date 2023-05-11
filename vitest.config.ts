@@ -13,8 +13,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "effect-schema-class/test": path.resolve(__dirname, "/test"),
-      "effect-schema-class": path.resolve(__dirname, "/src"),
+      "pgfx/test": path.resolve(__dirname, "/test"),
+      pgfx: path.resolve(__dirname, "/src"),
     },
   },
 })
