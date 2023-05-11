@@ -16,6 +16,7 @@ import type { Scope } from "@effect/io/Scope"
 import * as Schema from "@effect/schema/Schema"
 import type { PgFx, Request, Resolver } from "pgfx"
 import type { RequestError, SchemaError } from "pgfx/Error"
+import * as Context from "@effect/data/Context"
 import { PostgresError, ResultLengthMismatch } from "pgfx/Error"
 import * as PgSchema from "pgfx/Schema"
 import type { ParameterOrFragment } from "postgres"
@@ -219,17 +220,19 @@ export const make = (
       schema: Schema.Schema<RI, RA>,
     ) => {
       const encodeRequest = PgSchema.encode(schema, "request")
+      const resolverWithSql = Effect.map(
+        Effect.serviceOption(PgSql),
+        Option.match(
+          () => Resolver,
+          (sql) =>
+            RequestResolver.provideContext(Resolver, Context.make(PgSql, sql)),
+        ),
+      )
       return Debug.methodWithTrace(
         (trace) => (_: RA) =>
-          pipe(
-            encodeRequest(_),
-            Effect.flatMap((i0) =>
-              Effect.request(
-                Request({ i0 }),
-                RequestResolver.contextFromServices(PgSql)(Resolver),
-              ),
-            ),
-            Effect.provideServiceEffect(PgSql, getSql),
+          Effect.flatMap(
+            Effect.zip(encodeRequest(_), resolverWithSql),
+            ([i0, resolver]) => Effect.request(Request({ i0 }), resolver),
           )
             .traced(trace)
             .traced(parentTrace),
