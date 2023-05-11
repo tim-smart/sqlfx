@@ -14,6 +14,7 @@ Added in v1.0.0
 
 - [utils](#utils)
   - [decode](#decode)
+  - [encode](#encode)
 
 ---
 
@@ -28,6 +29,19 @@ export declare const decode: <I, A>(
   schema: Schema.Schema<I, A>,
   type: any
 ) => (input: I) => Effect.Effect<never, any, A>
+```
+
+Added in v1.0.0
+
+## encode
+
+**Signature**
+
+```ts
+export declare const encode: <I, A>(
+  schema: Schema.Schema<I, A>,
+  type: any
+) => (input: A) => Effect.Effect<never, any, I>
 ```
 
 Added in v1.0.0
