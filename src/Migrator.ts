@@ -25,7 +25,10 @@ export interface MigrationError extends Data.Case {
 }
 export const MigrationError = Data.tagged<MigrationError>("MigrationError")
 
-const make = ({ directory, table = "pgfx_migrations" }: MigratorOptions) =>
+export const run = ({
+  directory,
+  table = "pgfx_migrations",
+}: MigratorOptions) =>
   Effect.gen(function* (_) {
     const sql = yield* _(Pg.tag)
 
@@ -201,4 +204,4 @@ as the following already complete migrations would come after it: ${[
   })
 
 export const makeLayer = (options: MigratorOptions) =>
-  Layer.effectDiscard(make(options))
+  Layer.effectDiscard(run(options))
