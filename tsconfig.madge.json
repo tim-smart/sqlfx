@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "allowJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "pgfx": ["./build/esm/index.js"],
+      "pgfx/*": ["./build/esm/*"]
+    }
+  },
+  "include": ["./build/esm/**/*.js"]
+}

@@ -1,25 +1,14 @@
 {
-  "compilerOptions": {
-    "baseUrl": ".",
-    "rootDir": "src",
-    "outDir": "dist",
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "moduleResolution": "NodeNext",
-    "module": "ESNext",
-    "allowSyntheticDefaultImports": true,
-    "lib": ["ESNext", "DOM"],
-    "sourceMap": true,
-    "strict": true,
-    "target": "ES2022",
-    "incremental": true,
-    "declaration": true,
-    "paths": {
-      "pgfx": ["./src/index.js"],
-      "pgfx/*": ["./src/*.js"]
+  "extends": "./tsconfig.base.json",
+  "references": [
+    {
+      "path": "./tsconfig.build.json"
     },
-    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
-    "plugins": [{ "name": "@effect/language-service" }]
-  },
-  "include": ["src/**/*"]
+    {
+      "path": "./tsconfig.build-test.json"
+    },
+    {
+      "path": "./tsconfig.examples.json"
+    }
+  ]
 }
