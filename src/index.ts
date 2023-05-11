@@ -100,9 +100,9 @@ export interface Request<T extends string, I, E, A>
  * @since 1.0.0
  */
 export interface Resolver<T extends string, II, IA, A, E> {
-  readonly Request: request.Request.Constructor<Request<T, IA, E, A>>
-  readonly Resolver: RequestResolver.RequestResolver<Request<T, IA, E, A>>
-  execute(_: II): Effect.Effect<never, RequestError | E, A>
+  readonly Request: request.Request.Constructor<Request<T, II, E, A>>
+  readonly Resolver: RequestResolver.RequestResolver<Request<T, II, E, A>>
+  execute(_: IA): Effect.Effect<never, RequestError | E, A>
 }
 
 /**
@@ -178,8 +178,8 @@ export interface PgFx {
   schema<II, IA, AI, A, R, E>(
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
-  ): (_: II) => Effect.Effect<R, E | SchemaError, Chunk.Chunk<A>>
+    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+  ): (_: IA) => Effect.Effect<R, E | SchemaError, Chunk.Chunk<A>>
 
   /**
    * Run a sql query with a request schema and a result schema.
@@ -192,8 +192,8 @@ export interface PgFx {
   singleSchema<II, IA, AI, A, R, E>(
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
-  ): (_: II) => Effect.Effect<R, E | SchemaError, A>
+    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+  ): (_: IA) => Effect.Effect<R, E | SchemaError, A>
 
   /**
    * Run a sql query with a request schema and a result schema.
@@ -206,8 +206,8 @@ export interface PgFx {
   singleSchemaOption<II, IA, AI, A, R, E>(
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
-  ): (_: II) => Effect.Effect<R, E | SchemaError, Option.Option<A>>
+    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+  ): (_: IA) => Effect.Effect<R, E | SchemaError, Option.Option<A>>
 
   /**
    * Create a resolver for a sql query with a request schema and a result schema.
@@ -224,7 +224,7 @@ export interface PgFx {
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
     run: (
-      requests: ReadonlyArray<IA>,
+      requests: ReadonlyArray<II>,
     ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
   ): Resolver<T, II, IA, A, E | ResultLengthMismatch>
 
@@ -244,7 +244,7 @@ export interface PgFx {
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
     run: (
-      request: IA,
+      request: II,
     ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
   ): Resolver<T, II, IA, Option.Option<A>, E>
 
@@ -264,7 +264,7 @@ export interface PgFx {
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
     run: (
-      request: IA,
+      request: II,
     ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
   ): Resolver<T, II, IA, A, E>
 
@@ -282,7 +282,7 @@ export interface PgFx {
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     run: (
-      requests: ReadonlyArray<IA>,
+      requests: ReadonlyArray<II>,
     ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<X>>,
   ): Resolver<T, II, IA, void, E>
 
@@ -299,9 +299,9 @@ export interface PgFx {
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    resultId: (_: AI) => IA,
+    resultId: (_: AI) => II,
     run: (
-      requests: ReadonlyArray<IA>,
+      requests: ReadonlyArray<II>,
     ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
   ): Resolver<T, II, IA, Option.Option<A>, E>
 }

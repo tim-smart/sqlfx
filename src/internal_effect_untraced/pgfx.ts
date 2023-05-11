@@ -133,19 +133,19 @@ export const make = (
         function makeSchema<II, IA, AI, A, R, E>(
           requestSchema: Schema.Schema<II, IA>,
           resultSchema: Schema.Schema<AI, A>,
-          run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+          run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
         ) {
           const decodeResult = PgSchema.decode(
             Schema.chunk(resultSchema),
             "result",
           )
-          const decodeRequest = PgSchema.decode(requestSchema, "request")
+          const encodeRequest = PgSchema.encode(requestSchema, "request")
 
           return Debug.methodWithTrace(
             (trace) =>
-              (_: II): Effect.Effect<R, SchemaError | E, Chunk.Chunk<A>> =>
+              (_: IA): Effect.Effect<R, SchemaError | E, Chunk.Chunk<A>> =>
                 pipe(
-                  decodeRequest(_),
+                  encodeRequest(_),
                   Effect.flatMap(run),
                   Effect.flatMap(decodeResult),
                 )
@@ -160,16 +160,16 @@ export const make = (
         function makeSingleSchema<II, IA, AI, A, R, E>(
           requestSchema: Schema.Schema<II, IA>,
           resultSchema: Schema.Schema<AI, A>,
-          run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+          run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
         ) {
           const decodeResult = PgSchema.decode(resultSchema, "result")
-          const decodeRequest = PgSchema.decode(requestSchema, "request")
+          const encodeRequest = PgSchema.encode(requestSchema, "request")
 
           return Debug.methodWithTrace(
             (trace) =>
-              (_: II): Effect.Effect<R, SchemaError | E, A> =>
+              (_: IA): Effect.Effect<R, SchemaError | E, A> =>
                 pipe(
-                  decodeRequest(_),
+                  encodeRequest(_),
                   Effect.flatMap(run),
                   Effect.flatMap((_) => Effect.orDie(ROA.head(_))),
                   Effect.flatMap(decodeResult),
@@ -185,16 +185,16 @@ export const make = (
         function makeSingleSchemaOption<II, IA, AI, A, R, E>(
           requestSchema: Schema.Schema<II, IA>,
           resultSchema: Schema.Schema<AI, A>,
-          run: (_: IA) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+          run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
         ) {
           const decodeResult = PgSchema.decode(resultSchema, "result")
-          const decodeRequest = PgSchema.decode(requestSchema, "request")
+          const encodeRequest = PgSchema.encode(requestSchema, "request")
 
           return Debug.methodWithTrace(
             (trace) =>
-              (_: II): Effect.Effect<R, SchemaError | E, Option.Option<A>> =>
+              (_: IA): Effect.Effect<R, SchemaError | E, Option.Option<A>> =>
                 pipe(
-                  decodeRequest(_),
+                  encodeRequest(_),
                   Effect.flatMap(run),
                   Effect.map(ROA.head),
                   Effect.flatMap(
@@ -213,16 +213,16 @@ export const make = (
     const makeExecuteRequest = <E, A, RI, RA>(
       parentTrace: Debug.Trace,
       Request: request.Request.Constructor<
-        request.Request<RequestError | E, A> & { i0: RA }
+        request.Request<RequestError | E, A> & { i0: RI }
       >,
       Resolver: RequestResolver.RequestResolver<any>,
       schema: Schema.Schema<RI, RA>,
     ) => {
-      const decodeRequest = PgSchema.decode(schema, "request")
+      const encodeRequest = PgSchema.encode(schema, "request")
       return Debug.methodWithTrace(
-        (trace) => (_: RI) =>
+        (trace) => (_: RA) =>
           pipe(
-            decodeRequest(_),
+            encodeRequest(_),
             Effect.flatMap((i0) =>
               Effect.request(
                 Request({ i0 }),
@@ -243,14 +243,14 @@ export const make = (
           requestSchema: Schema.Schema<II, IA>,
           resultSchema: Schema.Schema<AI, A>,
           run: (
-            requests: ReadonlyArray<IA>,
+            requests: ReadonlyArray<II>,
           ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
         ): Resolver<T, II, IA, A, E | ResultLengthMismatch> {
           const Request =
-            request.tagged<Request<T, IA, E | ResultLengthMismatch, A>>(tag)
+            request.tagged<Request<T, II, E | ResultLengthMismatch, A>>(tag)
           const decodeResult = PgSchema.decode(resultSchema, "result")
           const Resolver = RequestResolver.makeBatched(
-            (requests: Array<Request<T, IA, E | ResultLengthMismatch, A>>) =>
+            (requests: Array<Request<T, II, E | ResultLengthMismatch, A>>) =>
               pipe(
                 run(requests.map((_) => _.i0)),
                 Effect.filterOrElseWith(
@@ -299,14 +299,14 @@ export const make = (
           requestSchema: Schema.Schema<II, IA>,
           resultSchema: Schema.Schema<AI, A>,
           run: (
-            request: IA,
+            request: II,
           ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
         ): Resolver<T, II, IA, Option.Option<A>, E> {
           const Request =
-            request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
+            request.tagged<Request<T, II, E, Option.Option<A>>>(tag)
           const decodeResult = PgSchema.decode(resultSchema, "result")
           const Resolver = RequestResolver.fromFunctionEffect(
-            (req: Request<T, IA, E, Option.Option<A>>) =>
+            (req: Request<T, II, E, Option.Option<A>>) =>
               pipe(
                 run(req.i0),
                 Effect.map(ROA.head),
@@ -337,13 +337,13 @@ export const make = (
           requestSchema: Schema.Schema<II, IA>,
           resultSchema: Schema.Schema<AI, A>,
           run: (
-            request: IA,
+            request: II,
           ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
         ): Resolver<T, II, IA, A, E> {
-          const Request = request.tagged<Request<T, IA, E, A>>(tag)
+          const Request = request.tagged<Request<T, II, E, A>>(tag)
           const decodeResult = PgSchema.decode(resultSchema, "result")
           const Resolver = RequestResolver.fromFunctionEffect(
-            (req: Request<T, IA, E, A>) =>
+            (req: Request<T, II, E, A>) =>
               pipe(
                 run(req.i0),
                 Effect.flatMap((_) => Effect.orDie(ROA.head(_))),
@@ -368,12 +368,12 @@ export const make = (
           tag: T,
           requestSchema: Schema.Schema<II, IA>,
           run: (
-            requests: ReadonlyArray<IA>,
+            requests: ReadonlyArray<II>,
           ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<X>>,
         ): Resolver<T, II, IA, void, E> {
-          const Request = request.tagged<Request<T, IA, E, void>>(tag)
+          const Request = request.tagged<Request<T, II, E, void>>(tag)
           const Resolver = RequestResolver.makeBatched(
-            (requests: Array<Request<T, IA, E, void>>) =>
+            (requests: Array<Request<T, II, E, void>>) =>
               pipe(
                 run(requests.map((_) => _.i0)),
                 Effect.zipRight(
@@ -406,23 +406,23 @@ export const make = (
           tag: T,
           requestSchema: Schema.Schema<II, IA>,
           resultSchema: Schema.Schema<AI, A>,
-          resultId: (_: AI) => IA,
+          resultId: (_: AI) => II,
           run: (
-            requests: ReadonlyArray<IA>,
+            requests: ReadonlyArray<II>,
           ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
         ): Resolver<T, II, IA, Option.Option<A>, E> {
           const Request =
-            request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
+            request.tagged<Request<T, II, E, Option.Option<A>>>(tag)
           const decodeResult = PgSchema.decode(resultSchema, "result")
           const Resolver = RequestResolver.makeBatched(
-            (requests: Array<Request<T, IA, E, Option.Option<A>>>) =>
+            (requests: Array<Request<T, II, E, Option.Option<A>>>) =>
               pipe(
                 Effect.all({
                   results: run(requests.map((_) => _.i0)),
                   requestsMap: Effect.sync(() =>
                     requests.reduce(
                       (acc, request) => acc.set(request.i0, request),
-                      new Map<IA, Request<T, IA, E, Option.Option<A>>>(),
+                      new Map<II, Request<T, II, E, Option.Option<A>>>(),
                     ),
                   ),
                 }),
