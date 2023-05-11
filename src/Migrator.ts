@@ -40,6 +40,10 @@ const make = ({ directory, table = "pgfx_migrations" }: MigratorOptions) =>
       `,
     )
 
+    const lockMigrationsTable = sql`
+      LOCK TABLE ${sql(table)} IN ACCESS EXCLUSIVE MODE
+    `
+
     const insertMigration = (id: number, name: string) => sql`
       INSERT INTO ${sql(table)} (
         migrationid,
@@ -124,6 +128,8 @@ const make = ({ directory, table = "pgfx_migrations" }: MigratorOptions) =>
     // === run
 
     const run = Effect.gen(function* (_) {
+      yield* _(lockMigrationsTable)
+
       const [complete, current] = yield* _(
         Effect.all(completedMigrations, currentMigrations),
       )
