@@ -20,9 +20,9 @@ export interface MigratorOptions {
 }
 
 interface Migration {
-  readonly migrationid: number
+  readonly id: number
   readonly name: string
-  readonly createdat: Date
+  readonly createdAt: Date
 }
 
 /**
@@ -55,8 +55,8 @@ export const run = ({
       sql`select ${table}::regclass`,
       () => sql`
         CREATE TABLE IF NOT EXISTS ${sql(table)} (
-          migrationid serial primary key,
-          createdat timestamp with time zone not null default now(),
+          migration_id serial primary key,
+          created_at timestamp with time zone not null default now(),
           name text
         )
       `,
@@ -68,7 +68,7 @@ export const run = ({
 
     const insertMigration = (id: number, name: string) => sql`
       INSERT INTO ${sql(table)} (
-        migrationid,
+        migration_id,
         name
       ) VALUES (
         ${id},
@@ -77,16 +77,26 @@ export const run = ({
     `
 
     const latestMigration = Effect.map(
-      sql<Array<Migration>>`
-        SELECT * FROM ${sql(table)} ORDER BY migrationid DESC LIMIT 1
+      sql.values<Migration>`
+        SELECT migration_id, name, created_at FROM ${sql(
+          table,
+        )} ORDER BY migration_id DESC LIMIT 1
       `,
-      (_) => Option.fromNullable(_[0]),
+      _ =>
+        Option.map(
+          Option.fromNullable(_[0] as any),
+          ([id, name, createdAt]: [number, string, Date]): Migration => ({
+            id,
+            name,
+            createdAt,
+          }),
+        ),
     )
 
     const migrationsFromDisk = Effect.catchAllDefect(
       Effect.sync(() =>
         NFS.readdirSync(directory)
-          .map((_) =>
+          .map(_ =>
             Option.fromNullable(Path.basename(_).match(/^(\d+)_([^.]+)\.js$/)),
           )
           .flatMap(
@@ -97,7 +107,7 @@ export const run = ({
           )
           .sort(([a], [b]) => a - b),
       ),
-      (_) =>
+      _ =>
         Effect.as(Effect.log(`Could not load migrations from disk: ${_}`), []),
     )
 
@@ -112,7 +122,7 @@ export const run = ({
               message: `Could not import migration: ${fullPath}`,
             }),
         ),
-        Effect.flatMap((_) =>
+        Effect.flatMap(_ =>
           _.default
             ? Effect.succeed(_.default)
             : Effect.fail(
@@ -139,7 +149,7 @@ export const run = ({
       effect: Effect.Effect<never, never, unknown>,
     ) =>
       Effect.zipRight(
-        Effect.orDieWith(effect, (_) =>
+        Effect.orDieWith(effect, _ =>
           MigrationError({
             reason: "failed",
             message: `Migration ${id}_${name} failed: ${JSON.stringify(_)}`,
@@ -159,7 +169,7 @@ export const run = ({
             latestMigration,
             Option.match(
               () => 0,
-              (_) => _.migrationid,
+              _ => _.id,
             ),
           ),
           migrationsFromDisk,
@@ -213,13 +223,10 @@ export const run = ({
         Effect.flatMap(
           Option.match(
             () => Effect.logInfo(`Migrations complete`),
-            (_) =>
+            _ =>
               pipe(
                 Effect.logInfo(`Migrations complete`),
-                Effect.logAnnotate(
-                  "latest_migration_id",
-                  _.migrationid.toString(),
-                ),
+                Effect.logAnnotate("latest_migration_id", _.id.toString()),
                 Effect.logAnnotate("latest_migration_name", _.name),
               ),
           ),

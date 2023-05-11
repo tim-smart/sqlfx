@@ -75,15 +75,10 @@ type First<T, K extends ReadonlyArray<any>, TT> =
     : // Unexpected type
       never
 
-type Return<T, K extends ReadonlyArray<any>> = [T] extends [
-  TemplateStringsArray,
-]
-  ? [unknown] extends [T]
-    ? postgres.Helper<T, K> // ensure no `PendingQuery` with `any` types
-    : [TemplateStringsArray] extends [T]
-    ? postgres.PendingQuery<Array<postgres.Row>>
-    : postgres.Helper<T, K>
-  : postgres.Helper<T, K>
+type PgValuesResult<A extends Record<string, unknown>> =
+  postgres.PendingValuesQuery<ReadonlyArray<A>> extends Promise<infer T>
+    ? T
+    : never
 
 /**
  * @category models
@@ -119,15 +114,23 @@ export interface PgFx {
   /**
    * Create an Effect from an sql query
    */
-  <T extends ReadonlyArray<object | undefined> = Array<Record<string, any>>>(
+  <T extends Record<string, any>>(
     template: TemplateStringsArray,
     ...parameters: ReadonlyArray<ParameterOrFragment<{}>>
-  ): Effect.Effect<never, PostgresError, T>
+  ): Effect.Effect<never, PostgresError, ReadonlyArray<T>>
 
   /**
    * Query helper
    */
-  <T, K extends Rest<T>>(first: T & First<T, K, {}>, ...rest: K): Return<T, K>
+  <T, K extends Rest<T>>(first: T & First<T, K, {}>, ...rest: K): SqlFragment
+
+  /**
+   * Create an Effect from an sql query, returning rows as arrays
+   */
+  readonly values: <T extends Record<string, any>>(
+    template: TemplateStringsArray,
+    ...parameters: ReadonlyArray<ParameterOrFragment<{}>>
+  ) => Effect.Effect<never, PostgresError, PgValuesResult<T>>
 
   /**
    * Copy of `sql` for use as a safeql target
