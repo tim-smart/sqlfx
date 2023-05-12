@@ -1,5 +1,11 @@
 # pgfx
 
+## 0.5.8
+
+### Patch Changes
+
+- [`dbd77f2`](https://github.com/tim-smart/pgfx/commit/dbd77f29ddfb4e30feb09c3b092f7e783f9c39a5) Thanks [@tim-smart](https://github.com/tim-smart)! - unsafe and csv helper
+
 ## 0.5.7
 
 ### Patch Changes
