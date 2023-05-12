@@ -1,6 +1,7 @@
 /**
  * @since 1.0.0
  */
+import type * as Brand from "@effect/data/Brand"
 import type { Tag } from "@effect/data/Context"
 import type * as Option from "@effect/data/Option"
 import type * as Config from "@effect/io/Config"
@@ -20,7 +21,6 @@ import type {
 import * as internal from "pgfx/internal_effect_untraced/pgfx"
 import type { ParameterOrFragment } from "postgres"
 import postgres from "postgres"
-import type * as Brand from "@effect/data/Brand"
 
 type Rest<T> = T extends TemplateStringsArray
   ? never // force fallback to the tagged template function overload
@@ -345,10 +345,6 @@ const { fromCamel, fromKebab, fromPascal, toCamel, toKebab, toPascal } =
   postgres
 
 export {
-  /**
-   * @category transform
-   * @since 1.0.0
-   */
   fromCamel,
   /**
    * @category transform
