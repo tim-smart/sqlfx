@@ -1,5 +1,11 @@
 # pgfx
 
+## 0.6.0
+
+### Minor Changes
+
+- [`00e58d9`](https://github.com/tim-smart/pgfx/commit/00e58d98dc34774a223e6835bf50f0a19a529ea5) Thanks [@tim-smart](https://github.com/tim-smart)! - update deps
+
 ## 0.5.8
 
 ### Patch Changes

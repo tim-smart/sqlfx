@@ -1,5 +1,0 @@
----
-"pgfx": minor
----
-
-update deps
