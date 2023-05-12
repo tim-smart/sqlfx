@@ -1,5 +1,11 @@
 # pgfx
 
+## 0.6.1
+
+### Patch Changes
+
+- [#13](https://github.com/tim-smart/pgfx/pull/13) [`dbe96d9`](https://github.com/tim-smart/pgfx/commit/dbe96d98c137c2016803b2f08baa30ba01894436) Thanks [@tim-smart](https://github.com/tim-smart)! - resolver context
+
 ## 0.6.0
 
 ### Minor Changes
