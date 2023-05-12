@@ -1,4 +1,5 @@
 /** @internal */
+import * as Context from "@effect/data/Context"
 import { Tag } from "@effect/data/Context"
 import * as Debug from "@effect/data/Debug"
 import { pipe } from "@effect/data/Function"
@@ -6,16 +7,16 @@ import * as Option from "@effect/data/Option"
 import * as ROA from "@effect/data/ReadonlyArray"
 import * as Config from "@effect/io/Config"
 import type { ConfigError } from "@effect/io/Config/Error"
-import * as Deferred from "@effect/io/Deferred"
 import * as Effect from "@effect/io/Effect"
+import * as Exit from "@effect/io/Exit"
 import * as Layer from "@effect/io/Layer"
 import * as request from "@effect/io/Request"
 import * as RequestResolver from "@effect/io/RequestResolver"
+import * as Runtime from "@effect/io/Runtime"
 import type { Scope } from "@effect/io/Scope"
 import * as Schema from "@effect/schema/Schema"
-import type { PgFx, Request, Resolver } from "pgfx"
+import type { PgFx, Request, Resolver, SqlFragment } from "pgfx"
 import type { RequestError, SchemaError } from "pgfx/Error"
-import * as Context from "@effect/data/Context"
 import { PostgresError, ResultLengthMismatch } from "pgfx/Error"
 import * as PgSchema from "pgfx/Schema"
 import type { ParameterOrFragment } from "postgres"
@@ -32,7 +33,7 @@ export const make = (
     const pgSql = postgres(options)
     const getSql = Effect.map(
       Effect.serviceOption(PgSql),
-      Option.getOrElse(() => pgSql as postgres.TransactionSql<{}>),
+      Option.getOrElse(() => pgSql),
     )
 
     yield* _(Effect.addFinalizer(() => Effect.promise(() => pgSql.end())))
@@ -75,6 +76,22 @@ export const make = (
     ;(sql as any).array = pgSql.array
     ;(sql as any).json = pgSql.json
     ;(sql as any).values = execute(_ => _.values().execute())
+    ;(sql as any).and = (clauses: ReadonlyArray<SqlFragment>): SqlFragment => {
+      if (clauses.length === 0) {
+        return sql.$`(1 = 1)`
+      }
+
+      return sql.$`(${clauses.reduce(
+        (acc, frag) => sql.$`${acc} AND ${frag}`,
+      )})`
+    }
+    ;(sql as any).or = (clauses: ReadonlyArray<SqlFragment>): SqlFragment => {
+      if (clauses.length === 0) {
+        return sql.$`1 = 1`
+      }
+
+      return sql.$`(${clauses.reduce((acc, frag) => sql.$`${acc} OR ${frag}`)})`
+    }
 
     sql.describe = Debug.methodWithTrace(
       trace =>
@@ -99,41 +116,54 @@ export const make = (
         function withTransaction<R, E, A>(
           self: Effect.Effect<R, E, A>,
         ): Effect.Effect<R, E | PostgresError, A> {
-          return Effect.acquireUseRelease(
-            pipe(
-              Effect.all(Effect.serviceOption(PgSql), Deferred.make<E, A>()),
-              Effect.flatMap(([sql, deferred]) =>
-                Effect.async<
-                  never,
-                  PostgresError,
-                  readonly [
-                    postgres.TransactionSql<{}>,
-                    Deferred.Deferred<E, A>,
-                  ]
-                >(resume => {
-                  let done = false
+          return pipe(
+            Effect.zip(Effect.runtime<R>(), Effect.serviceOption(PgSql)),
+            Effect.flatMap(([runtime, sql]) =>
+              Effect.asyncInterrupt<never, E | PostgresError, A>(resume => {
+                const run = Runtime.runCallback(runtime)
+                let resumed = false
+                let cancel: Runtime.Cancel<E, A>
 
-                  const begin = Option.match(
-                    sql,
-                    () => pgSql.begin.bind(pgSql),
-                    pgSql => pgSql.savepoint.bind(pgSql),
-                  )
+                const effect = Effect.tapErrorCause(self, cause =>
+                  Effect.sync(() => {
+                    resumed = true
+                    resume(Effect.failCause(cause))
+                  }),
+                )
 
-                  begin(tSql => {
-                    if (done) return
-                    done = true
-                    resume(Effect.succeed([tSql, deferred]))
-                    return Effect.runPromise(Deferred.await(deferred))
-                  }).catch(error => {
-                    if (done) return
-                    done = true
+                const begin = Option.match(
+                  sql,
+                  () => pgSql.begin.bind(pgSql),
+                  pgSql => pgSql.savepoint.bind(pgSql),
+                )
+
+                begin(
+                  tSql =>
+                    new Promise((resolve, reject) => {
+                      cancel = run(
+                        Effect.provideService(effect, PgSql, tSql),
+                        exit =>
+                          Exit.isSuccess(exit)
+                            ? resolve(exit.value)
+                            : reject(exit.cause),
+                      )
+                    }),
+                )
+                  .then(_ => {
+                    resumed = true
+                    resume(Effect.succeed(_ as A))
+                  })
+                  .catch(error => {
+                    if (resumed) return
                     resume(Effect.fail(PostgresError(error)))
                   })
-                }),
-              ),
+
+                return Effect.sync(() => {
+                  resumed = true
+                  cancel()
+                })
+              }),
             ),
-            ([sql]) => Effect.provideService(self, PgSql, sql),
-            ([, deferred], exit) => Deferred.complete(deferred, exit),
           ).traced(trace)
         },
     )
