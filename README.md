@@ -130,20 +130,17 @@ Here is an example migration:
 import * as Effect from "@effect/io/Effect"
 import * as Pg from "pgfx"
 
-export default Effect.gen(function* (_) {
-  const sql = yield* _(Pg.tag)
-
-  yield* _(
-    sql`
-      CREATE TABLE users (
-        id serial PRIMARY KEY,
-        name varchar(255) NOT NULL,
-        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-      )
-    `,
-  )
-})
+export default Effect.flatMap(
+  Pg.tag,
+  sql => sql`
+    CREATE TABLE users (
+      id serial PRIMARY KEY,
+      name varchar(255) NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    )
+  `,
+)
 ```
 
 To run your migrations:
