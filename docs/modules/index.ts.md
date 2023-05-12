@@ -19,7 +19,7 @@ Added in v1.0.0
   - [PgFx (interface)](#pgfx-interface)
   - [Request (interface)](#request-interface)
   - [Resolver (interface)](#resolver-interface)
-  - [SqlFragment (type alias)](#sqlfragment-type-alias)
+  - [SqlFragment (interface)](#sqlfragment-interface)
 - [tag](#tag)
   - [tag](#tag-1)
 - [transform](#transform)
@@ -91,6 +91,15 @@ export interface PgFx {
   readonly safe: PgFx
 
   /**
+   * Create unsafe SQL query
+   */
+  readonly unsafe: (
+    query: string,
+    parameters?: Array<ParameterOrJSON<{}>> | undefined,
+    queryOptions?: postgres.UnsafeQueryOptions | undefined
+  ) => SqlFragment
+
+  /**
    * Create a SQL fragment
    */
   readonly $: (template: TemplateStringsArray, ...parameters: ReadonlyArray<ParameterOrFragment<{}>>) => SqlFragment
@@ -108,12 +117,20 @@ export interface PgFx {
   /**
    * Create an `AND` chain for a where clause
    */
-  readonly and: (clauses: ReadonlyArray<SqlFragment>) => SqlFragment
+  readonly and: (clauses: ReadonlyArray<SqlFragment | string>) => SqlFragment
 
   /**
    * Create an `OR` chain for a where clause
    */
-  readonly or: (clauses: ReadonlyArray<SqlFragment>) => SqlFragment
+  readonly or: (clauses: ReadonlyArray<SqlFragment | string>) => SqlFragment
+
+  /**
+   * Create comma seperated values, with an optional prefix
+   */
+  readonly csv: {
+    (clauses: ReadonlyArray<SqlFragment | string>): SqlFragment
+    (prefix: string, clauses: ReadonlyArray<SqlFragment | string>): SqlFragment
+  }
 
   /**
    * Describe the given sql
@@ -287,12 +304,14 @@ export interface Resolver<T extends string, II, IA, A, E> {
 
 Added in v1.0.0
 
-## SqlFragment (type alias)
+## SqlFragment (interface)
 
 **Signature**
 
 ```ts
-export type SqlFragment = Brand.Branded<string, 'SqlFragment'>
+export interface SqlFragment {
+  readonly _: unique symbol
+}
 ```
 
 Added in v1.0.0
