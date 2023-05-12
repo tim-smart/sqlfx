@@ -345,6 +345,10 @@ const { fromCamel, fromKebab, fromPascal, toCamel, toKebab, toPascal } =
   postgres
 
 export {
+  /**
+   * @category transform
+   * @since 1.0.0
+   */
   fromCamel,
   /**
    * @category transform
