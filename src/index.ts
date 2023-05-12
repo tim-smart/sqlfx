@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import type { Tag } from "@effect/data/Context"
+import type { Context, Tag } from "@effect/data/Context"
 import type * as Option from "@effect/data/Option"
 import type * as Config from "@effect/io/Config"
 import type { ConfigError } from "@effect/io/Config/Error"
@@ -256,6 +256,7 @@ export interface PgFx {
     run: (
       requests: ReadonlyArray<II>,
     ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+    context?: Context<any>,
   ): Resolver<T, II, IA, A, E | ResultLengthMismatch>
 
   /**
@@ -276,6 +277,7 @@ export interface PgFx {
     run: (
       request: II,
     ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+    context?: Context<any>,
   ): Resolver<T, II, IA, Option.Option<A>, E>
 
   /**
@@ -296,6 +298,7 @@ export interface PgFx {
     run: (
       request: II,
     ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+    context?: Context<any>,
   ): Resolver<T, II, IA, A, E>
 
   /**
@@ -314,6 +317,7 @@ export interface PgFx {
     run: (
       requests: ReadonlyArray<II>,
     ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<X>>,
+    context?: Context<any>,
   ): Resolver<T, II, IA, void, E>
 
   /**
@@ -333,6 +337,7 @@ export interface PgFx {
     run: (
       requests: ReadonlyArray<II>,
     ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+    context?: Context<any>,
   ): Resolver<T, II, IA, Option.Option<A>, E>
 }
 

@@ -280,14 +280,17 @@ export const make = (
       >,
       Resolver: RequestResolver.RequestResolver<any>,
       schema: Schema.Schema<RI, RA>,
+      context = Context.empty() as Context.Context<any>,
     ) => {
       const encodeRequest = PgSchema.encode(schema, "request")
-      const resolverWithSql = Effect.map(
-        Effect.serviceOption(PgSql),
-        Option.match(
-          () => Resolver,
-          sql =>
-            RequestResolver.provideContext(Resolver, Context.make(PgSql, sql)),
+      const resolverWithSql = Effect.map(Effect.serviceOption(PgSql), _ =>
+        RequestResolver.provideContext(
+          Resolver,
+          Option.match(
+            _,
+            () => context,
+            sql => Context.add(context, PgSql, sql),
+          ),
         ),
       )
       return Debug.methodWithTrace(
@@ -310,6 +313,7 @@ export const make = (
           run: (
             requests: ReadonlyArray<II>,
           ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+          context?: Context.Context<any>,
         ): Resolver<T, II, IA, A, E | ResultLengthMismatch> {
           const Request =
             request.tagged<Request<T, II, E | ResultLengthMismatch, A>>(tag)
@@ -351,6 +355,7 @@ export const make = (
             Request,
             Resolver,
             requestSchema,
+            context,
           )
 
           return { Request, Resolver, execute }
@@ -366,6 +371,8 @@ export const make = (
           run: (
             request: II,
           ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+
+          context?: Context.Context<any>,
         ): Resolver<T, II, IA, Option.Option<A>, E> {
           const Request =
             request.tagged<Request<T, II, E, Option.Option<A>>>(tag)
@@ -389,6 +396,7 @@ export const make = (
             Request,
             Resolver,
             requestSchema,
+            context,
           )
 
           return { Request, Resolver, execute }
@@ -404,6 +412,7 @@ export const make = (
           run: (
             request: II,
           ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+          context?: Context.Context<any>,
         ): Resolver<T, II, IA, A, E> {
           const Request = request.tagged<Request<T, II, E, A>>(tag)
           const decodeResult = PgSchema.decode(resultSchema, "result")
@@ -421,6 +430,7 @@ export const make = (
             Request,
             Resolver,
             requestSchema,
+            context,
           )
 
           return { Request, Resolver, execute }
@@ -435,6 +445,7 @@ export const make = (
           run: (
             requests: ReadonlyArray<II>,
           ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<X>>,
+          context?: Context.Context<any>,
         ): Resolver<T, II, IA, void, E> {
           const Request = request.tagged<Request<T, II, E, void>>(tag)
           const Resolver = RequestResolver.makeBatched(
@@ -459,6 +470,7 @@ export const make = (
             Request,
             Resolver,
             requestSchema,
+            context,
           )
 
           return { Request, Resolver, execute }
@@ -475,6 +487,7 @@ export const make = (
           run: (
             requests: ReadonlyArray<II>,
           ) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+          context?: Context.Context<any>,
         ): Resolver<T, II, IA, Option.Option<A>, E> {
           const Request =
             request.tagged<Request<T, II, E, Option.Option<A>>>(tag)
@@ -529,6 +542,7 @@ export const make = (
             Request,
             Resolver,
             requestSchema,
+            context,
           )
 
           return { Request, Resolver, execute }
