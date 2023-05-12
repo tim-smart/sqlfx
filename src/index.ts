@@ -93,7 +93,7 @@ export interface Request<T extends string, I, E, A>
  * @since 1.0.0
  */
 export interface Resolver<T extends string, II, IA, A, E> {
-  readonly Request: request.Request.Constructor<Request<T, II, E, A>>
+  readonly Request: request.Request.Constructor<Request<T, II, E, A>, "_tag">
   readonly Resolver: RequestResolver.RequestResolver<Request<T, II, E, A>>
   execute(_: IA): Effect.Effect<never, RequestError | E, A>
 }
