@@ -1,7 +1,6 @@
 /**
  * @since 1.0.0
  */
-import type * as Brand from "@effect/data/Brand"
 import type { Tag } from "@effect/data/Context"
 import type * as Option from "@effect/data/Option"
 import type * as Config from "@effect/io/Config"
@@ -19,7 +18,7 @@ import type {
   SchemaError,
 } from "pgfx/Error"
 import * as internal from "pgfx/internal_effect_untraced/pgfx"
-import type { ParameterOrFragment } from "postgres"
+import type { ParameterOrFragment, ParameterOrJSON } from "postgres"
 import postgres from "postgres"
 
 type Rest<T> = T extends TemplateStringsArray
@@ -103,7 +102,9 @@ export interface Resolver<T extends string, II, IA, A, E> {
  * @category models
  * @since 1.0.0
  */
-export type SqlFragment = Brand.Branded<string, "SqlFragment">
+export interface SqlFragment {
+  readonly _: unique symbol
+}
 
 /**
  * @category models
@@ -137,6 +138,15 @@ export interface PgFx {
   readonly safe: PgFx
 
   /**
+   * Create unsafe SQL query
+   */
+  readonly unsafe: (
+    query: string,
+    parameters?: Array<ParameterOrJSON<{}>> | undefined,
+    queryOptions?: postgres.UnsafeQueryOptions | undefined,
+  ) => SqlFragment
+
+  /**
    * Create a SQL fragment
    */
   readonly $: (
@@ -157,12 +167,20 @@ export interface PgFx {
   /**
    * Create an `AND` chain for a where clause
    */
-  readonly and: (clauses: ReadonlyArray<SqlFragment>) => SqlFragment
+  readonly and: (clauses: ReadonlyArray<SqlFragment | string>) => SqlFragment
 
   /**
    * Create an `OR` chain for a where clause
    */
-  readonly or: (clauses: ReadonlyArray<SqlFragment>) => SqlFragment
+  readonly or: (clauses: ReadonlyArray<SqlFragment | string>) => SqlFragment
+
+  /**
+   * Create comma seperated values, with an optional prefix
+   */
+  readonly csv: {
+    (clauses: ReadonlyArray<SqlFragment | string>): SqlFragment
+    (prefix: string, clauses: ReadonlyArray<SqlFragment | string>): SqlFragment
+  }
 
   /**
    * Describe the given sql

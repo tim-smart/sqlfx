@@ -73,25 +73,49 @@ export const make = (
     const sql: PgFx = execute(_ => _.execute())
 
     ;(sql as any).safe = sql
+    ;(sql as any).unsafe = pgSql.unsafe
     ;(sql as any).$ = pgSql
     ;(sql as any).array = pgSql.array
     ;(sql as any).json = pgSql.json
     ;(sql as any).values = execute(_ => _.values().execute())
+
+    const stringToFragment = (_: string | SqlFragment) =>
+      typeof _ === "string" ? sql.unsafe(_) : _
+
     ;(sql as any).and = (clauses: ReadonlyArray<SqlFragment>): SqlFragment => {
       if (clauses.length === 0) {
         return sql.$`(1 = 1)`
       }
 
-      return sql.$`(${clauses.reduce(
-        (acc, frag) => sql.$`${acc} AND ${frag}`,
-      )})`
+      return sql.$`(${clauses
+        .map(stringToFragment)
+        .reduce((acc, frag) => sql.$`${acc} AND ${frag}`)})`
     }
     ;(sql as any).or = (clauses: ReadonlyArray<SqlFragment>): SqlFragment => {
       if (clauses.length === 0) {
         return sql.$`1 = 1`
       }
 
-      return sql.$`(${clauses.reduce((acc, frag) => sql.$`${acc} OR ${frag}`)})`
+      return sql.$`(${clauses
+        .map(stringToFragment)
+        .reduce((acc, frag) => sql.$`${acc} OR ${frag}`)})`
+    }
+    ;(sql as any).csv = (
+      ...args:
+        | [ReadonlyArray<SqlFragment>]
+        | [string, ReadonlyArray<SqlFragment>]
+    ): SqlFragment => {
+      const clauses = args.length === 1 ? args[0] : args[1]
+
+      if (clauses.length === 0) {
+        return sql.unsafe("")
+      }
+
+      const query = clauses
+        .map(stringToFragment)
+        .reduce((acc, frag) => sql.$`${acc}, ${frag}`)
+
+      return args.length === 1 ? query : sql.$`${sql.unsafe(args[0])} ${query}`
     }
 
     sql.describe = Debug.methodWithTrace(
