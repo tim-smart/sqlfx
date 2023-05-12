@@ -1,5 +1,11 @@
 # pgfx
 
+## 0.6.2
+
+### Patch Changes
+
+- [`6dce08f`](https://github.com/tim-smart/pgfx/commit/6dce08ffac13165e65c4b489913300f320b8707b) Thanks [@tim-smart](https://github.com/tim-smart)! - omit \_tag
+
 ## 0.6.1
 
 ### Patch Changes
