@@ -43,10 +43,12 @@
   "keywords": [],
   "exports": {
     ".": {
-      "require": "./build/cjs/index.js"
+      "require": "./build/cjs/index.js",
+      "import": "./build/esm/index.js"
     },
     "./*": {
-      "require": "./build/cjs/*.js"
+      "require": "./build/cjs/*.js",
+      "import": "./build/esm/*.js"
     }
   },
   "config": {
