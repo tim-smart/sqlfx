@@ -1,5 +1,11 @@
 # pgfx
 
+## 0.5.7
+
+### Patch Changes
+
+- [`9a04cb1`](https://github.com/tim-smart/pgfx/commit/9a04cb133c10b3cc599c71b6fe997b03edfdcd6c) Thanks [@tim-smart](https://github.com/tim-smart)! - cleanup transaction error handling
+
 ## 0.5.6
 
 ### Patch Changes
