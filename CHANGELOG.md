@@ -1,5 +1,15 @@
 # pgfx
 
+## 0.5.6
+
+### Patch Changes
+
+- [`b3d591f`](https://github.com/tim-smart/pgfx/commit/b3d591f27caf4e1a19b0c4d0b8d5e9598e122d68) Thanks [@tim-smart](https://github.com/tim-smart)! - log at info level in Migrator
+
+- [#9](https://github.com/tim-smart/pgfx/pull/9) [`7ddd787`](https://github.com/tim-smart/pgfx/commit/7ddd7874e56a56a793e5c12b1676200e296575d3) Thanks [@tim-smart](https://github.com/tim-smart)! - fix transaction commit
+
+- [#9](https://github.com/tim-smart/pgfx/pull/9) [`38d227c`](https://github.com/tim-smart/pgfx/commit/38d227c92fbe4ce23cd522a65e450480cdb2be60) Thanks [@tim-smart](https://github.com/tim-smart)! - add and / or helpers
+
 ## 0.5.5
 
 ### Patch Changes
