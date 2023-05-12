@@ -155,6 +155,16 @@ export interface PgFx {
   readonly json: postgres.Sql["json"]
 
   /**
+   * Create an `AND` chain for a where clause
+   */
+  readonly and: (clauses: ReadonlyArray<SqlFragment>) => SqlFragment
+
+  /**
+   * Create an `OR` chain for a where clause
+   */
+  readonly or: (clauses: ReadonlyArray<SqlFragment>) => SqlFragment
+
+  /**
    * Describe the given sql
    */
   describe(

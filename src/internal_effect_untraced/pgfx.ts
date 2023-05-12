@@ -75,6 +75,22 @@ export const make = (
     ;(sql as any).array = pgSql.array
     ;(sql as any).json = pgSql.json
     ;(sql as any).values = execute(_ => _.values().execute())
+    ;(sql as any).and = (clauses: ReadonlyArray<SqlFragment>): SqlFragment => {
+      if (clauses.length === 0) {
+        return sql.$`(1 = 1)`
+      }
+
+      return sql.$`(${clauses.reduce(
+        (acc, frag) => sql.$`${acc} AND ${frag}`,
+      )})`
+    }
+    ;(sql as any).or = (clauses: ReadonlyArray<SqlFragment>): SqlFragment => {
+      if (clauses.length === 0) {
+        return sql.$`1 = 1`
+      }
+
+      return sql.$`(${clauses.reduce((acc, frag) => sql.$`${acc} OR ${frag}`)})`
+    }
 
     sql.describe = Debug.methodWithTrace(
       trace =>
