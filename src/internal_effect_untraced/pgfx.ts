@@ -5,6 +5,7 @@ import * as Debug from "@effect/data/Debug"
 import { pipe } from "@effect/data/Function"
 import * as Option from "@effect/data/Option"
 import * as ROA from "@effect/data/ReadonlyArray"
+import * as Cause from "@effect/io/Cause"
 import * as Config from "@effect/io/Config"
 import type { ConfigError } from "@effect/io/Config/Error"
 import * as Effect from "@effect/io/Effect"
@@ -117,19 +118,15 @@ export const make = (
           self: Effect.Effect<R, E, A>,
         ): Effect.Effect<R, E | PostgresError, A> {
           return pipe(
-            Effect.zip(Effect.runtime<R>(), Effect.serviceOption(PgSql)),
-            Effect.flatMap(([runtime, sql]) =>
+            Effect.all(
+              Effect.runtime<R>(),
+              Effect.fiberId(),
+              Effect.serviceOption(PgSql),
+            ),
+            Effect.flatMap(([runtime, fiberId, sql]) =>
               Effect.asyncInterrupt<never, E | PostgresError, A>(resume => {
-                const run = Runtime.runCallback(runtime)
-                let resumed = false
+                let cancelled = false
                 let cancel: Runtime.Cancel<E, A>
-
-                const effect = Effect.tapErrorCause(self, cause =>
-                  Effect.sync(() => {
-                    resumed = true
-                    resume(Effect.failCause(cause))
-                  }),
-                )
 
                 const begin = Option.match(
                   sql,
@@ -139,9 +136,9 @@ export const make = (
 
                 begin(
                   tSql =>
-                    new Promise((resolve, reject) => {
-                      cancel = run(
-                        Effect.provideService(effect, PgSql, tSql),
+                    new Promise<A>((resolve, reject) => {
+                      cancel = Runtime.runCallback(runtime)(
+                        Effect.provideService(self, PgSql, tSql),
                         exit =>
                           Exit.isSuccess(exit)
                             ? resolve(exit.value)
@@ -149,18 +146,20 @@ export const make = (
                       )
                     }),
                 )
-                  .then(_ => {
-                    resumed = true
-                    resume(Effect.succeed(_ as A))
-                  })
+                  .then(_ => resume(Effect.succeed(_ as A)))
                   .catch(error => {
-                    if (resumed) return
-                    resume(Effect.fail(PostgresError(error)))
+                    if (cancelled) {
+                      return
+                    } else if (Cause.isCause(error)) {
+                      resume(Effect.failCause(error))
+                    } else {
+                      resume(Effect.fail(PostgresError(error)))
+                    }
                   })
 
                 return Effect.sync(() => {
-                  resumed = true
-                  cancel()
+                  cancelled = true
+                  cancel(fiberId)
                 })
               }),
             ),
