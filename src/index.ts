@@ -97,6 +97,7 @@ export interface Resolver<T extends string, II, IA, A, E> {
   readonly Resolver: RequestResolver.RequestResolver<Request<T, II, E, A>>
   execute(_: IA): Effect.Effect<never, RequestError | E, A>
   populateCache(id: II, _: A): Effect.Effect<never, never, void>
+  invalidateCache(id: II): Effect.Effect<never, never, void>
 }
 
 /**

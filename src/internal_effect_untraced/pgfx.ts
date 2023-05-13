@@ -10,6 +10,7 @@ import * as Config from "@effect/io/Config"
 import type { ConfigError } from "@effect/io/Config/Error"
 import * as Effect from "@effect/io/Effect"
 import * as Exit from "@effect/io/Exit"
+import * as FiberRef from "@effect/io/FiberRef"
 import * as Layer from "@effect/io/Layer"
 import * as request from "@effect/io/Request"
 import * as RequestResolver from "@effect/io/RequestResolver"
@@ -318,6 +319,22 @@ export const make = (
       )
     }
 
+    const makeInvalidateCache = <E, A, RI>(
+      parentTrace: Debug.Trace,
+      Request: request.Request.Constructor<
+        request.Request<RequestError | E, A> & { i0: RI }
+      >,
+    ) => {
+      return Debug.methodWithTrace(
+        trace => (id: RI) =>
+          Effect.flatMap(FiberRef.get(FiberRef.currentRequestCache), cache =>
+            cache.invalidate(Request({ i0: id })),
+          )
+            .traced(trace)
+            .traced(parentTrace),
+      )
+    }
+
     sql.resolver = Debug.methodWithTrace(
       parentTrace =>
         function makeResolver<T extends string, II, IA, AI, A, E>(
@@ -373,8 +390,9 @@ export const make = (
           )
 
           const populateCache = makePopulateCache(parentTrace, Request)
+          const invalidateCache = makeInvalidateCache(parentTrace, Request)
 
-          return { Request, Resolver, execute, populateCache }
+          return { Request, Resolver, execute, populateCache, invalidateCache }
         },
     )
 
@@ -416,8 +434,9 @@ export const make = (
           )
 
           const populateCache = makePopulateCache(parentTrace, Request)
+          const invalidateCache = makeInvalidateCache(parentTrace, Request)
 
-          return { Request, Resolver, execute, populateCache }
+          return { Request, Resolver, execute, populateCache, invalidateCache }
         },
     )
 
@@ -452,8 +471,9 @@ export const make = (
           )
 
           const populateCache = makePopulateCache(parentTrace, Request)
+          const invalidateCache = makeInvalidateCache(parentTrace, Request)
 
-          return { Request, Resolver, execute, populateCache }
+          return { Request, Resolver, execute, populateCache, invalidateCache }
         },
     )
 
@@ -494,8 +514,9 @@ export const make = (
           )
 
           const populateCache = makePopulateCache(parentTrace, Request)
+          const invalidateCache = makeInvalidateCache(parentTrace, Request)
 
-          return { Request, Resolver, execute, populateCache }
+          return { Request, Resolver, execute, populateCache, invalidateCache }
         },
     )
 
@@ -568,8 +589,9 @@ export const make = (
           )
 
           const populateCache = makePopulateCache(parentTrace, Request)
+          const invalidateCache = makeInvalidateCache(parentTrace, Request)
 
-          return { Request, Resolver, execute, populateCache }
+          return { Request, Resolver, execute, populateCache, invalidateCache }
         },
     )
 
