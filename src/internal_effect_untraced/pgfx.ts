@@ -304,6 +304,20 @@ export const make = (
       )
     }
 
+    const makePopulateCache = <E, A, RI>(
+      parentTrace: Debug.Trace,
+      Request: request.Request.Constructor<
+        request.Request<RequestError | E, A> & { i0: RI }
+      >,
+    ) => {
+      return Debug.methodWithTrace(
+        trace => (id: RI, _: A) =>
+          Effect.cacheRequestResult(Request({ i0: id }), Exit.succeed(_))
+            .traced(trace)
+            .traced(parentTrace),
+      )
+    }
+
     sql.resolver = Debug.methodWithTrace(
       parentTrace =>
         function makeResolver<T extends string, II, IA, AI, A, E>(
@@ -358,7 +372,9 @@ export const make = (
             context,
           )
 
-          return { Request, Resolver, execute }
+          const populateCache = makePopulateCache(parentTrace, Request)
+
+          return { Request, Resolver, execute, populateCache }
         },
     )
 
@@ -399,7 +415,9 @@ export const make = (
             context,
           )
 
-          return { Request, Resolver, execute }
+          const populateCache = makePopulateCache(parentTrace, Request)
+
+          return { Request, Resolver, execute, populateCache }
         },
     )
 
@@ -433,7 +451,9 @@ export const make = (
             context,
           )
 
-          return { Request, Resolver, execute }
+          const populateCache = makePopulateCache(parentTrace, Request)
+
+          return { Request, Resolver, execute, populateCache }
         },
     )
 
@@ -473,7 +493,9 @@ export const make = (
             context,
           )
 
-          return { Request, Resolver, execute }
+          const populateCache = makePopulateCache(parentTrace, Request)
+
+          return { Request, Resolver, execute, populateCache }
         },
     )
 
@@ -545,7 +567,9 @@ export const make = (
             context,
           )
 
-          return { Request, Resolver, execute }
+          const populateCache = makePopulateCache(parentTrace, Request)
+
+          return { Request, Resolver, execute, populateCache }
         },
     )
 

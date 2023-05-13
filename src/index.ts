@@ -96,6 +96,7 @@ export interface Resolver<T extends string, II, IA, A, E> {
   readonly Request: request.Request.Constructor<Request<T, II, E, A>, "_tag">
   readonly Resolver: RequestResolver.RequestResolver<Request<T, II, E, A>>
   execute(_: IA): Effect.Effect<never, RequestError | E, A>
+  populateCache(id: II, _: A): Effect.Effect<never, never, void>
 }
 
 /**
