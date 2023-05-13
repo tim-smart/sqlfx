@@ -201,7 +201,8 @@ export interface PgFx {
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (requests: ReadonlyArray<II>) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>
+    run: (requests: ReadonlyArray<II>) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+    context?: Context<any>
   ): Resolver<T, II, IA, A, E | ResultLengthMismatch>
 
   /**
@@ -219,7 +220,8 @@ export interface PgFx {
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (request: II) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>
+    run: (request: II) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+    context?: Context<any>
   ): Resolver<T, II, IA, Option.Option<A>, E>
 
   /**
@@ -237,7 +239,8 @@ export interface PgFx {
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (request: II) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>
+    run: (request: II) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+    context?: Context<any>
   ): Resolver<T, II, IA, A, E>
 
   /**
@@ -253,7 +256,8 @@ export interface PgFx {
   voidResolver<T extends string, II, IA, E, X>(
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
-    run: (requests: ReadonlyArray<II>) => Effect.Effect<never, PostgresError | E, ReadonlyArray<X>>
+    run: (requests: ReadonlyArray<II>) => Effect.Effect<never, PostgresError | E, ReadonlyArray<X>>,
+    context?: Context<any>
   ): Resolver<T, II, IA, void, E>
 
   /**
@@ -270,7 +274,8 @@ export interface PgFx {
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
     resultId: (_: AI) => II,
-    run: (requests: ReadonlyArray<II>) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>
+    run: (requests: ReadonlyArray<II>) => Effect.Effect<never, PostgresError | E, ReadonlyArray<AI>>,
+    context?: Context<any>
   ): Resolver<T, II, IA, Option.Option<A>, E>
 }
 ```
@@ -296,9 +301,11 @@ Added in v1.0.0
 
 ```ts
 export interface Resolver<T extends string, II, IA, A, E> {
-  readonly Request: request.Request.Constructor<Request<T, II, E, A>>
+  readonly Request: request.Request.Constructor<Request<T, II, E, A>, '_tag'>
   readonly Resolver: RequestResolver.RequestResolver<Request<T, II, E, A>>
   execute(_: IA): Effect.Effect<never, RequestError | E, A>
+  populateCache(id: II, _: A): Effect.Effect<never, never, void>
+  invalidateCache(id: II): Effect.Effect<never, never, void>
 }
 ```
 
