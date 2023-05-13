@@ -1,5 +1,11 @@
 # pgfx
 
+## 0.6.3
+
+### Patch Changes
+
+- [`e1901ad`](https://github.com/tim-smart/pgfx/commit/e1901adf9e5f5837af0abcfa63be4f706042447f) Thanks [@tim-smart](https://github.com/tim-smart)! - cache helpers
+
 ## 0.6.2
 
 ### Patch Changes
