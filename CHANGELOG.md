@@ -1,5 +1,11 @@
 # pgfx
 
+## 0.6.4
+
+### Patch Changes
+
+- [#18](https://github.com/tim-smart/pgfx/pull/18) [`2390dad`](https://github.com/tim-smart/pgfx/commit/2390dad29baea41fc1d1fc02f5c6e0ca9fef0135) Thanks [@tim-smart](https://github.com/tim-smart)! - dump schema in migrator
+
 ## 0.6.3
 
 ### Patch Changes
