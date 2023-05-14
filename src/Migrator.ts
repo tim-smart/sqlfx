@@ -6,10 +6,13 @@ import { pipe } from "@effect/data/Function"
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
+import type { ExecFileException } from "node:child_process"
+import { execFile } from "node:child_process"
 import * as NFS from "node:fs"
 import * as Path from "node:path"
 import * as Pg from "pgfx"
 import type { PostgresError } from "pgfx/Error"
+import type postgres from "postgres"
 
 /**
  * @category model
@@ -17,6 +20,7 @@ import type { PostgresError } from "pgfx/Error"
  */
 export interface MigratorOptions {
   readonly directory: string
+  readonly schemaDirectory: string
   readonly table?: string
 }
 
@@ -48,6 +52,7 @@ export const MigrationError: Data.Case.Constructor<MigrationError, "_tag"> =
  */
 export const run = ({
   directory,
+  schemaDirectory,
   table = "pgfx_migrations",
 }: MigratorOptions): Effect.Effect<
   Pg.PgFx,
@@ -56,6 +61,7 @@ export const run = ({
 > =>
   Effect.gen(function* (_) {
     const sql = yield* _(Pg.tag)
+    const options: postgres.Options<{}> = (sql as any).options
 
     const ensureMigrationsTable = Effect.catchAll(
       sql`select ${table}::regclass`,
@@ -152,19 +158,75 @@ export const run = ({
       )
     }
 
+    const pgDump = (args: Array<string>) =>
+      Effect.map(
+        Effect.async<never, ExecFileException, string>(resume => {
+          execFile(
+            "pg_dump",
+            [...args, "--no-owner", "--no-privileges"],
+            {
+              env: {
+                PATH: process.env.PATH,
+                PGHOST: options.host,
+                PGPORT: options.port?.toString(),
+                PGUSER: options.user,
+                PGPASSWORD: (options.password ?? options.pass) as string,
+                PGDATABASE: options.database,
+              },
+            },
+            (error, sql) => {
+              if (error) {
+                resume(Effect.fail(error))
+              } else {
+                resume(Effect.succeed(sql))
+              }
+            },
+          )
+        }),
+        _ =>
+          _.replace(/^--.*$/gm, "")
+            .replace(/^SET .*$/gm, "")
+            .replace(/^SELECT pg_catalog\..*$/gm, "")
+            .replace(/\n{2,}/gm, "\n\n")
+            .trim(),
+      )
+
+    const pgDumpSchema = pgDump(["--schema-only"])
+
+    const pgDumpMigrations = pgDump([
+      "--column-inserts",
+      "--data-only",
+      `--table=${table}`,
+    ])
+
+    const pgDumpAll = Effect.map(
+      Effect.zipPar(pgDumpSchema, pgDumpMigrations),
+      ([schema, migrations]) => schema + "\n\n" + migrations,
+    )
+
+    const pgDumpFile = (path: string) =>
+      Effect.flatMap(pgDumpAll, sql =>
+        Effect.sync(() => {
+          NFS.mkdirSync(schemaDirectory, {
+            recursive: true,
+          })
+          NFS.writeFileSync(Path.join(schemaDirectory, path), sql)
+        }),
+      )
+
     const runMigration = (
       id: number,
       name: string,
       effect: Effect.Effect<never, never, unknown>,
     ) =>
-      Effect.zipRight(
+      pipe(
         Effect.orDieWith(effect, _ =>
           MigrationError({
             reason: "failed",
             message: `Migration ${id}_${name} failed: ${JSON.stringify(_)}`,
           }),
         ),
-        insertMigration(id, name),
+        Effect.zipRight(insertMigration(id, name)),
       )
 
     // === run
@@ -245,6 +307,7 @@ export const run = ({
 
     yield* _(ensureMigrationsTable)
     yield* _(sql.withTransaction(run))
+    yield* _(Effect.ignoreLogged(pgDumpFile(`_schema.sql`)))
   })
 
 /**

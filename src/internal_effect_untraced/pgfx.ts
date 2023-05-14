@@ -73,6 +73,7 @@ export const make = (
 
     const sql: PgFx = execute(_ => _.execute())
 
+    ;(sql as any).options = options
     ;(sql as any).safe = sql
     ;(sql as any).unsafe = pgSql.unsafe
     ;(sql as any).$ = pgSql
