@@ -67,7 +67,7 @@ export const run = ({
       sql`select ${table}::regclass`,
       () => sql`
         CREATE TABLE IF NOT EXISTS ${sql(table)} (
-          migration_id serial primary key,
+          migration_id integer primary key,
           created_at timestamp with time zone not null default now(),
           name text
         )
