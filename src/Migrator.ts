@@ -57,7 +57,7 @@ export const run = ({
 }: MigratorOptions): Effect.Effect<
   Pg.PgFx,
   MigrationError | PostgresError,
-  void
+  ReadonlyArray<readonly [id: number, name: string]>
 > =>
   Effect.gen(function* (_) {
     const sql = yield* _(Pg.tag)
@@ -303,11 +303,18 @@ export const run = ({
           ),
         ),
       )
+
+      return required.map(([id, name]) => [id, name] as const)
     })
 
     yield* _(ensureMigrationsTable)
-    yield* _(sql.withTransaction(run))
-    yield* _(Effect.ignoreLogged(pgDumpFile(`_schema.sql`)))
+    const completed = yield* _(sql.withTransaction(run))
+
+    if (completed.length > 0) {
+      yield* _(Effect.ignoreLogged(pgDumpFile(`_schema.sql`)))
+    }
+
+    return completed
   })
 
 /**
