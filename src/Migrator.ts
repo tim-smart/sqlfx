@@ -6,10 +6,12 @@ import { pipe } from "@effect/data/Function"
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
+import { ExecFileException, execFile } from "node:child_process"
 import * as NFS from "node:fs"
 import * as Path from "node:path"
 import * as Pg from "pgfx"
 import type { PostgresError } from "pgfx/Error"
+import postgres from "postgres"
 
 /**
  * @category model
@@ -56,6 +58,7 @@ export const run = ({
 > =>
   Effect.gen(function* (_) {
     const sql = yield* _(Pg.tag)
+    const options: postgres.Options<{}> = (sql as any).options
 
     const ensureMigrationsTable = Effect.catchAll(
       sql`select ${table}::regclass`,
@@ -152,19 +155,55 @@ export const run = ({
       )
     }
 
+    const pgDump = Effect.async<never, ExecFileException, string>(resume => {
+      execFile(
+        "pg_dump",
+        ["--no-owner", "--no-privileges", "--schema-only"],
+        {
+          env: {
+            PGHOST: options.host,
+            PGPORT: options.port?.toString(),
+            PGUSER: options.user,
+            PGPASSWORD: (options.password ?? options.pass) as string,
+            PGDATABASE: options.database,
+          },
+        },
+        (error, sql) => {
+          if (error) {
+            resume(Effect.fail(error))
+          } else {
+            resume(Effect.succeed(sql))
+          }
+        },
+      )
+    })
+
+    const pgDumpFile = (path: string) =>
+      Effect.flatMap(pgDump, sql =>
+        Effect.sync(() => {
+          NFS.mkdirSync(Path.join(directory, "_schema"), { recursive: true })
+          NFS.writeFileSync(Path.join(directory, "_schema", path), sql)
+        }),
+      )
+
     const runMigration = (
       id: number,
       name: string,
       effect: Effect.Effect<never, never, unknown>,
     ) =>
-      Effect.zipRight(
+      pipe(
         Effect.orDieWith(effect, _ =>
           MigrationError({
             reason: "failed",
             message: `Migration ${id}_${name} failed: ${JSON.stringify(_)}`,
           }),
         ),
-        insertMigration(id, name),
+        Effect.zipRight(insertMigration(id, name)),
+        Effect.zipRight(
+          Effect.ignoreLogged(
+            pgDumpFile(`${id.toString().padStart(5, "0")}_${name}.sql`),
+          ),
+        ),
       )
 
     // === run
