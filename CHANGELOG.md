@@ -1,5 +1,11 @@
 # pgfx
 
+## 0.6.6
+
+### Patch Changes
+
+- [`1a2ede4`](https://github.com/tim-smart/pgfx/commit/1a2ede4325065e5d00d3ec5ae006d4edf66ae408) Thanks [@tim-smart](https://github.com/tim-smart)! - only dump schema if migrations are run
+
 ## 0.6.5
 
 ### Patch Changes
