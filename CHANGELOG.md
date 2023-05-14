@@ -1,5 +1,11 @@
 # pgfx
 
+## 0.6.5
+
+### Patch Changes
+
+- [`29adf75`](https://github.com/tim-smart/pgfx/commit/29adf754a7f518324e1210fb0adf3a3de22e1b87) Thanks [@tim-smart](https://github.com/tim-smart)! - use int for migration id
+
 ## 0.6.4
 
 ### Patch Changes
