@@ -14,9 +14,9 @@
   "author": "Tim Smart <hello@timsmart.co>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/tim-smart/effect-schema-class/issues"
+    "url": "https://github.com/tim-smart/pgfx/issues"
   },
-  "homepage": "https://github.com/tim-smart/effect-schema-class",
+  "homepage": "https://github.com/tim-smart/pgfx",
   "scripts": {
     "example": "ts-node --project tsconfig.examples.json",
     "version": "changeset version && pnpm install --no-frozen-lockfile && pnpm run docs-update",
@@ -93,7 +93,6 @@
     "cpx": "^1.5.0",
     "docs-ts": "0.8.0",
     "dtslint": "github:gcanti/dtslint",
-    "effect-schema-class": "^0.2.2",
     "eslint": "^8.40.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-import-resolver-typescript": "^3.5.5",

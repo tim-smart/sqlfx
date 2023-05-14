@@ -95,9 +95,6 @@ devDependencies:
   dtslint:
     specifier: github:gcanti/dtslint
     version: github.com/gcanti/dtslint/1558adbeda424fec83a8d314784c18728a970cd4
-  effect-schema-class:
-    specifier: ^0.2.2
-    version: 0.2.2
   eslint:
     specifier: ^8.40.0
     version: 8.40.0
@@ -2813,14 +2810,6 @@ packages:
 
   /eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
-    dev: true
-
-  /effect-schema-class@0.2.2:
-    resolution: {integrity: sha512-4uyzbbtfNSom65jGdMb++2lsIevYT5qlDUWgHZatfLd/bGBZSuVbHWrMPgIzPLYurl3U2jWLj5oiN+S3NeUvZA==}
-    dependencies:
-      '@effect/data': 0.12.2
-      '@effect/io': 0.25.10
-      '@effect/schema': 0.19.0
     dev: true
 
   /electron-to-chromium@1.4.391:
