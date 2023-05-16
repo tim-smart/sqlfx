@@ -6,4 +6,4 @@ search_enabled: true
 # Aux links for the upper right navigation
 aux_links:
   'pgfx on GitHub':
-    - 'https://github.com/tim-smart/effect-schema-class'
+    - 'https://github.com/tim-smart/pgfx'

@@ -44,8 +44,13 @@ Added in v1.0.0
 ```ts
 export declare const run: ({
   directory,
+  schemaDirectory,
   table,
-}: MigratorOptions) => Effect.Effect<Pg.PgFx, MigrationError | PostgresError, void>
+}: MigratorOptions) => Effect.Effect<
+  Pg.PgFx,
+  MigrationError | PostgresError,
+  ReadonlyArray<readonly [id: number, name: string]>
+>
 ```
 
 Added in v1.0.0
@@ -85,6 +90,7 @@ Added in v1.0.0
 ```ts
 export interface MigratorOptions {
   readonly directory: string
+  readonly schemaDirectory: string
   readonly table?: string
 }
 ```
