@@ -143,10 +143,14 @@ export const sql: {
   if (Array.isArray(strings) && "raw" in strings) {
     return statement(strings as TemplateStringsArray, ...args)
   } else if (Array.isArray(strings)) {
-    if (isPrimitive(strings[0])) {
-      return new ArrayHelper(args as Array<_.Primitive>)
+    if (
+      strings.length > 0 &&
+      !isPrimitive(strings[0]) &&
+      typeof strings[0] === "object"
+    ) {
+      return new ArrayOfRecordsHelper(strings)
     }
-    return new ArrayOfRecordsHelper(strings)
+    return new ArrayHelper(strings)
   } else if (typeof strings === "object") {
     return new RecordHelper(strings as Record<string, _.Primitive>)
   }
