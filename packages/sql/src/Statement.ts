@@ -280,19 +280,3 @@ export const makeCompiler: (
  * @since 1.0.0
  */
 export const defaultEscape: (str: string) => string = internal.defaultEscape
-
-/**
- * @since 1.0.0
- */
-export const defaultCompiler: Compiler = internal.defaultCompiler
-
-const sql = make(null as any)
-
-console.log(
-  defaultCompiler.compile(
-    sql`SELECT * FROM ${sql("users")} WHERE id = ${sql({
-      name: "Tim",
-      age: 18,
-    })} AND name = ${"foo"}`,
-  ),
-)

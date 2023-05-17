@@ -10,7 +10,7 @@ import type { ExecFileException } from "node:child_process"
 import { execFile } from "node:child_process"
 import * as NFS from "node:fs"
 import * as Path from "node:path"
-import * as Pg from "@sqlfx/sql"
+import * as Pg from "@sqlfx/pg"
 import type postgres from "postgres"
 import type { SqlError } from "@sqlfx/sql/Error"
 
@@ -24,7 +24,7 @@ export interface MigratorOptions {
   readonly table?: string
 }
 
-interface Migration {
+type Migration = {
   readonly id: number
   readonly name: string
   readonly createdAt: Date
@@ -55,7 +55,7 @@ export const run = ({
   schemaDirectory,
   table = "pgfx_migrations",
 }: MigratorOptions): Effect.Effect<
-  Pg.PgFx,
+  Pg.PgClient,
   MigrationError | SqlError,
   ReadonlyArray<readonly [id: number, name: string]>
 > =>
@@ -87,13 +87,12 @@ export const run = ({
         ${name}
       )
     `
-
     const latestMigration = Effect.map(
-      sql.values<Migration>`
+      sql<Migration>`
         SELECT migration_id, name, created_at FROM ${sql(
           table,
         )} ORDER BY migration_id DESC LIMIT 1
-      `,
+      `.values,
       _ =>
         Option.map(
           Option.fromNullable(_[0] as any),
@@ -323,5 +322,5 @@ export const run = ({
  */
 export const makeLayer = (
   options: MigratorOptions,
-): Layer.Layer<Pg.PgFx, MigrationError | SqlError, never> =>
+): Layer.Layer<Pg.PgClient, MigrationError | SqlError, never> =>
   Layer.effectDiscard(run(options))

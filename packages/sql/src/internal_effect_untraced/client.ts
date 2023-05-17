@@ -14,7 +14,7 @@ import * as RequestResolver from "@effect/io/RequestResolver"
 import * as Schema from "@effect/schema/Schema"
 import type { Client, Request, Resolver } from "@sqlfx/sql/Client"
 import type { Connection, Row } from "@sqlfx/sql/Connection"
-import type { SchemaError } from "@sqlfx/sql/Error"
+import type { SchemaError, SqlError } from "@sqlfx/sql/Error"
 import { ResultLengthMismatch } from "@sqlfx/sql/Error"
 import * as SqlSchema from "@sqlfx/sql/Schema"
 import * as Statement from "@sqlfx/sql/Statement"
@@ -35,7 +35,7 @@ export function make(
   )
   const withTransaction = <R, E, A>(
     effect: Effect.Effect<R, E, A>,
-  ): Effect.Effect<R, E, A> =>
+  ): Effect.Effect<R, E | SqlError, A> =>
     Effect.scoped(
       Effect.acquireUseRelease(
         pipe(
@@ -58,10 +58,10 @@ export function make(
           Exit.isSuccess(exit)
             ? id > 0
               ? Effect.unit()
-              : conn.executeRaw("COMMIT")
+              : Effect.orDie(conn.executeRaw("COMMIT"))
             : id > 0
-            ? conn.executeRaw(`ROLLBACK TO SAVEPONT sqlfx${id}`)
-            : conn.executeRaw("ROLLBACK"),
+            ? Effect.orDie(conn.executeRaw(`ROLLBACK TO SAVEPOINT sqlfx${id}`))
+            : Effect.orDie(conn.executeRaw("ROLLBACK")),
       ),
     )
 

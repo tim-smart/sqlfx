@@ -44,7 +44,6 @@ Added in v1.0.0
   - [FragmentId](#fragmentid)
   - [FragmentId (type alias)](#fragmentid-type-alias)
 - [utils](#utils)
-  - [defaultCompiler](#defaultcompiler)
   - [defaultEscape](#defaultescape)
 
 ---
@@ -147,7 +146,7 @@ Added in v1.0.0
 ```ts
 export declare const unsafe: (
   acquirer: Connection.Acquirer
-) => <A extends Record<string, any>>(sql: string, params?: ReadonlyArray<Primitive> | undefined) => Statement<A>
+) => <A extends Row>(sql: string, params?: ReadonlyArray<Primitive> | undefined) => Statement<A>
 ```
 
 Added in v1.0.0
@@ -390,16 +389,6 @@ export type FragmentId = typeof FragmentId
 Added in v1.0.0
 
 # utils
-
-## defaultCompiler
-
-**Signature**
-
-```ts
-export declare const defaultCompiler: Compiler
-```
-
-Added in v1.0.0
 
 ## defaultEscape
 

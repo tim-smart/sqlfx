@@ -487,23 +487,3 @@ const placeholders = (text: string, len: number) => {
 export const defaultEscape = function escape(str: string) {
   return '"' + str.replace(/"/g, '""').replace(/\./g, '"."') + '"'
 }
-
-/** @internal */
-export const defaultCompiler = makeCompiler(
-  "?",
-  defaultEscape,
-  (placeholder, values) => [`(${placeholder})`, values],
-  (columns, placeholder, values) => [
-    `(${columns.join(",")}) VALUES ${values
-      .map(() => `(${placeholder})`)
-      .join(",")}`,
-    values.flat(),
-  ],
-  (columns, placeholder, valueAlias, valueColumns, values) => [
-    `${columns.map(([c, v]) => `${c} = ${v}`).join(", ")} FROM (values ${values
-      .map(() => `(${placeholder})`)
-      .join(",")}) AS ${valueAlias}(${valueColumns.join(",")})`,
-    values.flat(),
-  ],
-  () => ["", []],
-)

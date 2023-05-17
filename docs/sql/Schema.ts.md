@@ -27,8 +27,8 @@ Added in v1.0.0
 ```ts
 export declare const encode: <I, A>(
   schema: Schema.Schema<I, A>,
-  type: any
-) => (input: A) => Effect.Effect<never, any, I>
+  type: SchemaError['type']
+) => (input: A) => Effect.Effect<never, SchemaError, I>
 ```
 
 Added in v1.0.0
@@ -40,8 +40,8 @@ Added in v1.0.0
 ```ts
 export declare const parse: <I, A>(
   schema: Schema.Schema<I, A>,
-  type: any
-) => (input: unknown) => Effect.Effect<never, any, A>
+  type: SchemaError['type']
+) => (input: unknown) => Effect.Effect<never, SchemaError, A>
 ```
 
 Added in v1.0.0

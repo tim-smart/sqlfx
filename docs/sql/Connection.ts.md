@@ -34,7 +34,10 @@ export interface Connection {
     statement: Statement<A>
   ) => Effect.Effect<never, SqlError, ReadonlyArray<ReadonlyArray<Primitive>>>
 
-  readonly executeRaw: (sql: string) => Effect.Effect<never, SqlError, ReadonlyArray<Row>>
+  readonly executeRaw: (
+    sql: string,
+    params?: ReadonlyArray<Primitive> | undefined
+  ) => Effect.Effect<never, SqlError, ReadonlyArray<Row>>
 }
 ```
 
@@ -45,7 +48,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Row = Record<string, Primitive>
+export type Row = { readonly [column: string]: Primitive }
 ```
 
 Added in v1.0.0

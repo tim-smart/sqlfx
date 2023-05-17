@@ -15,11 +15,12 @@ Added in v1.0.0
 - [constructor](#constructor)
   - [ResultLengthMismatch](#resultlengthmismatch)
   - [SchemaError](#schemaerror)
+  - [SqlError](#sqlerror)
 - [model](#model)
   - [ResultLengthMismatch (interface)](#resultlengthmismatch-interface)
   - [SchemaError (interface)](#schemaerror-interface)
 - [utils](#utils)
-  - [SqlError (type alias)](#sqlerror-type-alias)
+  - [SqlError (interface)](#sqlerror-interface)
   - [SqlFxErrorId](#sqlfxerrorid)
   - [SqlFxErrorId (type alias)](#sqlfxerrorid-type-alias)
 
@@ -46,6 +47,16 @@ export declare const SchemaError: (
   type: SchemaError['type'],
   errors: readonly [ParseErrors, ...ParseErrors[]]
 ) => SchemaError
+```
+
+Added in v1.0.0
+
+## SqlError
+
+**Signature**
+
+```ts
+export declare const SqlError: (message: string) => SqlError
 ```
 
 Added in v1.0.0
@@ -84,12 +95,16 @@ Added in v1.0.0
 
 # utils
 
-## SqlError (type alias)
+## SqlError (interface)
 
 **Signature**
 
 ```ts
-export type SqlError = never
+export interface SqlError extends Data.Case {
+  readonly [SqlFxErrorId]: SqlFxErrorId
+  readonly _tag: 'SqlError'
+  readonly message: string
+}
 ```
 
 Added in v1.0.0

@@ -29,7 +29,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: (acquirer: any, transactionAcquirer: any) => Client
+export declare const make: (acquirer: Connection.Acquirer, transactionAcquirer: Connection.Acquirer) => Client
 ```
 
 Added in v1.0.0

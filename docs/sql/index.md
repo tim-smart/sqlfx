@@ -2,5 +2,5 @@
 title: "@sqlfx/sql"
 has_children: true
 permalink: /docs/sql
-nav_order: 2
+nav_order: 3
 ---

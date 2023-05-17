@@ -17,7 +17,20 @@ export type SqlFxErrorId = typeof SqlFxErrorId
 /**
  * @since 1.0.0
  */
-export type SqlError = never
+export interface SqlError extends Data.Case {
+  readonly [SqlFxErrorId]: SqlFxErrorId
+  readonly _tag: "SqlError"
+  readonly message: string
+}
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
+export const SqlError = (message: string) =>
+  Data.tagged<SqlError>("SqlError")({
+    [SqlFxErrorId]: SqlFxErrorId,
+    message,
+  })
 
 /**
  * @category model

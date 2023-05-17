@@ -22,6 +22,7 @@ export interface Connection {
 
   readonly executeRaw: (
     sql: string,
+    params?: ReadonlyArray<Primitive> | undefined,
   ) => Effect.Effect<never, SqlError, ReadonlyArray<Row>>
 }
 
@@ -46,4 +47,4 @@ export const Connection = Tag<Connection>()
  * @category model
  * @since 1.0.0
  */
-export type Row = Record<string, Primitive>
+export type Row = { readonly [column: string]: Primitive }
