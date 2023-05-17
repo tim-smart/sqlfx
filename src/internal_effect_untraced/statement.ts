@@ -24,13 +24,13 @@ export class StatementPrimitive implements _.Statement {
   get segments(): ReadonlyArray<_.Segment> {
     return this.i0
   }
+  [StatementId] = identity
 
   // Make it a valid effect
   public _tag = "Commit" // OP_COMMIT
   public i1: any = undefined
   public i2: any = undefined
   public trace: Debug.Trace = undefined;
-  [StatementId] = identity;
   [Effect.EffectTypeId] = undefined as any
 
   commit(): Effect.Effect<Connection, SqlError, ReadonlyArray<Row>> {
@@ -50,23 +50,25 @@ export class StatementPrimitive implements _.Statement {
     trace: Debug.Trace,
   ): Effect.Effect<Connection, SqlError, ReadonlyArray<Row>> {
     if (trace) {
-      return new StatementTraced(this, trace)
+      return new StatementTraced(this, this, trace)
     }
     return this
   }
 }
 
-class StatementTraced
-  implements Effect.Effect<Connection, SqlError, ReadonlyArray<Row>>
-{
+class StatementTraced implements _.Statement {
   constructor(
     readonly i0: StatementPrimitive | StatementTraced,
+    readonly i1: StatementPrimitive,
     readonly trace: Debug.Trace,
   ) {}
+  get segments(): ReadonlyArray<_.Segment> {
+    return this.i1.segments
+  }
+  [StatementId] = identity
 
   // Make it a valid effect
   public _tag = "Traced" // OP_TRACED
-  public i1: any = undefined
   public i2: any = undefined;
   [Effect.EffectTypeId] = undefined as any;
 
@@ -81,7 +83,7 @@ class StatementTraced
     trace: Debug.Trace,
   ): Effect.Effect<Connection, SqlError, ReadonlyArray<Row>> {
     if (trace) {
-      return new StatementTraced(this, trace)
+      return new StatementTraced(this, this.i1, trace)
     }
     return this
   }
