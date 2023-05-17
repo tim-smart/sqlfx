@@ -121,6 +121,9 @@ importers:
       '@sqlfx/sql':
         specifier: workspace:*
         version: link:../sql/dist
+      postgres:
+        specifier: ^3.3.4
+        version: 3.3.4
     publishDirectory: dist
 
   packages/sql:
@@ -5473,6 +5476,10 @@ packages:
       picocolors: 1.0.0
       source-map-js: 1.0.2
     dev: true
+
+  /postgres@3.3.4:
+    resolution: {integrity: sha512-XVu0+d/Y56pl2lSaf0c7V19AhAEfpVrhID1IENWN8nf0xch6hFq6dAov5dtUX6ZD46wfr1TxvLhxLtV8WnNsOg==}
+    dev: false
 
   /precinct@8.3.1:
     resolution: {integrity: sha512-pVppfMWLp2wF68rwHqBIpPBYY8Kd12lDhk8LVQzOwqllifVR15qNFyod43YLyFpurKRZQKnE7E4pofAagDOm2Q==}

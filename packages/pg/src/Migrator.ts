@@ -11,8 +11,8 @@ import { execFile } from "node:child_process"
 import * as NFS from "node:fs"
 import * as Path from "node:path"
 import * as Pg from "@sqlfx/sql"
-import type { PostgresError } from "@sqlfx/sql/Error"
 import type postgres from "postgres"
+import type { SqlError } from "@sqlfx/sql/Error"
 
 /**
  * @category model
@@ -56,7 +56,7 @@ export const run = ({
   table = "pgfx_migrations",
 }: MigratorOptions): Effect.Effect<
   Pg.PgFx,
-  MigrationError | PostgresError,
+  MigrationError | SqlError,
   ReadonlyArray<readonly [id: number, name: string]>
 > =>
   Effect.gen(function* (_) {
@@ -323,5 +323,5 @@ export const run = ({
  */
 export const makeLayer = (
   options: MigratorOptions,
-): Layer.Layer<Pg.PgFx, MigrationError | PostgresError, never> =>
+): Layer.Layer<Pg.PgFx, MigrationError | SqlError, never> =>
   Layer.effectDiscard(run(options))

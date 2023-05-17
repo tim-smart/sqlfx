@@ -3,7 +3,7 @@ const Fs = require("node:fs")
 const Path = require("node:path")
 
 function packages() {
-  return Fs.readdirSync("packages").filter((_) =>
+  return Fs.readdirSync("packages").filter(_ =>
     Fs.existsSync(Path.join("packages", _, "docs/modules")),
   )
 }
@@ -41,7 +41,7 @@ nav_order: ${order}
 }
 
 packages().forEach((pkg, i) => {
-  Fs.rmSync(Path.join("docs", pkg), { recursive: true })
+  Fs.rmSync(Path.join("docs", pkg), { recursive: true, force: true })
   Fs.mkdirSync(Path.join("docs", pkg), { recursive: true })
   copyFiles(pkg)
   generateIndex(pkg, i + 2)
