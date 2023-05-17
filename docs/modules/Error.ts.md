@@ -1,6 +1,6 @@
 ---
 title: Error.ts
-nav_order: 1
+nav_order: 2
 parent: Modules
 ---
 
@@ -24,6 +24,7 @@ Added in v1.0.0
 - [utils](#utils)
   - [PgFxErrorId](#pgfxerrorid)
   - [PgFxErrorId (type alias)](#pgfxerrorid-type-alias)
+  - [SqlError (type alias)](#sqlerror-type-alias)
 
 ---
 
@@ -149,6 +150,16 @@ Added in v1.0.0
 
 ```ts
 export type PgFxErrorId = typeof PgFxErrorId
+```
+
+Added in v1.0.0
+
+## SqlError (type alias)
+
+**Signature**
+
+```ts
+export type SqlError = never
 ```
 
 Added in v1.0.0

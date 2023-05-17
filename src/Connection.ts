@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import { Tag } from "@effect/data/Context"
 import type * as Effect from "@effect/io/Effect"
 import type { SqlError } from "pgfx/Error"

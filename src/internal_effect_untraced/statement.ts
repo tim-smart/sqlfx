@@ -92,6 +92,11 @@ class Literal implements _.Literal {
   constructor(readonly value: string) {}
 }
 
+class Identifier implements _.Identifier {
+  readonly _tag = "Identifier"
+  constructor(readonly value: string) {}
+}
+
 class Parameter implements _.Parameter {
   readonly _tag = "Parameter"
   constructor(readonly value: _.Primitive) {}
@@ -112,12 +117,11 @@ class ArrayOfRecordsHelper implements _.ArrayOfRecordsHelper {
   constructor(readonly value: ReadonlyArray<Record<string, _.Primitive>>) {}
 }
 
-const isHelper = (
-  u: unknown,
-): u is _.ArrayHelper | _.ArrayOfRecordsHelper | _.RecordHelper =>
+const isHelper = (u: unknown): u is _.Helper =>
   u instanceof ArrayHelper ||
   u instanceof ArrayOfRecordsHelper ||
-  u instanceof RecordHelper
+  u instanceof RecordHelper ||
+  u instanceof Identifier
 
 const isPrimitive = (u: unknown): u is _.Primitive =>
   typeof u === "string" ||
@@ -132,6 +136,7 @@ export const sql: {
   (value: Array<_.Primitive | Record<string, _.Primitive>>): _.ArrayHelper
   (value: Array<Record<string, _.Primitive>>): _.ArrayOfRecordsHelper
   (value: Record<string, _.Primitive>): _.RecordHelper
+  (value: string): _.Identifier
   (
     strings: TemplateStringsArray,
     ...args: Array<_.Statement | _.Argument>
@@ -151,6 +156,8 @@ export const sql: {
       return new ArrayOfRecordsHelper(strings)
     }
     return new ArrayHelper(strings)
+  } else if (typeof strings === "string") {
+    return new Identifier(strings)
   } else if (typeof strings === "object") {
     return new RecordHelper(strings as Record<string, _.Primitive>)
   }
@@ -189,3 +196,144 @@ export function statement(
 export function unsafe(sql: string): _.Statement {
   return new StatementPrimitive([new Literal(sql)])
 }
+
+/** @internal */
+class Compiler implements _.Compiler {
+  constructor(
+    readonly parameterPlaceholder: string,
+    readonly onIdentifier: (value: string) => string,
+    readonly onRecord: (
+      columns: ReadonlyArray<string>,
+      identifiers: ReadonlyArray<string>,
+      placeholder: string,
+      values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
+    ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
+    readonly onArray: (
+      placeholder: string,
+      values: ReadonlyArray<_.Primitive>,
+    ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
+  ) {}
+
+  compile(
+    statement: _.Statement,
+  ): readonly [sql: string, binds: ReadonlyArray<_.Primitive>] {
+    if ((statement as any).__compiled) {
+      return (statement as any).__compiled
+    }
+
+    const segments = statement.segments
+    const len = segments.length
+
+    let sql = ""
+    const binds: Array<_.Primitive> = []
+
+    for (let i = 0; i < len; i++) {
+      const segment = segments[i]
+
+      switch (segment._tag) {
+        case "Literal": {
+          sql += segment.value
+          break
+        }
+
+        case "Identifier": {
+          sql += this.onIdentifier(segment.value)
+          break
+        }
+
+        case "Parameter": {
+          sql += this.parameterPlaceholder
+          binds.push(segment.value)
+          break
+        }
+
+        case "ArrayHelper": {
+          const [s, b] = this.onArray(
+            placeholders(this.parameterPlaceholder, segment.value.length),
+            segment.value,
+          )
+          sql += s
+          binds.push(...b)
+          break
+        }
+
+        case "RecordHelper": {
+          const keys = Object.keys(segment.value)
+          const [s, b] = this.onRecord(
+            keys,
+            keys.map(this.onIdentifier),
+            placeholders(this.parameterPlaceholder, keys.length),
+            [Object.values(segment.value)],
+          )
+          sql += s
+          binds.push(...b)
+          break
+        }
+
+        case "ArrayOfRecordsHelper": {
+          const keys = Object.keys(segment.value[0])
+          const [s, b] = this.onRecord(
+            keys,
+            keys.map(this.onIdentifier),
+            placeholders(this.parameterPlaceholder, keys.length),
+            segment.value.map(record => keys.map(key => record[key])),
+          )
+          sql += s
+          binds.push(...b)
+          break
+        }
+      }
+    }
+
+    return ((statement as any).__compiled = [sql, binds] as const)
+  }
+}
+
+export const makeCompiler = (
+  parameterPlaceholder: string,
+  onIdentifier: (value: string) => string,
+  onRecord: (
+    columns: ReadonlyArray<string>,
+    identifiers: ReadonlyArray<string>,
+    placeholder: string,
+    values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
+  ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
+  onArray: (
+    placeholder: string,
+    values: ReadonlyArray<_.Primitive>,
+  ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
+) => new Compiler(parameterPlaceholder, onIdentifier, onRecord, onArray)
+
+const placeholders = (text: string, len: number) => {
+  if (len === 0) {
+    return ""
+  } else if (len === 1) {
+    return text
+  }
+
+  let result = text
+  for (let i = 1; i < len; i++) {
+    result += "," + text
+  }
+
+  return result
+}
+
+export const defaultEscape = function escape(str: string) {
+  return '"' + str.replace(/"/g, '""').replace(/\./g, '"."') + '"'
+}
+
+/** @internal */
+export const defaultCompiler = makeCompiler(
+  "?",
+  defaultEscape,
+  (_columns, ids, placeholder, values) => {
+    return [
+      `(${ids.join(",")})VALUES${values
+        .map(() => `(${placeholder})`)
+        .join(",")}`,
+      values.flat(),
+    ]
+  },
+  (placeholder, values) => [`(${placeholder})`, values],
+)
