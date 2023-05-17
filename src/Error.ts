@@ -9,6 +9,11 @@ import type postgres from "postgres"
 /**
  * @since 1.0.0
  */
+export type SqlError = never
+
+/**
+ * @since 1.0.0
+ */
 export const PgFxErrorId = Symbol.for("pgfx/PgFxErrorId")
 /**
  * @since 1.0.0
