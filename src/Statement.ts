@@ -120,22 +120,19 @@ export type Helper =
  * @category model
  * @since 1.0.0
  */
-export type Argument = Primitive | Helper
+export type Argument = Primitive | Helper | Statement
 
 /**
  * @category constructor
  * @since 1.0.0
  */
-export const sql: {
+export const make: {
   (value: Array<Primitive | Record<string, Primitive>>): ArrayHelper
   (value: Array<Record<string, Primitive>>): ArrayOfRecordsHelper
   (value: Record<string, Primitive>): RecordHelper
   (value: string): Identifier
-  (
-    strings: TemplateStringsArray,
-    ...args: Array<Statement | Argument>
-  ): Statement
-} = internal.sql
+  (strings: TemplateStringsArray, ...args: Array<Argument>): Statement
+} = internal.make
 
 /**
  * @category constructor

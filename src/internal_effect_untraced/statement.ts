@@ -132,19 +132,13 @@ const isPrimitive = (u: unknown): u is _.Primitive =>
   u === undefined
 
 /** @internal */
-export const sql: {
+export const make: {
   (value: Array<_.Primitive | Record<string, _.Primitive>>): _.ArrayHelper
   (value: Array<Record<string, _.Primitive>>): _.ArrayOfRecordsHelper
   (value: Record<string, _.Primitive>): _.RecordHelper
   (value: string): _.Identifier
-  (
-    strings: TemplateStringsArray,
-    ...args: Array<_.Statement | _.Argument>
-  ): _.Statement
-} = function sql(
-  strings: unknown,
-  ...args: Array<_.Statement | _.Argument>
-): any {
+  (strings: TemplateStringsArray, ...args: Array<_.Argument>): _.Statement
+} = function sql(strings: unknown, ...args: Array<_.Argument>): any {
   if (Array.isArray(strings) && "raw" in strings) {
     return statement(strings as TemplateStringsArray, ...args)
   } else if (Array.isArray(strings)) {
@@ -168,7 +162,7 @@ export const sql: {
 /** @internal */
 export function statement(
   strings: TemplateStringsArray,
-  ...args: Array<_.Statement | _.Argument>
+  ...args: Array<_.Argument>
 ): _.Statement {
   const segments: Array<_.Segment> =
     strings[0].length > 0 ? [new Literal(strings[0])] : []
@@ -253,7 +247,7 @@ class Compiler implements _.Compiler {
             segment.value,
           )
           sql += s
-          binds.push(...b)
+          binds.push.apply(binds, b as any)
           break
         }
 
@@ -266,7 +260,7 @@ class Compiler implements _.Compiler {
             [Object.values(segment.value)],
           )
           sql += s
-          binds.push(...b)
+          binds.push.apply(binds, b as any)
           break
         }
 
@@ -276,10 +270,10 @@ class Compiler implements _.Compiler {
             keys,
             keys.map(this.onIdentifier),
             placeholders(this.parameterPlaceholder, keys.length),
-            segment.value.map(record => keys.map(key => record[key])),
+            segment.value.map(record => keys.map(key => record?.[key])),
           )
           sql += s
-          binds.push(...b)
+          binds.push.apply(binds, b as any)
           break
         }
       }
@@ -289,6 +283,7 @@ class Compiler implements _.Compiler {
   }
 }
 
+/** @internal */
 export const makeCompiler = (
   parameterPlaceholder: string,
   onIdentifier: (value: string) => string,
@@ -313,12 +308,13 @@ const placeholders = (text: string, len: number) => {
 
   let result = text
   for (let i = 1; i < len; i++) {
-    result += "," + text
+    result += `,${text}`
   }
 
   return result
 }
 
+/** @internal */
 export const defaultEscape = function escape(str: string) {
   return '"' + str.replace(/"/g, '""').replace(/\./g, '"."') + '"'
 }
