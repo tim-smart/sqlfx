@@ -89,7 +89,10 @@ class StatementTraced
 
 class Literal implements _.Literal {
   readonly _tag = "Literal"
-  constructor(readonly value: string) {}
+  constructor(
+    readonly value: string,
+    readonly params?: ReadonlyArray<_.Primitive>,
+  ) {}
 }
 
 class Identifier implements _.Identifier {
@@ -211,8 +214,83 @@ export function statement(
 }
 
 /** @internal */
-export function unsafe(sql: string): _.Statement {
-  return new StatementPrimitive([new Literal(sql)])
+export function unsafe(
+  sql: string,
+  params?: ReadonlyArray<_.Primitive>,
+): _.Statement {
+  return new StatementPrimitive([new Literal(sql, params)])
+}
+
+function convertLiteralOrStatement(
+  clause: string | _.Statement,
+): Array<_.Segment> {
+  if (typeof clause === "string") {
+    return [new Literal(clause)]
+  }
+  return clause.segments as Array<_.Segment>
+}
+
+/** @internal */
+export function join(literal: string, addParens = true, fallback = "") {
+  const literalSegment = new Literal(literal)
+
+  return function (clauses: ReadonlyArray<string | _.Statement>): _.Statement {
+    if (clauses.length === 0) {
+      return unsafe(fallback)
+    } else if (clauses.length === 1) {
+      return new StatementPrimitive(convertLiteralOrStatement(clauses[0]))
+    }
+
+    const segments: Array<_.Segment> = []
+
+    if (addParens) {
+      segments.push(new Literal("("))
+    }
+
+    segments.push.apply(segments, convertLiteralOrStatement(clauses[0]))
+
+    for (let i = 1; i < clauses.length; i++) {
+      segments.push(literalSegment)
+      segments.push.apply(segments, convertLiteralOrStatement(clauses[i]))
+    }
+
+    if (addParens) {
+      segments.push(new Literal(")"))
+    }
+
+    return new StatementPrimitive(segments)
+  }
+}
+
+/** @internal */
+export const and = join(" AND ", true, "1=1")
+
+/** @internal */
+export const or = join(" OR ", true, "1=1")
+
+const csvRaw = join(", ", false)
+
+/** @internal */
+export const csv: {
+  (values: ReadonlyArray<string | _.Statement>): _.Statement
+  (prefix: string, values: ReadonlyArray<string | _.Statement>): _.Statement
+} = (
+  ...args:
+    | [values: ReadonlyArray<string | _.Statement>]
+    | [prefix: string, values: ReadonlyArray<string | _.Statement>]
+) => {
+  if (args[args.length - 1].length === 0) {
+    return unsafe("")
+  }
+
+  if (args.length === 1) {
+    return csvRaw(args[0])
+  }
+
+  return new StatementPrimitive([
+    new Literal(`${args[0]} `),
+    ...csvRaw(args[1]).segments,
+  ])
 }
 
 /** @internal */
@@ -257,6 +335,9 @@ class Compiler implements _.Compiler {
       switch (segment._tag) {
         case "Literal": {
           sql += segment.value
+          if (segment.params) {
+            binds.push.apply(binds, segment.params as any)
+          }
           break
         }
 
@@ -324,19 +405,19 @@ export const makeCompiler = (
   onArray: (
     placeholder: string,
     values: ReadonlyArray<_.Primitive>,
-  ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
+  ) => readonly [sql: string, params: ReadonlyArray<_.Primitive>],
   onRecordInsert: (
     columns: ReadonlyArray<string>,
     placeholder: string,
     values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
-  ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
+  ) => readonly [sql: string, params: ReadonlyArray<_.Primitive>],
   onRecordUpdate: (
     columns: ReadonlyArray<readonly [table: string, value: string]>,
     placeholder: string,
     valueAlias: string,
     valueColumns: ReadonlyArray<string>,
     values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
-  ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
+  ) => readonly [sql: string, params: ReadonlyArray<_.Primitive>],
 ) =>
   new Compiler(
     parameterPlaceholder,

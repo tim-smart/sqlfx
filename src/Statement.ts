@@ -59,6 +59,7 @@ export type RecordHelperKind = "insert" | "update"
 export interface Literal {
   readonly _tag: "Literal"
   readonly value: string
+  readonly params?: ReadonlyArray<Primitive> | undefined
 }
 
 /**
@@ -156,7 +157,43 @@ export const make: {
  * @category constructor
  * @since 1.0.0
  */
-export const unsafe: (sql: string) => Statement = internal.unsafe
+export const unsafe: (
+  sql: string,
+  params?: ReadonlyArray<Primitive> | undefined,
+) => Statement = internal.unsafe
+
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
+export const and: (clauses: ReadonlyArray<string | Statement>) => Statement =
+  internal.and
+
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
+export const or: (clauses: ReadonlyArray<string | Statement>) => Statement =
+  internal.or
+
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
+export const csv: {
+  (values: ReadonlyArray<string | Statement>): Statement
+  (prefix: string, values: ReadonlyArray<string | Statement>): Statement
+} = internal.csv
+
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
+export const join: (
+  literal: string,
+  addParens?: boolean,
+  fallback?: string,
+) => (clauses: ReadonlyArray<string | Statement>) => Statement = internal.join
 
 /**
  * @category model
@@ -165,7 +202,7 @@ export const unsafe: (sql: string) => Statement = internal.unsafe
 export interface Compiler {
   readonly compile: (
     statement: Statement,
-  ) => readonly [sql: string, binds: ReadonlyArray<Primitive>]
+  ) => readonly [sql: string, params: ReadonlyArray<Primitive>]
 }
 
 /**
@@ -206,9 +243,10 @@ export const defaultCompiler: Compiler = internal.defaultCompiler
 console.log(
   defaultCompiler.compile(
     make`
-      UPDATE people
+      UPDATE ${make("people")}
       SET ${make([{ name: "Tim", age: 21, id: 1 }], "id", "data")}
-      WHERE people.id = data.id
+      WHERE ${and(["people.id = data.id", make`people.name = ${"Tim"}`])}
+      ${csv("ORDER", [make`people.name = ${1}`])}
     `,
   ),
 )
