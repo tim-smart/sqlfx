@@ -107,20 +107,24 @@ class ArrayHelper implements _.ArrayHelper {
   constructor(readonly value: Array<_.Primitive>) {}
 }
 
-class RecordHelper implements _.RecordHelper {
-  readonly _tag = "RecordHelper"
-  constructor(readonly value: Record<string, _.Primitive>) {}
+class RecordInsertHelper implements _.RecordInsertHelper {
+  readonly _tag = "RecordInsertHelper"
+  constructor(readonly value: ReadonlyArray<Record<string, _.Primitive>>) {}
 }
 
-class ArrayOfRecordsHelper implements _.ArrayOfRecordsHelper {
-  readonly _tag = "ArrayOfRecordsHelper"
-  constructor(readonly value: ReadonlyArray<Record<string, _.Primitive>>) {}
+class RecordUpdateHelper implements _.RecordUpdateHelper {
+  readonly _tag = "RecordUpdateHelper"
+  constructor(
+    readonly value: ReadonlyArray<Record<string, _.Primitive>>,
+    readonly idColumn: string,
+    readonly alias: string,
+  ) {}
 }
 
 const isHelper = (u: unknown): u is _.Helper =>
   u instanceof ArrayHelper ||
-  u instanceof ArrayOfRecordsHelper ||
-  u instanceof RecordHelper ||
+  u instanceof RecordInsertHelper ||
+  u instanceof RecordUpdateHelper ||
   u instanceof Identifier
 
 const isPrimitive = (u: unknown): u is _.Primitive =>
@@ -134,11 +138,24 @@ const isPrimitive = (u: unknown): u is _.Primitive =>
 /** @internal */
 export const make: {
   (value: Array<_.Primitive | Record<string, _.Primitive>>): _.ArrayHelper
-  (value: Array<Record<string, _.Primitive>>): _.ArrayOfRecordsHelper
-  (value: Record<string, _.Primitive>): _.RecordHelper
+
+  (value: Array<Record<string, _.Primitive>>): _.RecordInsertHelper
+  (
+    value: Array<Record<string, _.Primitive>>,
+    idColumn: string,
+    identifier: string,
+  ): _.RecordUpdateHelper
+
+  (value: Record<string, _.Primitive>): _.RecordInsertHelper
+  (
+    value: Record<string, _.Primitive>,
+    idColumn: string,
+    identifier: string,
+  ): _.RecordUpdateHelper
+
   (value: string): _.Identifier
   (strings: TemplateStringsArray, ...args: Array<_.Argument>): _.Statement
-} = function sql(strings: unknown, ...args: Array<_.Argument>): any {
+} = function sql(strings: unknown, ...args: Array<any>): any {
   if (Array.isArray(strings) && "raw" in strings) {
     return statement(strings as TemplateStringsArray, ...args)
   } else if (Array.isArray(strings)) {
@@ -147,13 +164,20 @@ export const make: {
       !isPrimitive(strings[0]) &&
       typeof strings[0] === "object"
     ) {
-      return new ArrayOfRecordsHelper(strings)
+      if (typeof args[0] === "string") {
+        return new RecordUpdateHelper(strings, args[0], args[1])
+      }
+
+      return new RecordInsertHelper(strings)
     }
     return new ArrayHelper(strings)
   } else if (typeof strings === "string") {
     return new Identifier(strings)
   } else if (typeof strings === "object") {
-    return new RecordHelper(strings as Record<string, _.Primitive>)
+    if (typeof args[0] === "string") {
+      return new RecordUpdateHelper([strings as any], args[0], args[1])
+    }
+    return new RecordInsertHelper([strings as any])
   }
 
   throw "absurd"
@@ -196,15 +220,21 @@ class Compiler implements _.Compiler {
   constructor(
     readonly parameterPlaceholder: string,
     readonly onIdentifier: (value: string) => string,
-    readonly onRecord: (
-      columns: ReadonlyArray<string>,
-      identifiers: ReadonlyArray<string>,
-      placeholder: string,
-      values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
-    ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
     readonly onArray: (
       placeholder: string,
       values: ReadonlyArray<_.Primitive>,
+    ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
+    readonly onRecordInsert: (
+      columns: ReadonlyArray<string>,
+      placeholder: string,
+      values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
+    ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
+    readonly onRecordUpdate: (
+      columns: ReadonlyArray<readonly [table: string, value: string]>,
+      placeholder: string,
+      alias: string,
+      valueColumns: ReadonlyArray<string>,
+      values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
     ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
   ) {}
 
@@ -251,25 +281,29 @@ class Compiler implements _.Compiler {
           break
         }
 
-        case "RecordHelper": {
-          const keys = Object.keys(segment.value)
-          const [s, b] = this.onRecord(
-            keys,
+        case "RecordInsertHelper": {
+          const keys = Object.keys(segment.value[0])
+          const [s, b] = this.onRecordInsert(
             keys.map(this.onIdentifier),
             placeholders(this.parameterPlaceholder, keys.length),
-            [Object.values(segment.value)],
+            segment.value.map(record => keys.map(key => record?.[key])),
           )
           sql += s
           binds.push.apply(binds, b as any)
           break
         }
 
-        case "ArrayOfRecordsHelper": {
+        case "RecordUpdateHelper": {
           const keys = Object.keys(segment.value[0])
-          const [s, b] = this.onRecord(
-            keys,
-            keys.map(this.onIdentifier),
+          const keysWithoutId = keys.filter(_ => _ !== segment.idColumn)
+          const [s, b] = this.onRecordUpdate(
+            keysWithoutId.map(_ => [
+              this.onIdentifier(_),
+              this.onIdentifier(`${segment.alias}.${_}`),
+            ]),
             placeholders(this.parameterPlaceholder, keys.length),
+            segment.alias,
+            keys.map(this.onIdentifier),
             segment.value.map(record => keys.map(key => record?.[key])),
           )
           sql += s
@@ -279,7 +313,7 @@ class Compiler implements _.Compiler {
       }
     }
 
-    return ((statement as any).__compiled = [sql, binds] as const)
+    return ((statement as any).__compiled = [sql.trim(), binds] as const)
   }
 }
 
@@ -287,17 +321,30 @@ class Compiler implements _.Compiler {
 export const makeCompiler = (
   parameterPlaceholder: string,
   onIdentifier: (value: string) => string,
-  onRecord: (
-    columns: ReadonlyArray<string>,
-    identifiers: ReadonlyArray<string>,
-    placeholder: string,
-    values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
-  ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
   onArray: (
     placeholder: string,
     values: ReadonlyArray<_.Primitive>,
   ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
-) => new Compiler(parameterPlaceholder, onIdentifier, onRecord, onArray)
+  onRecordInsert: (
+    columns: ReadonlyArray<string>,
+    placeholder: string,
+    values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
+  ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
+  onRecordUpdate: (
+    columns: ReadonlyArray<readonly [table: string, value: string]>,
+    placeholder: string,
+    valueAlias: string,
+    valueColumns: ReadonlyArray<string>,
+    values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
+  ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
+) =>
+  new Compiler(
+    parameterPlaceholder,
+    onIdentifier,
+    onArray,
+    onRecordInsert,
+    onRecordUpdate,
+  )
 
 const placeholders = (text: string, len: number) => {
   if (len === 0) {
@@ -323,13 +370,17 @@ export const defaultEscape = function escape(str: string) {
 export const defaultCompiler = makeCompiler(
   "?",
   defaultEscape,
-  (_columns, ids, placeholder, values) => {
-    return [
-      `(${ids.join(",")})VALUES${values
-        .map(() => `(${placeholder})`)
-        .join(",")}`,
-      values.flat(),
-    ]
-  },
   (placeholder, values) => [`(${placeholder})`, values],
+  (columns, placeholder, values) => [
+    `(${columns.join(",")}) VALUES ${values
+      .map(() => `(${placeholder})`)
+      .join(",")}`,
+    values.flat(),
+  ],
+  (columns, placeholder, valueAlias, valueColumns, values) => [
+    `${columns.map(([c, v]) => `${c} = ${v}`).join(", ")} FROM (values ${values
+      .map(() => `(${placeholder})`)
+      .join(",")}) AS ${valueAlias}(${valueColumns.join(",")})`,
+    values.flat(),
+  ],
 )

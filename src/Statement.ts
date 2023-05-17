@@ -43,8 +43,14 @@ export type Segment =
   | Identifier
   | Parameter
   | ArrayHelper
-  | RecordHelper
-  | ArrayOfRecordsHelper
+  | RecordInsertHelper
+  | RecordUpdateHelper
+
+/**
+ * @category model
+ * @since 1.0.0
+ */
+export type RecordHelperKind = "insert" | "update"
 
 /**
  * @category model
@@ -86,18 +92,20 @@ export interface ArrayHelper {
  * @category model
  * @since 1.0.0
  */
-export interface RecordHelper {
-  readonly _tag: "RecordHelper"
-  readonly value: Record<string, Primitive>
+export interface RecordInsertHelper {
+  readonly _tag: "RecordInsertHelper"
+  readonly value: ReadonlyArray<Record<string, Primitive>>
 }
 
 /**
  * @category model
  * @since 1.0.0
  */
-export interface ArrayOfRecordsHelper {
-  readonly _tag: "ArrayOfRecordsHelper"
+export interface RecordUpdateHelper {
+  readonly _tag: "RecordUpdateHelper"
   readonly value: ReadonlyArray<Record<string, Primitive>>
+  readonly idColumn: string
+  readonly alias: string
 }
 
 /**
@@ -112,8 +120,8 @@ export type Primitive = string | number | bigint | boolean | Date | null
  */
 export type Helper =
   | ArrayHelper
-  | RecordHelper
-  | ArrayOfRecordsHelper
+  | RecordInsertHelper
+  | RecordUpdateHelper
   | Identifier
 
 /**
@@ -128,8 +136,18 @@ export type Argument = Primitive | Helper | Statement
  */
 export const make: {
   (value: Array<Primitive | Record<string, Primitive>>): ArrayHelper
-  (value: Array<Record<string, Primitive>>): ArrayOfRecordsHelper
-  (value: Record<string, Primitive>): RecordHelper
+  (value: Array<Record<string, Primitive>>): RecordInsertHelper
+  (
+    value: Array<Record<string, Primitive>>,
+    idColumn: string,
+    identifier: string,
+  ): RecordUpdateHelper
+  (value: Record<string, Primitive>): RecordInsertHelper
+  (
+    value: Record<string, Primitive>,
+    idColumn: string,
+    identifier: string,
+  ): RecordUpdateHelper
   (value: string): Identifier
   (strings: TemplateStringsArray, ...args: Array<Argument>): Statement
 } = internal.make
@@ -157,15 +175,21 @@ export interface Compiler {
 export const makeCompiler: (
   parameterPlaceholder: string,
   onIdentifier: (value: string) => string,
-  onRecord: (
-    columns: ReadonlyArray<string>,
-    identifiers: ReadonlyArray<string>,
-    placeholder: string,
-    values: ReadonlyArray<ReadonlyArray<Primitive>>,
-  ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
   onArray: (
     placeholder: string,
     values: ReadonlyArray<Primitive>,
+  ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
+  onRecordInsert: (
+    columns: ReadonlyArray<string>,
+    placeholder: string,
+    values: ReadonlyArray<ReadonlyArray<Primitive>>,
+  ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
+  onRecordUpdate: (
+    columns: ReadonlyArray<readonly [table: string, value: string]>,
+    placeholder: string,
+    valueAlias: string,
+    valueColumns: ReadonlyArray<string>,
+    values: ReadonlyArray<ReadonlyArray<Primitive>>,
   ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
 ) => Compiler = internal.makeCompiler
 
@@ -178,3 +202,13 @@ export const defaultEscape: (str: string) => string = internal.defaultEscape
  * @since 1.0.0
  */
 export const defaultCompiler: Compiler = internal.defaultCompiler
+
+console.log(
+  defaultCompiler.compile(
+    make`
+      UPDATE people
+      SET ${make([{ name: "Tim", age: 21, id: 1 }], "id", "data")}
+      WHERE people.id = data.id
+    `,
+  ),
+)
