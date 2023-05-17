@@ -3,8 +3,7 @@ import * as Equal from "@effect/data/Equal"
 import { identity } from "@effect/data/Function"
 import * as Hash from "@effect/data/Hash"
 import * as Effect from "@effect/io/Effect"
-import { Connection } from "@sqlfx/sql/Connection"
-import type { Row } from "@sqlfx/sql/Connection"
+import type { Connection, Row } from "@sqlfx/sql/Connection"
 import type { SqlError } from "@sqlfx/sql/Error"
 import type * as _ from "@sqlfx/sql/Statement"
 
@@ -19,7 +18,7 @@ export function isFragment(u: unknown): u is _.Fragment {
 }
 
 /** @internal */
-export class StatementPrimitive implements _.Statement {
+export class StatementPrimitive<A extends Row> implements _.Statement<A> {
   constructor(
     readonly i0: ReadonlyArray<_.Segment>,
     readonly i1: Connection.Acquirer,
@@ -37,22 +36,23 @@ export class StatementPrimitive implements _.Statement {
   public trace: Debug.Trace = undefined;
   [Effect.EffectTypeId] = undefined as any
 
-  commit(): Effect.Effect<never, SqlError, ReadonlyArray<Row>> {
+  commit(): Effect.Effect<never, SqlError, ReadonlyArray<A>> {
     return Debug.untraced(() =>
       Effect.scoped(Effect.flatMap(this.i1, _ => _.execute(this))),
     )
   }
 
-  [Equal.symbol](this: StatementPrimitive, that: StatementPrimitive): boolean {
+  [Equal.symbol](
+    this: StatementPrimitive<Row>,
+    that: StatementPrimitive<Row>,
+  ): boolean {
     return this === that
   }
-  [Hash.symbol](this: StatementPrimitive): number {
+  [Hash.symbol](this: StatementPrimitive<Row>): number {
     return Hash.random(this)
   }
 
-  traced(
-    trace: Debug.Trace,
-  ): Effect.Effect<never, SqlError, ReadonlyArray<Row>> {
+  traced(trace: Debug.Trace): Effect.Effect<never, SqlError, ReadonlyArray<A>> {
     if (trace) {
       return new StatementTraced(this, this, trace)
     }
@@ -60,10 +60,10 @@ export class StatementPrimitive implements _.Statement {
   }
 }
 
-class StatementTraced implements _.Statement {
+class StatementTraced<A extends Row> implements _.Statement<A> {
   constructor(
-    readonly i0: StatementPrimitive | StatementTraced,
-    readonly i1: StatementPrimitive,
+    readonly i0: StatementPrimitive<A> | StatementTraced<A>,
+    readonly i1: StatementPrimitive<A>,
     readonly trace: Debug.Trace,
   ) {}
   get segments(): ReadonlyArray<_.Segment> {
@@ -78,16 +78,17 @@ class StatementTraced implements _.Statement {
   public i2: any = undefined;
   [Effect.EffectTypeId] = undefined as any;
 
-  [Equal.symbol](this: StatementPrimitive, that: StatementPrimitive): boolean {
+  [Equal.symbol](
+    this: StatementPrimitive<Row>,
+    that: StatementPrimitive<Row>,
+  ): boolean {
     return this === that
   }
-  [Hash.symbol](this: StatementPrimitive): number {
+  [Hash.symbol](this: StatementPrimitive<Row>): number {
     return Hash.random(this)
   }
 
-  traced(
-    trace: Debug.Trace,
-  ): Effect.Effect<never, SqlError, ReadonlyArray<Row>> {
+  traced(trace: Debug.Trace): Effect.Effect<never, SqlError, ReadonlyArray<A>> {
     if (trace) {
       return new StatementTraced(this, this.i1, trace)
     }
@@ -174,7 +175,10 @@ export const make = (
   ): _.RecordUpdateHelper
 
   (value: string): _.Identifier
-  (strings: TemplateStringsArray, ...args: Array<_.Argument>): _.Statement
+  <A extends Row>(
+    strings: TemplateStringsArray,
+    ...args: Array<_.Argument>
+  ): _.Statement<A>
 } =>
   function sql(strings: unknown, ...args: Array<any>): any {
     if (Array.isArray(strings) && "raw" in strings) {
@@ -209,7 +213,7 @@ export function statement(
   acquirer: Connection.Acquirer,
   strings: TemplateStringsArray,
   ...args: Array<_.Argument>
-): _.Statement {
+): _.Statement<Row> {
   const segments: Array<_.Segment> =
     strings[0].length > 0 ? [new Literal(strings[0])] : []
 
@@ -235,7 +239,10 @@ export function statement(
 /** @internal */
 export const unsafe =
   (acquirer: Connection.Acquirer) =>
-  (sql: string, params?: ReadonlyArray<_.Primitive>): _.Statement =>
+  <A extends Row>(
+    sql: string,
+    params?: ReadonlyArray<_.Primitive>,
+  ): _.Statement<A> =>
     new StatementPrimitive([new Literal(sql, params)], acquirer)
 
 /** @internal */

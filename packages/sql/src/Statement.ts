@@ -31,9 +31,9 @@ export interface Fragment {
  * @category model
  * @since 1.0.0
  */
-export interface Statement
+export interface Statement<A extends Row>
   extends Fragment,
-    Effect<never, SqlError, ReadonlyArray<Row>> {}
+    Effect<never, SqlError, ReadonlyArray<A>> {}
 
 /**
  * @category guard
@@ -151,7 +151,10 @@ export const make: (acquirer: Connection.Acquirer) => {
     identifier: string,
   ): RecordUpdateHelper
   (value: string): Identifier
-  (strings: TemplateStringsArray, ...args: Array<Argument>): Statement
+  <A extends Row>(
+    strings: TemplateStringsArray,
+    ...args: Array<Argument>
+  ): Statement<A>
 } = internal.make
 
 /**
@@ -160,8 +163,10 @@ export const make: (acquirer: Connection.Acquirer) => {
  */
 export const unsafe: (
   acquirer: Connection.Acquirer,
-) => (sql: string, params?: ReadonlyArray<Primitive> | undefined) => Statement =
-  internal.unsafe
+) => <A extends Row>(
+  sql: string,
+  params?: ReadonlyArray<Primitive> | undefined,
+) => Statement<A> = internal.unsafe
 
 /**
  * @category constructor

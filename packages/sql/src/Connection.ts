@@ -12,9 +12,13 @@ import type { Primitive, Statement } from "@sqlfx/sql/Statement"
  * @since 1.0.0
  */
 export interface Connection {
-  readonly execute: (
-    statement: Statement,
-  ) => Effect.Effect<never, SqlError, ReadonlyArray<Row>>
+  readonly execute: <A extends Row>(
+    statement: Statement<A>,
+  ) => Effect.Effect<never, SqlError, ReadonlyArray<A>>
+
+  readonly executeValues: <A extends Row>(
+    statement: Statement<A>,
+  ) => Effect.Effect<never, SqlError, ReadonlyArray<ReadonlyArray<Primitive>>>
 
   readonly executeRaw: (
     sql: string,
