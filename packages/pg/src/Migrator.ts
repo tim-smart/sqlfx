@@ -10,8 +10,8 @@ import type { ExecFileException } from "node:child_process"
 import { execFile } from "node:child_process"
 import * as NFS from "node:fs"
 import * as Path from "node:path"
-import * as Pg from "pgfx"
-import type { PostgresError } from "pgfx/Error"
+import * as Pg from "@sqlfx/sql"
+import type { PostgresError } from "@sqlfx/sql/Error"
 import type postgres from "postgres"
 
 /**

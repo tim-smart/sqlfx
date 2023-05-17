@@ -3,8 +3,8 @@
  */
 import { Tag } from "@effect/data/Context"
 import type * as Effect from "@effect/io/Effect"
-import type { SqlError } from "pgfx/Error"
-import type { Primitive, Statement } from "pgfx/Statement"
+import type { SqlError } from "@sqlfx/sql/Error"
+import type { Primitive, Statement } from "@sqlfx/sql/Statement"
 
 /**
  * @category model

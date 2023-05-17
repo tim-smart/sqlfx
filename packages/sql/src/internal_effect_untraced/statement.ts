@@ -3,10 +3,10 @@ import * as Equal from "@effect/data/Equal"
 import { identity } from "@effect/data/Function"
 import * as Hash from "@effect/data/Hash"
 import * as Effect from "@effect/io/Effect"
-import { Connection } from "pgfx/Connection"
-import type { Row } from "pgfx/Connection"
-import type { SqlError } from "pgfx/Error"
-import type * as _ from "pgfx/Statement"
+import { Connection } from "@sqlfx/sql/Connection"
+import type { Row } from "@sqlfx/sql/Connection"
+import type { SqlError } from "@sqlfx/sql/Error"
+import type * as _ from "@sqlfx/sql/Statement"
 
 /** @internal */
 export const StatementId: _.StatementId = Symbol.for(

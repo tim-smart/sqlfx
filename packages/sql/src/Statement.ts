@@ -2,7 +2,7 @@
  * @since 1.0.0
  */
 import type { Effect } from "@effect/io/Effect"
-import * as internal from "pgfx/internal_effect_untraced/statement"
+import * as internal from "@sqlfx/sql/internal_effect_untraced/statement"
 import type { Connection, Row } from "./Connection"
 import type { SqlError } from "./Error"
 
@@ -22,8 +22,8 @@ export type StatementId = typeof StatementId
  * @category model
  * @since 1.0.0
  */
-export interface Statement
-  extends Effect<Connection, SqlError, ReadonlyArray<Row>> {
+export interface Statement<A extends Row>
+  extends Effect<Connection, SqlError, ReadonlyArray<A>> {
   readonly [StatementId]: (_: never) => StatementId
   readonly segments: ReadonlyArray<Segment>
 }
@@ -32,7 +32,8 @@ export interface Statement
  * @category guard
  * @since 1.0.0
  */
-export const isStatement: (u: unknown) => u is Statement = internal.isStatement
+export const isStatement: (u: unknown) => u is Statement<Row> =
+  internal.isStatement
 
 /**
  * @category model

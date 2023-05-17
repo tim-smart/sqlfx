@@ -3,7 +3,7 @@
  */
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
-import { SchemaError } from "pgfx/Error"
+import { SchemaError } from "@sqlfx/sql/Error"
 
 /**
  * @since 1.0.0

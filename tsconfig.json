@@ -1,14 +1,4 @@
 {
   "extends": "./tsconfig.base.json",
-  "references": [
-    {
-      "path": "./tsconfig.build.json"
-    },
-    {
-      "path": "./tsconfig.build-test.json"
-    },
-    {
-      "path": "./tsconfig.examples.json"
-    }
-  ]
+  "references": [{ "path": "packages/sql" }, { "path": "packages/pg" }]
 }
