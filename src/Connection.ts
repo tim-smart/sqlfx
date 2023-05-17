@@ -3,6 +3,7 @@
  */
 import { Tag } from "@effect/data/Context"
 import type * as Effect from "@effect/io/Effect"
+import { Scope } from "@effect/io/Scope"
 import type { SqlError } from "pgfx/Error"
 import type { Primitive, Statement } from "pgfx/Statement"
 
@@ -18,6 +19,17 @@ export interface Connection {
   readonly executeRaw: (
     sql: string,
   ) => Effect.Effect<never, SqlError, ReadonlyArray<Row>>
+}
+
+/**
+ * @since 1.0.0
+ */
+export namespace Connection {
+  /**
+   * @category model
+   * @since 1.0.0
+   */
+  export type Acquirer = Effect.Effect<Scope, SqlError, Connection>
 }
 
 /**

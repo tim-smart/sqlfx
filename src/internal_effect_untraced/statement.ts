@@ -9,33 +9,37 @@ import type { SqlError } from "pgfx/Error"
 import type * as _ from "pgfx/Statement"
 
 /** @internal */
-export const StatementId: _.StatementId = Symbol.for(
-  "pgfx/Statement",
-) as _.StatementId
+export const FragmentId: _.FragmentId = Symbol.for(
+  "pgfx/Fragment",
+) as _.FragmentId
 
 /** @internal */
-export function isStatement(u: unknown): u is _.Statement {
-  return typeof u === "object" && u !== null && StatementId in u
+export function isFragment(u: unknown): u is _.Fragment {
+  return typeof u === "object" && u !== null && FragmentId in u
 }
 
 /** @internal */
 export class StatementPrimitive implements _.Statement {
-  constructor(readonly i0: ReadonlyArray<_.Segment>) {}
+  constructor(
+    readonly i0: ReadonlyArray<_.Segment>,
+    readonly i1: Connection.Acquirer,
+  ) {}
   get segments(): ReadonlyArray<_.Segment> {
     return this.i0
   }
-  [StatementId] = identity
+  get [FragmentId]() {
+    return identity
+  }
 
   // Make it a valid effect
   public _tag = "Commit" // OP_COMMIT
-  public i1: any = undefined
   public i2: any = undefined
   public trace: Debug.Trace = undefined;
   [Effect.EffectTypeId] = undefined as any
 
-  commit(): Effect.Effect<Connection, SqlError, ReadonlyArray<Row>> {
+  commit(): Effect.Effect<never, SqlError, ReadonlyArray<Row>> {
     return Debug.untraced(() =>
-      Effect.flatMap(Connection, _ => _.execute(this)),
+      Effect.scoped(Effect.flatMap(this.i1, _ => _.execute(this))),
     )
   }
 
@@ -48,7 +52,7 @@ export class StatementPrimitive implements _.Statement {
 
   traced(
     trace: Debug.Trace,
-  ): Effect.Effect<Connection, SqlError, ReadonlyArray<Row>> {
+  ): Effect.Effect<never, SqlError, ReadonlyArray<Row>> {
     if (trace) {
       return new StatementTraced(this, this, trace)
     }
@@ -65,7 +69,9 @@ class StatementTraced implements _.Statement {
   get segments(): ReadonlyArray<_.Segment> {
     return this.i1.segments
   }
-  [StatementId] = identity
+  get [FragmentId]() {
+    return identity
+  }
 
   // Make it a valid effect
   public _tag = "Traced" // OP_TRACED
@@ -81,12 +87,19 @@ class StatementTraced implements _.Statement {
 
   traced(
     trace: Debug.Trace,
-  ): Effect.Effect<Connection, SqlError, ReadonlyArray<Row>> {
+  ): Effect.Effect<never, SqlError, ReadonlyArray<Row>> {
     if (trace) {
       return new StatementTraced(this, this.i1, trace)
     }
     return this
   }
+}
+
+class Fragment implements _.Fragment {
+  get [FragmentId]() {
+    return identity
+  }
+  constructor(readonly segments: ReadonlyArray<_.Segment>) {}
 }
 
 class Literal implements _.Literal {
@@ -141,7 +154,9 @@ const isPrimitive = (u: unknown): u is _.Primitive =>
   u === undefined
 
 /** @internal */
-export const make: {
+export const make = (
+  acquirer: Connection.Acquirer,
+): {
   (value: Array<_.Primitive | Record<string, _.Primitive>>): _.ArrayHelper
 
   (value: Array<Record<string, _.Primitive>>): _.RecordInsertHelper
@@ -160,36 +175,38 @@ export const make: {
 
   (value: string): _.Identifier
   (strings: TemplateStringsArray, ...args: Array<_.Argument>): _.Statement
-} = function sql(strings: unknown, ...args: Array<any>): any {
-  if (Array.isArray(strings) && "raw" in strings) {
-    return statement(strings as TemplateStringsArray, ...args)
-  } else if (Array.isArray(strings)) {
-    if (
-      strings.length > 0 &&
-      !isPrimitive(strings[0]) &&
-      typeof strings[0] === "object"
-    ) {
-      if (typeof args[0] === "string") {
-        return new RecordUpdateHelper(strings, args[0], args[1])
+} =>
+  function sql(strings: unknown, ...args: Array<any>): any {
+    if (Array.isArray(strings) && "raw" in strings) {
+      return statement(acquirer, strings as TemplateStringsArray, ...args)
+    } else if (Array.isArray(strings)) {
+      if (
+        strings.length > 0 &&
+        !isPrimitive(strings[0]) &&
+        typeof strings[0] === "object"
+      ) {
+        if (typeof args[0] === "string") {
+          return new RecordUpdateHelper(strings, args[0], args[1])
+        }
+
+        return new RecordInsertHelper(strings)
       }
+      return new ArrayHelper(strings)
+    } else if (typeof strings === "string") {
+      return new Identifier(strings)
+    } else if (typeof strings === "object") {
+      if (typeof args[0] === "string") {
+        return new RecordUpdateHelper([strings as any], args[0], args[1])
+      }
+      return new RecordInsertHelper([strings as any])
+    }
 
-      return new RecordInsertHelper(strings)
-    }
-    return new ArrayHelper(strings)
-  } else if (typeof strings === "string") {
-    return new Identifier(strings)
-  } else if (typeof strings === "object") {
-    if (typeof args[0] === "string") {
-      return new RecordUpdateHelper([strings as any], args[0], args[1])
-    }
-    return new RecordInsertHelper([strings as any])
+    throw "absurd"
   }
-
-  throw "absurd"
-}
 
 /** @internal */
 export function statement(
+  acquirer: Connection.Acquirer,
   strings: TemplateStringsArray,
   ...args: Array<_.Argument>
 ): _.Statement {
@@ -199,7 +216,7 @@ export function statement(
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]
 
-    if (isStatement(arg)) {
+    if (isFragment(arg)) {
       segments.push(...arg.segments)
     } else if (isHelper(arg)) {
       segments.push(arg)
@@ -212,19 +229,23 @@ export function statement(
     }
   }
 
-  return new StatementPrimitive(segments)
+  return new StatementPrimitive(segments, acquirer)
 }
 
 /** @internal */
-export function unsafe(
+export const unsafe =
+  (acquirer: Connection.Acquirer) =>
+  (sql: string, params?: ReadonlyArray<_.Primitive>): _.Statement =>
+    new StatementPrimitive([new Literal(sql, params)], acquirer)
+
+/** @internal */
+export const unsafeFragment = (
   sql: string,
   params?: ReadonlyArray<_.Primitive>,
-): _.Statement {
-  return new StatementPrimitive([new Literal(sql, params)])
-}
+): _.Fragment => new Fragment([new Literal(sql, params)])
 
-function convertLiteralOrStatement(
-  clause: string | _.Statement,
+function convertLiteralOrFragment(
+  clause: string | _.Fragment,
 ): Array<_.Segment> {
   if (typeof clause === "string") {
     return [new Literal(clause)]
@@ -236,11 +257,11 @@ function convertLiteralOrStatement(
 export function join(literal: string, addParens = true, fallback = "") {
   const literalSegment = new Literal(literal)
 
-  return function (clauses: ReadonlyArray<string | _.Statement>): _.Statement {
+  return function (clauses: ReadonlyArray<string | _.Fragment>): _.Fragment {
     if (clauses.length === 0) {
-      return unsafe(fallback)
+      return unsafeFragment(fallback)
     } else if (clauses.length === 1) {
-      return new StatementPrimitive(convertLiteralOrStatement(clauses[0]))
+      return new Fragment(convertLiteralOrFragment(clauses[0]))
     }
 
     const segments: Array<_.Segment> = []
@@ -249,18 +270,18 @@ export function join(literal: string, addParens = true, fallback = "") {
       segments.push(new Literal("("))
     }
 
-    segments.push.apply(segments, convertLiteralOrStatement(clauses[0]))
+    segments.push.apply(segments, convertLiteralOrFragment(clauses[0]))
 
     for (let i = 1; i < clauses.length; i++) {
       segments.push(literalSegment)
-      segments.push.apply(segments, convertLiteralOrStatement(clauses[i]))
+      segments.push.apply(segments, convertLiteralOrFragment(clauses[i]))
     }
 
     if (addParens) {
       segments.push(new Literal(")"))
     }
 
-    return new StatementPrimitive(segments)
+    return new Fragment(segments)
   }
 }
 
@@ -274,25 +295,22 @@ const csvRaw = join(", ", false)
 
 /** @internal */
 export const csv: {
-  (values: ReadonlyArray<string | _.Statement>): _.Statement
-  (prefix: string, values: ReadonlyArray<string | _.Statement>): _.Statement
+  (values: ReadonlyArray<string | _.Fragment>): _.Fragment
+  (prefix: string, values: ReadonlyArray<string | _.Fragment>): _.Fragment
 } = (
   ...args:
-    | [values: ReadonlyArray<string | _.Statement>]
-    | [prefix: string, values: ReadonlyArray<string | _.Statement>]
+    | [values: ReadonlyArray<string | _.Fragment>]
+    | [prefix: string, values: ReadonlyArray<string | _.Fragment>]
 ) => {
   if (args[args.length - 1].length === 0) {
-    return unsafe("")
+    return unsafeFragment("")
   }
 
   if (args.length === 1) {
     return csvRaw(args[0])
   }
 
-  return new StatementPrimitive([
-    new Literal(`${args[0]} `),
-    ...csvRaw(args[1]).segments,
-  ])
+  return new Fragment([new Literal(`${args[0]} `), ...csvRaw(args[1]).segments])
 }
 
 /** @internal */
@@ -319,7 +337,7 @@ class Compiler implements _.Compiler {
   ) {}
 
   compile(
-    statement: _.Statement,
+    statement: _.Fragment,
   ): readonly [sql: string, binds: ReadonlyArray<_.Primitive>] {
     if ((statement as any).__compiled) {
       return (statement as any).__compiled

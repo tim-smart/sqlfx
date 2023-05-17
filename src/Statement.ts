@@ -10,29 +10,36 @@ import type { SqlError } from "./Error"
  * @category type id
  * @since 1.0.0
  */
-export const StatementId: unique symbol = internal.StatementId
+export const FragmentId: unique symbol = internal.FragmentId
 
 /**
  * @category type id
  * @since 1.0.0
  */
-export type StatementId = typeof StatementId
+export type FragmentId = typeof FragmentId
+
+/**
+ * @category model
+ * @since 1.0.0
+ */
+export interface Fragment {
+  readonly [FragmentId]: (_: never) => FragmentId
+  readonly segments: ReadonlyArray<Segment>
+}
 
 /**
  * @category model
  * @since 1.0.0
  */
 export interface Statement
-  extends Effect<Connection, SqlError, ReadonlyArray<Row>> {
-  readonly [StatementId]: (_: never) => StatementId
-  readonly segments: ReadonlyArray<Segment>
-}
+  extends Fragment,
+    Effect<never, SqlError, ReadonlyArray<Row>> {}
 
 /**
  * @category guard
  * @since 1.0.0
  */
-export const isStatement: (u: unknown) => u is Statement = internal.isStatement
+export const isFragment: (u: unknown) => u is Fragment = internal.isFragment
 
 /**
  * @category model
@@ -45,12 +52,6 @@ export type Segment =
   | ArrayHelper
   | RecordInsertHelper
   | RecordUpdateHelper
-
-/**
- * @category model
- * @since 1.0.0
- */
-export type RecordHelperKind = "insert" | "update"
 
 /**
  * @category model
@@ -129,13 +130,13 @@ export type Helper =
  * @category model
  * @since 1.0.0
  */
-export type Argument = Primitive | Helper | Statement
+export type Argument = Primitive | Helper | Fragment
 
 /**
  * @category constructor
  * @since 1.0.0
  */
-export const make: {
+export const make: (acquirer: Connection.Acquirer) => {
   (value: Array<Primitive | Record<string, Primitive>>): ArrayHelper
   (value: Array<Record<string, Primitive>>): RecordInsertHelper
   (
@@ -158,22 +159,31 @@ export const make: {
  * @since 1.0.0
  */
 export const unsafe: (
-  sql: string,
-  params?: ReadonlyArray<Primitive> | undefined,
-) => Statement = internal.unsafe
+  acquirer: Connection.Acquirer,
+) => (sql: string, params?: ReadonlyArray<Primitive> | undefined) => Statement =
+  internal.unsafe
 
 /**
  * @category constructor
  * @since 1.0.0
  */
-export const and: (clauses: ReadonlyArray<string | Statement>) => Statement =
+export const unsafeFragment: (
+  sql: string,
+  params?: ReadonlyArray<Primitive> | undefined,
+) => Fragment = internal.unsafeFragment
+
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
+export const and: (clauses: ReadonlyArray<string | Fragment>) => Fragment =
   internal.and
 
 /**
  * @category constructor
  * @since 1.0.0
  */
-export const or: (clauses: ReadonlyArray<string | Statement>) => Statement =
+export const or: (clauses: ReadonlyArray<string | Fragment>) => Fragment =
   internal.or
 
 /**
@@ -181,8 +191,8 @@ export const or: (clauses: ReadonlyArray<string | Statement>) => Statement =
  * @since 1.0.0
  */
 export const csv: {
-  (values: ReadonlyArray<string | Statement>): Statement
-  (prefix: string, values: ReadonlyArray<string | Statement>): Statement
+  (values: ReadonlyArray<string | Fragment>): Fragment
+  (prefix: string, values: ReadonlyArray<string | Fragment>): Fragment
 } = internal.csv
 
 /**
@@ -193,7 +203,7 @@ export const join: (
   literal: string,
   addParens?: boolean,
   fallback?: string,
-) => (clauses: ReadonlyArray<string | Statement>) => Statement = internal.join
+) => (clauses: ReadonlyArray<string | Fragment>) => Fragment = internal.join
 
 /**
  * @category model
@@ -201,7 +211,7 @@ export const join: (
  */
 export interface Compiler {
   readonly compile: (
-    statement: Statement,
+    statement: Fragment,
   ) => readonly [sql: string, params: ReadonlyArray<Primitive>]
 }
 
