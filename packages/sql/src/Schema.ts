@@ -8,14 +8,14 @@ import { SchemaError } from "@sqlfx/sql/Error"
 /**
  * @since 1.0.0
  */
-export const decode = <I, A>(
+export const parse = <I, A>(
   schema: Schema.Schema<I, A>,
   type: SchemaError["type"],
-): ((input: I) => Effect.Effect<never, SchemaError, A>) => {
-  const decode = Schema.decodeEffect(schema)
+): ((input: unknown) => Effect.Effect<never, SchemaError, A>) => {
+  const parse = Schema.parseEffect(schema)
 
   return input =>
-    Effect.mapError(decode(input), _ => SchemaError(type, _.errors))
+    Effect.mapError(parse(input), _ => SchemaError(type, _.errors))
 }
 
 /**

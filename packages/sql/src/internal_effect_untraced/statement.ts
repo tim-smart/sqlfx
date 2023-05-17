@@ -19,15 +19,29 @@ export function isFragment(u: unknown): u is _.Fragment {
 
 /** @internal */
 export class StatementPrimitive<A extends Row> implements _.Statement<A> {
+  get [FragmentId]() {
+    return identity
+  }
+
   constructor(
     readonly i0: ReadonlyArray<_.Segment>,
     readonly i1: Connection.Acquirer,
   ) {}
+
   get segments(): ReadonlyArray<_.Segment> {
     return this.i0
   }
-  get [FragmentId]() {
-    return identity
+
+  get values(): Effect.Effect<
+    never,
+    SqlError,
+    ReadonlyArray<ReadonlyArray<_.Primitive>>
+  > {
+    return Debug.bodyWithTrace(trace =>
+      Effect.scoped(Effect.flatMap(this.i1, _ => _.executeValues(this))).traced(
+        trace,
+      ),
+    )
   }
 
   // Make it a valid effect
@@ -61,16 +75,22 @@ export class StatementPrimitive<A extends Row> implements _.Statement<A> {
 }
 
 class StatementTraced<A extends Row> implements _.Statement<A> {
+  get [FragmentId]() {
+    return identity
+  }
+
   constructor(
     readonly i0: StatementPrimitive<A> | StatementTraced<A>,
     readonly i1: StatementPrimitive<A>,
     readonly trace: Debug.Trace,
   ) {}
+
   get segments(): ReadonlyArray<_.Segment> {
     return this.i1.segments
   }
-  get [FragmentId]() {
-    return identity
+
+  get values() {
+    return this.i1.values
   }
 
   // Make it a valid effect
@@ -155,31 +175,7 @@ const isPrimitive = (u: unknown): u is _.Primitive =>
   u === undefined
 
 /** @internal */
-export const make = (
-  acquirer: Connection.Acquirer,
-): {
-  (value: Array<_.Primitive | Record<string, _.Primitive>>): _.ArrayHelper
-
-  (value: Array<Record<string, _.Primitive>>): _.RecordInsertHelper
-  (
-    value: Array<Record<string, _.Primitive>>,
-    idColumn: string,
-    identifier: string,
-  ): _.RecordUpdateHelper
-
-  (value: Record<string, _.Primitive>): _.RecordInsertHelper
-  (
-    value: Record<string, _.Primitive>,
-    idColumn: string,
-    identifier: string,
-  ): _.RecordUpdateHelper
-
-  (value: string): _.Identifier
-  <A extends Row>(
-    strings: TemplateStringsArray,
-    ...args: Array<_.Argument>
-  ): _.Statement<A>
-} =>
+export const make = (acquirer: Connection.Acquirer): _.Constructor =>
   function sql(strings: unknown, ...args: Array<any>): any {
     if (Array.isArray(strings) && "raw" in strings) {
       return statement(acquirer, strings as TemplateStringsArray, ...args)
@@ -341,6 +337,11 @@ class Compiler implements _.Compiler {
       valueColumns: ReadonlyArray<string>,
       values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
     ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
+    readonly onCustom: (
+      kind: string,
+      i0: unknown,
+      i1: unknown,
+    ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
   ) {}
 
   compile(
@@ -418,6 +419,13 @@ class Compiler implements _.Compiler {
           binds.push.apply(binds, b as any)
           break
         }
+
+        case "Custom": {
+          const [s, b] = this.onCustom(segment.kind, segment.i0, segment.i1)
+          sql += s
+          binds.push.apply(binds, b as any)
+          break
+        }
       }
     }
 
@@ -445,6 +453,11 @@ export const makeCompiler = (
     valueColumns: ReadonlyArray<string>,
     values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
   ) => readonly [sql: string, params: ReadonlyArray<_.Primitive>],
+  onCustom: (
+    kind: string,
+    i0: unknown,
+    i1: unknown,
+  ) => readonly [sql: string, params: ReadonlyArray<_.Primitive>],
 ) =>
   new Compiler(
     parameterPlaceholder,
@@ -452,6 +465,7 @@ export const makeCompiler = (
     onArray,
     onRecordInsert,
     onRecordUpdate,
+    onCustom,
   )
 
 const placeholders = (text: string, len: number) => {
@@ -491,4 +505,5 @@ export const defaultCompiler = makeCompiler(
       .join(",")}) AS ${valueAlias}(${valueColumns.join(",")})`,
     values.flat(),
   ],
+  () => ["", []],
 )

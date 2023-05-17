@@ -61,16 +61,11 @@
     "eslint-plugin-sort-destructure-keys": "^1.5.0",
     "madge": "^6.0.0",
     "prettier": "^2.8.8",
-    "rimraf": "^5.0.0",
+    "rimraf": "^5.0.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.3",
     "ultra-runner": "^3.10.5",
     "vite": "^4.3.5",
-    "vitest": "0.31.0"
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "@effect-ts/build-utils@0.40.3": "patches/@effect-ts__build-utils@0.40.3.patch"
-    }
+    "vitest": "0.31.1"
   }
 }

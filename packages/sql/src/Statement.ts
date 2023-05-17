@@ -33,7 +33,13 @@ export interface Fragment {
  */
 export interface Statement<A extends Row>
   extends Fragment,
-    Effect<never, SqlError, ReadonlyArray<A>> {}
+    Effect<never, SqlError, ReadonlyArray<A>> {
+  readonly values: Effect<
+    never,
+    SqlError,
+    ReadonlyArray<ReadonlyArray<Primitive>>
+  >
+}
 
 /**
  * @category guard
@@ -52,6 +58,7 @@ export type Segment =
   | ArrayHelper
   | RecordInsertHelper
   | RecordUpdateHelper
+  | Custom
 
 /**
  * @category model
@@ -114,6 +121,17 @@ export interface RecordUpdateHelper {
  * @category model
  * @since 1.0.0
  */
+export interface Custom {
+  readonly _tag: "Custom"
+  readonly kind: string
+  readonly i0: unknown
+  readonly i1: unknown
+}
+
+/**
+ * @category model
+ * @since 1.0.0
+ */
 export type Primitive = string | number | bigint | boolean | Date | null
 
 /**
@@ -125,6 +143,7 @@ export type Helper =
   | RecordInsertHelper
   | RecordUpdateHelper
   | Identifier
+  | Custom
 
 /**
  * @category model
@@ -133,10 +152,10 @@ export type Helper =
 export type Argument = Primitive | Helper | Fragment
 
 /**
- * @category constructor
+ * @category model
  * @since 1.0.0
  */
-export const make: (acquirer: Connection.Acquirer) => {
+export interface Constructor {
   (value: Array<Primitive | Record<string, Primitive>>): ArrayHelper
   (value: Array<Record<string, Primitive>>): RecordInsertHelper
   (
@@ -155,7 +174,14 @@ export const make: (acquirer: Connection.Acquirer) => {
     strings: TemplateStringsArray,
     ...args: Array<Argument>
   ): Statement<A>
-} = internal.make
+}
+
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
+export const make: (acquirer: Connection.Acquirer) => Constructor =
+  internal.make
 
 /**
  * @category constructor
@@ -230,19 +256,24 @@ export const makeCompiler: (
   onArray: (
     placeholder: string,
     values: ReadonlyArray<Primitive>,
-  ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
+  ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
   onRecordInsert: (
     columns: ReadonlyArray<string>,
     placeholder: string,
     values: ReadonlyArray<ReadonlyArray<Primitive>>,
-  ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
+  ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
   onRecordUpdate: (
     columns: ReadonlyArray<readonly [table: string, value: string]>,
     placeholder: string,
     valueAlias: string,
     valueColumns: ReadonlyArray<string>,
     values: ReadonlyArray<ReadonlyArray<Primitive>>,
-  ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
+  ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
+  onCustom: (
+    kind: string,
+    i0: unknown,
+    i1: unknown,
+  ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
 ) => Compiler = internal.makeCompiler
 
 /**
@@ -254,3 +285,14 @@ export const defaultEscape: (str: string) => string = internal.defaultEscape
  * @since 1.0.0
  */
 export const defaultCompiler: Compiler = internal.defaultCompiler
+
+const sql = make(null as any)
+
+console.log(
+  defaultCompiler.compile(
+    sql`SELECT * FROM ${sql("users")} WHERE id = ${sql({
+      name: "Tim",
+      age: 18,
+    })} AND name = ${"foo"}`,
+  ),
+)
