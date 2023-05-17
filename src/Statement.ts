@@ -239,14 +239,3 @@ export const defaultEscape: (str: string) => string = internal.defaultEscape
  * @since 1.0.0
  */
 export const defaultCompiler: Compiler = internal.defaultCompiler
-
-console.log(
-  defaultCompiler.compile(
-    make`
-      UPDATE ${make("people")}
-      SET ${make([{ name: "Tim", age: 21, id: 1 }], "id", "data")}
-      WHERE ${and(["people.id = data.id", make`people.name = ${"Tim"}`])}
-      ${csv("ORDER", [make`people.name = ${1}`])}
-    `,
-  ),
-)
