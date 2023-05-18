@@ -17,8 +17,16 @@ import type { PostgresError } from "postgres"
 import postgres from "postgres"
 import * as Config from "@effect/io/Config"
 import * as Layer from "@effect/io/Layer"
+import * as transform from "@sqlfx/sql/Transform"
 
-export * as transform from "@sqlfx/sql/Transform"
+export {
+  /**
+   * Column renaming helpers.
+   *
+   * @since 1.0.0
+   */
+  transform,
+}
 
 /**
  * @category model

@@ -20,6 +20,8 @@ Added in v1.0.0
   - [PgClient (interface)](#pgclient-interface)
 - [tag](#tag)
   - [tag](#tag-1)
+- [utils](#utils)
+  - [transform](#transform)
 
 ---
 
@@ -91,6 +93,20 @@ Added in v1.0.0
 
 ```ts
 export declare const tag: Tag<PgClient, PgClient>
+```
+
+Added in v1.0.0
+
+# utils
+
+## transform
+
+Column renaming helpers.
+
+**Signature**
+
+```ts
+export declare const transform: typeof transform
 ```
 
 Added in v1.0.0
