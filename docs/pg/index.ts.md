@@ -44,6 +44,9 @@ export interface PgClientConfig {
   readonly idleTimeout?: Duration
   readonly connectTimeout?: Duration
 
+  readonly minConnections?: number
+  readonly maxConnections?: number
+
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
 }

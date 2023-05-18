@@ -56,6 +56,9 @@ export interface PgClientConfig {
   readonly idleTimeout?: Duration
   readonly connectTimeout?: Duration
 
+  readonly minConnections?: number
+  readonly maxConnections?: number
+
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
 }
@@ -132,7 +135,6 @@ export const make = (
         return {
           execute(statement) {
             const [sql, params] = compiler.compile(statement)
-            console.log(sql, params)
             return Effect.tryCatchPromiseInterrupt(
               () => run(sql, params),
               error => SqlError((error as PostgresError).message),
@@ -155,7 +157,14 @@ export const make = (
       }),
     )
 
-    const pool = yield* _(Pool.makeWithTTL(makeConnection, 0, 10, minutes(60)))
+    const pool = yield* _(
+      Pool.makeWithTTL(
+        makeConnection,
+        options.minConnections ?? 0,
+        options.maxConnections ?? 10,
+        minutes(60),
+      ),
+    )
 
     return Client.make(Effect.scoped(pool.get()), pool.get())
   })
