@@ -1,14 +1,8 @@
----
-title: Introduction
-permalink: /
-nav_order: 1
-has_children: false
-has_toc: false
----
-
 # sqlfx
 
 A SQL toolkit for Effect-TS
+
+https://tim-smart.github.io/sqlfx
 
 ## Basic example
 
