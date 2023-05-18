@@ -131,7 +131,15 @@ export interface Custom {
  * @category model
  * @since 1.0.0
  */
-export type Primitive = string | number | bigint | boolean | Date | null
+export type Primitive =
+  | string
+  | number
+  | bigint
+  | boolean
+  | Date
+  | null
+  | Int8Array
+  | Uint8Array
 
 /**
  * @category model

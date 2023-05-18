@@ -135,20 +135,29 @@ export const make = (
             const [sql, params] = compiler.compile(statement)
             return Effect.tryCatchPromiseInterrupt(
               () => run(sql, params),
-              error => SqlError((error as PostgresError).message),
+              error =>
+                SqlError((error as PostgresError).message, {
+                  ...(error as any).__proto__,
+                }),
             )
           },
           executeValues(statement) {
             const [sql, params] = compiler.compile(statement)
             return Effect.tryCatchPromiseInterrupt(
               () => run(sql, params).values(),
-              error => SqlError((error as PostgresError).message),
+              error =>
+                SqlError((error as PostgresError).message, {
+                  ...(error as any).__proto__,
+                }),
             )
           },
           executeRaw(sql, params) {
             return Effect.tryCatchPromiseInterrupt(
               () => run(sql, params),
-              error => SqlError((error as PostgresError).message),
+              error =>
+                SqlError((error as PostgresError).message, {
+                  ...(error as any).__proto__,
+                }),
             )
           },
         }
