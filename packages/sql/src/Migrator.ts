@@ -77,8 +77,8 @@ export const make =
   > =>
     Effect.gen(function* (_) {
       const sql = yield* _(getClient)
-      const ensureMigrationsTable = ensureTable(table)
-      const lockMigrationsTable = lockTable(table)
+      const ensureMigrationsTable = ensureTable(sql, table)
+      const lockMigrationsTable = lockTable(sql, table)
 
       const insertMigration = (id: number, name: string) => sql`
       INSERT INTO ${sql(table)} (
@@ -262,7 +262,7 @@ export const make =
       if (completed.length > 0) {
         yield* _(
           Effect.ignoreLogged(
-            dumpSchema(sql, Path.join(schemaDirectory, "_schema.sql")),
+            dumpSchema(sql, Path.join(schemaDirectory, "_schema.sql"), table),
           ),
         )
       }
