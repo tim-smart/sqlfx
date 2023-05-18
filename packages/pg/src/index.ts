@@ -83,10 +83,8 @@ export const make = (
           .join(",")}`,
         values.flat(),
       ],
-      (columns, placeholders, valueAlias, valueColumns, values) => [
-        `${columns
-          .map(([c, v]) => `${c} = ${v}`)
-          .join(", ")} FROM (values ${placeholders
+      (_columns, placeholders, valueAlias, valueColumns, values) => [
+        `(values ${placeholders
           .map(_ => `(${_})`)
           .join(",")}) AS ${valueAlias}(${valueColumns.join(",")})`,
         values.flat(),
