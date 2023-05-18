@@ -69,22 +69,22 @@ export const make = (
 ): Effect.Effect<Scope, never, PgClient> =>
   Effect.gen(function* (_) {
     const compiler = makeCompiler(
-      "?",
+      _ => `$${_}`,
       options.transformQueryNames
         ? _ => defaultEscape(options.transformQueryNames!(_))
         : defaultEscape,
-      (placeholder, values) => [`(${placeholder})`, values],
-      (columns, placeholder, values) => [
-        `(${columns.join(",")}) VALUES ${values
-          .map(() => `(${placeholder})`)
+      (placeholders, values) => [`(${placeholders.join(",")})`, values],
+      (columns, placeholders, values) => [
+        `(${columns.join(",")}) VALUES ${placeholders
+          .map(_ => `(${_})`)
           .join(",")}`,
         values.flat(),
       ],
-      (columns, placeholder, valueAlias, valueColumns, values) => [
+      (columns, placeholders, valueAlias, valueColumns, values) => [
         `${columns
           .map(([c, v]) => `${c} = ${v}`)
-          .join(", ")} FROM (values ${values
-          .map(() => `(${placeholder})`)
+          .join(", ")} FROM (values ${placeholders
+          .map(_ => `(${_})`)
           .join(",")}) AS ${valueAlias}(${valueColumns.join(",")})`,
         values.flat(),
       ],
@@ -123,30 +123,36 @@ export const make = (
         ),
         pg => Effect.promise(() => pg.end()),
       ),
-      Effect.map(
-        (pg): Connection => ({
+      Effect.map((pg): Connection => {
+        const run = (sql: string, params?: ReadonlyArray<any>) => {
+          const query = pg.unsafe<any>(sql, params as any)
+          ;(query as any).options.prepare = true
+          return query
+        }
+        return {
           execute(statement) {
             const [sql, params] = compiler.compile(statement)
+            console.log(sql, params)
             return Effect.tryCatchPromiseInterrupt(
-              () => pg.unsafe(sql, params as any),
+              () => run(sql, params),
               error => SqlError((error as PostgresError).message),
             )
           },
           executeValues(statement) {
             const [sql, params] = compiler.compile(statement)
             return Effect.tryCatchPromiseInterrupt(
-              () => pg.unsafe(sql, params as any).values(),
+              () => run(sql, params).values(),
               error => SqlError((error as PostgresError).message),
             )
           },
           executeRaw(sql, params) {
             return Effect.tryCatchPromiseInterrupt(
-              () => pg.unsafe(sql, params as any),
+              () => run(sql, params),
               error => SqlError((error as PostgresError).message),
             )
           },
-        }),
-      ),
+        }
+      }),
     )
 
     const pool = yield* _(Pool.makeWithTTL(makeConnection, 0, 10, minutes(60)))
