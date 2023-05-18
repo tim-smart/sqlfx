@@ -56,7 +56,7 @@
   "peerDependencies": {
     "@effect/data": "^0.12",
     "@effect/io": "^0.25",
-    "@effect/schema": "^0.17"
+    "@effect/schema": "^0.19"
   },
   "devDependencies": {}
 }
