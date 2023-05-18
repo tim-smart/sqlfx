@@ -48,13 +48,10 @@ export const tag = Tag<MysqlClient>()
 export interface MysqlClientConfig {
   readonly host?: string
   readonly port?: number
-  readonly path?: string
-  readonly ssl?: boolean
   readonly database?: string
   readonly username?: string
   readonly password?: ConfigSecret.ConfigSecret
 
-  readonly idleTimeout?: Duration
   readonly connectTimeout?: Duration
 
   readonly minConnections?: number
@@ -104,6 +101,7 @@ export const make = (
             password: options.password
               ? ConfigSecret.value(options.password)
               : undefined,
+            connectTimeout: options.connectTimeout?.millis,
           }),
         ),
         _ =>
@@ -163,7 +161,7 @@ export const make = (
       ),
     )
 
-    return Object.assign(Client.make(Effect.scoped(pool.get()), pool.get()), {
+    return Object.assign(Client.make(pool.get(), pool.get()), {
       config: options,
     })
   })
