@@ -1,6 +1,6 @@
 ---
 title: Statement.ts
-nav_order: 5
+nav_order: 6
 parent: "@sqlfx/sql"
 ---
 
@@ -312,7 +312,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Primitive = string | number | bigint | boolean | Date | null
+export type Primitive = string | number | bigint | boolean | Date | null | Int8Array | Uint8Array
 ```
 
 Added in v1.0.0
@@ -395,7 +395,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const defaultEscape: (str: string) => string
+export declare const defaultEscape: (c: string) => (str: string) => string
 ```
 
 Added in v1.0.0

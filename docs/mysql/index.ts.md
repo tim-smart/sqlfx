@@ -1,7 +1,7 @@
 ---
 title: index.ts
 nav_order: 1
-parent: "@sqlfx/pg"
+parent: "@sqlfx/mysql"
 ---
 
 ## index overview
@@ -13,11 +13,11 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [constructor](#constructor)
-  - [PgClientConfig (interface)](#pgclientconfig-interface)
+  - [MysqlClientConfig (interface)](#mysqlclientconfig-interface)
   - [make](#make)
   - [makeLayer](#makelayer)
 - [model](#model)
-  - [PgClient (interface)](#pgclient-interface)
+  - [MysqlClient (interface)](#mysqlclient-interface)
 - [tag](#tag)
   - [tag](#tag-1)
 - [utils](#utils)
@@ -27,21 +27,18 @@ Added in v1.0.0
 
 # constructor
 
-## PgClientConfig (interface)
+## MysqlClientConfig (interface)
 
 **Signature**
 
 ```ts
-export interface PgClientConfig {
+export interface MysqlClientConfig {
   readonly host?: string
   readonly port?: number
-  readonly path?: string
-  readonly ssl?: boolean
   readonly database?: string
   readonly username?: string
   readonly password?: ConfigSecret.ConfigSecret
 
-  readonly idleTimeout?: Duration
   readonly connectTimeout?: Duration
 
   readonly minConnections?: number
@@ -59,7 +56,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: (options: PgClientConfig) => Effect.Effect<Scope, never, PgClient>
+export declare const make: (options: MysqlClientConfig) => Effect.Effect<Scope, never, MysqlClient>
 ```
 
 Added in v1.0.0
@@ -70,21 +67,21 @@ Added in v1.0.0
 
 ```ts
 export declare const makeLayer: (
-  config: Config.Config.Wrap<PgClientConfig>
-) => Layer.Layer<never, ConfigError, PgClient>
+  config: Config.Config.Wrap<MysqlClientConfig>
+) => Layer.Layer<never, ConfigError, MysqlClient>
 ```
 
 Added in v1.0.0
 
 # model
 
-## PgClient (interface)
+## MysqlClient (interface)
 
 **Signature**
 
 ```ts
-export interface PgClient extends Client.Client {
-  readonly config: PgClientConfig
+export interface MysqlClient extends Client.Client {
+  readonly config: MysqlClientConfig
 }
 ```
 
@@ -97,7 +94,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const tag: Tag<PgClient, PgClient>
+export declare const tag: Tag<MysqlClient, MysqlClient>
 ```
 
 Added in v1.0.0

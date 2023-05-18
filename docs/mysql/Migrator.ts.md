@@ -1,7 +1,7 @@
 ---
 title: Migrator.ts
 nav_order: 2
-parent: "@sqlfx/pg"
+parent: "@sqlfx/mysql"
 ---
 
 ## Migrator overview
@@ -27,7 +27,7 @@ Added in v1.0.0
 ```ts
 export declare const makeLayer: (
   options: _.MigratorOptions
-) => Layer.Layer<Pg.PgClient, _.MigrationError | SqlError, never>
+) => Layer.Layer<Sql.MysqlClient, _.MigrationError | SqlError, never>
 ```
 
 Added in v1.0.0
@@ -42,7 +42,7 @@ export declare const run: ({
   schemaDirectory,
   table,
 }: _.MigratorOptions) => Effect.Effect<
-  Pg.PgClient,
+  Sql.MysqlClient,
   SqlError | _.MigrationError,
   ReadonlyArray<readonly [id: number, name: string]>
 >

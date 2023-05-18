@@ -56,7 +56,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const SqlError: (message: string) => SqlError
+export declare const SqlError: (message: string, error: unknown) => SqlError
 ```
 
 Added in v1.0.0
@@ -104,6 +104,7 @@ export interface SqlError extends Data.Case {
   readonly [SqlFxErrorId]: SqlFxErrorId
   readonly _tag: 'SqlError'
   readonly message: string
+  readonly error: unknown
 }
 ```
 

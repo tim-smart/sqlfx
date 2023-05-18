@@ -19,7 +19,14 @@ import { defaultEscape, makeCompiler } from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
 import * as Mysql from "mysql2"
 
-export { transform }
+export {
+  /**
+   * Column renaming helpers.
+   *
+   * @since 1.0.0
+   */
+  transform,
+}
 
 /**
  * @category model
