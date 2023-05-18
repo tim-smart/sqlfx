@@ -68,10 +68,9 @@ export declare const makeCompiler: (
     values: ReadonlyArray<ReadonlyArray<Primitive>>
   ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
   onRecordUpdate: (
-    columns: ReadonlyArray<readonly [table: string, value: string]>,
     placeholders: ReadonlyArray<string>,
-    valueAlias: string,
-    valueColumns: ReadonlyArray<string>,
+    alias: string,
+    columns: ReadonlyArray<string>,
     values: ReadonlyArray<ReadonlyArray<Primitive>>
   ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
   onCustom: (kind: string, i0: unknown, i1: unknown) => readonly [sql: string, params: ReadonlyArray<Primitive>]
@@ -222,9 +221,9 @@ export interface Constructor {
 
   (value: ReadonlyArray<Primitive | Record<string, Primitive>>): ArrayHelper
   (value: ReadonlyArray<Record<string, Primitive>>): RecordInsertHelper
-  (value: ReadonlyArray<Record<string, Primitive>>, idColumn: string, identifier: string): RecordUpdateHelper
+  (value: ReadonlyArray<Record<string, Primitive>>, alias: string): RecordUpdateHelper
   (value: Record<string, Primitive>): RecordInsertHelper
-  (value: Record<string, Primitive>, idColumn: string, identifier: string): RecordUpdateHelper
+  (value: Record<string, Primitive>, alias: string): RecordUpdateHelper
 }
 ```
 
@@ -339,7 +338,6 @@ Added in v1.0.0
 export interface RecordUpdateHelper {
   readonly _tag: 'RecordUpdateHelper'
   readonly value: ReadonlyArray<Record<string, Primitive>>
-  readonly idColumn: string
   readonly alias: string
 }
 ```
