@@ -109,6 +109,12 @@ importers:
 
   packages/pg:
     dependencies:
+      '@effect/data':
+        specifier: ^0.12
+        version: 0.12.2
+      '@effect/io':
+        specifier: ^0.25.12
+        version: 0.25.12
       '@sqlfx/sql':
         specifier: workspace:*
         version: link:../sql/dist
@@ -116,12 +122,6 @@ importers:
         specifier: ^3.3.4
         version: 3.3.4
     devDependencies:
-      '@effect/data':
-        specifier: ^0.12
-        version: 0.12.2
-      '@effect/io':
-        specifier: ^0.25.12
-        version: 0.25.12
       '@effect/schema':
         specifier: ^0.19.2
         version: 0.19.2
@@ -133,13 +133,13 @@ importers:
   packages/sql:
     dependencies:
       '@effect/data':
-        specifier: ^0.12
+        specifier: ^0.12.0
         version: 0.12.2
       '@effect/io':
-        specifier: ^0.25
-        version: 0.25.11
+        specifier: ^0.25.12
+        version: 0.25.12
       '@effect/schema':
-        specifier: ^0.19
+        specifier: ^0.19.0
         version: 0.19.2
     publishDirectory: dist
 
@@ -685,12 +685,6 @@ packages:
 
   /@effect/data@0.12.2:
     resolution: {integrity: sha512-bmWRTcsSRG1FlBswT+D8SxW6r3c4B3pKJrjYfitCD03tXHnup5gLHaWqbFgIjiyYITS+UsJRRjVrNxvyGG4ZNQ==}
-
-  /@effect/io@0.25.11:
-    resolution: {integrity: sha512-loUIQTAjvxEHyaEEBfHadUrAxjJXa7t/YBSqrdSYMqepokCWK9yQN6exdjUI6k6DvWhp0SbdDIAoQ/9u7BoloQ==}
-    dependencies:
-      '@effect/data': 0.12.2
-    dev: false
 
   /@effect/io@0.25.12:
     resolution: {integrity: sha512-hZDAVq8UENvfptp4yZczU+33SvrqqreD5SSAbZfv3CYNRdtmyKiPrb5pjBJL52p9Br7Ka0Akvnm6KMkSM4JgGA==}
