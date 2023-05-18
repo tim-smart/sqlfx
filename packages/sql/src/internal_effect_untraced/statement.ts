@@ -380,7 +380,7 @@ class Compiler implements _.Compiler {
         }
 
         case "Parameter": {
-          sql += this.parameterPlaceholder
+          sql += placeholder()
           binds.push(segment.value)
           break
         }
