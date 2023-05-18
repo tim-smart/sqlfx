@@ -146,7 +146,7 @@ Added in v1.0.0
 ```ts
 export declare const unsafe: (
   acquirer: Connection.Acquirer
-) => <A extends Row>(sql: string, params?: ReadonlyArray<Primitive> | undefined) => Statement<A>
+) => <A extends object = Row>(sql: string, params?: ReadonlyArray<Primitive> | undefined) => Statement<A>
 ```
 
 Added in v1.0.0
@@ -222,7 +222,7 @@ export interface Constructor {
   (value: Record<string, Primitive>): RecordInsertHelper
   (value: Record<string, Primitive>, idColumn: string, identifier: string): RecordUpdateHelper
   (value: string): Identifier
-  <A extends Row>(strings: TemplateStringsArray, ...args: Array<Argument>): Statement<A>
+  <A extends object = Row>(strings: TemplateStringsArray, ...args: Array<Argument>): Statement<A>
 }
 ```
 
@@ -359,7 +359,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Statement<A extends Row> extends Fragment, Effect<never, SqlError, ReadonlyArray<A>> {
+export interface Statement<A> extends Fragment, Effect<never, SqlError, ReadonlyArray<A>> {
   readonly values: Effect<never, SqlError, ReadonlyArray<ReadonlyArray<Primitive>>>
 }
 ```
