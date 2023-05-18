@@ -44,7 +44,12 @@
       "@sqlfx/pg/test/*": ["./packages/pg/test/*"],
       "@sqlfx/pg/examples/*": ["./packages/pg/examples/*"],
       "@sqlfx/pg/*": ["./packages/pg/src/*"],
-      "@sqlfx/pg": ["./packages/pg/src/index.js"]
+      "@sqlfx/pg": ["./packages/pg/src/index.js"],
+
+      "@sqlfx/mysql/test/*": ["./packages/mysql/test/*"],
+      "@sqlfx/mysql/examples/*": ["./packages/mysql/examples/*"],
+      "@sqlfx/mysql/*": ["./packages/mysql/src/*"],
+      "@sqlfx/mysql": ["./packages/mysql/src/index.js"]
     },
     "plugins": [{ "name": "@effect/language-service" }]
   },

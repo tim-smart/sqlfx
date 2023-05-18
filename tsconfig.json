@@ -1,4 +1,8 @@
 {
   "extends": "./tsconfig.base.json",
-  "references": [{ "path": "packages/sql" }, { "path": "packages/pg" }]
+  "references": [
+    { "path": "packages/sql" },
+    { "path": "packages/pg" },
+    { "path": "packages/mysql" }
+  ]
 }

@@ -11,7 +11,12 @@
       "@sqlfx/pg/test/*": ["./packages/pg/build/test/*"],
       "@sqlfx/pg/examples/*": ["./packages/pg/build/examples/*"],
       "@sqlfx/pg/*": ["./packages/pg/build/esm/*"],
-      "@sqlfx/pg": ["./packages/pg/build/esm/index.js"]
+      "@sqlfx/pg": ["./packages/pg/build/esm/index.js"],
+
+      "@sqlfx/mysql/test/*": ["./packages/mysql/build/test/*"],
+      "@sqlfx/mysql/examples/*": ["./packages/mysql/build/examples/*"],
+      "@sqlfx/mysql/*": ["./packages/mysql/build/esm/*"],
+      "@sqlfx/mysql": ["./packages/mysql/build/esm/index.js"]
     }
   },
   "include": [

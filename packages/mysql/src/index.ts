@@ -13,11 +13,10 @@ import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
 import { defaultEscape, makeCompiler } from "@sqlfx/sql/Statement"
-import type { PostgresError } from "postgres"
-import postgres from "postgres"
 import * as Config from "@effect/io/Config"
 import * as Layer from "@effect/io/Layer"
 import * as transform from "@sqlfx/sql/Transform"
+import * as Mysql from "mysql2"
 
 export {
   /**
@@ -32,21 +31,21 @@ export {
  * @category model
  * @since 1.0.0
  */
-export interface PgClient extends Client.Client {
-  readonly config: PgClientConfig
+export interface MysqlClient extends Client.Client {
+  readonly config: MysqlClientConfig
 }
 
 /**
  * @category tag
  * @since 1.0.0
  */
-export const tag = Tag<PgClient>()
+export const tag = Tag<MysqlClient>()
 
 /**
  * @category constructor
  * @since 1.0.0
  */
-export interface PgClientConfig {
+export interface MysqlClientConfig {
   readonly host?: string
   readonly port?: number
   readonly path?: string
@@ -70,11 +69,11 @@ export interface PgClientConfig {
  * @since 1.0.0
  */
 export const make = (
-  options: PgClientConfig,
-): Effect.Effect<Scope, never, PgClient> =>
+  options: MysqlClientConfig,
+): Effect.Effect<Scope, never, MysqlClient> =>
   Effect.gen(function* (_) {
     const compiler = makeCompiler(
-      _ => `$${_}`,
+      _ => `?`,
       options.transformQueryNames
         ? _ => defaultEscape(options.transformQueryNames!(_))
         : defaultEscape,
@@ -97,70 +96,59 @@ export const make = (
     const makeConnection = pipe(
       Effect.acquireRelease(
         Effect.sync(() =>
-          postgres({
-            max: 1,
-            max_lifetime: 0,
-            idle_timeout: options.idleTimeout
-              ? Math.round(options.idleTimeout.millis / 1000)
-              : undefined,
-            connect_timeout: options.connectTimeout
-              ? Math.round(options.connectTimeout.millis / 1000)
-              : undefined,
-
-            transform: {
-              column: {
-                from: options.transformResultNames,
-              },
-            },
-
+          Mysql.createConnection({
             host: options.host,
             port: options.port,
-            ssl: options.ssl,
-            path: options.path,
             database: options.database,
-            username: options.username,
+            user: options.username,
             password: options.password
               ? ConfigSecret.value(options.password)
               : undefined,
           }),
         ),
-        pg => Effect.promise(() => pg.end()),
+        _ =>
+          Effect.async<never, never, void>(resume =>
+            _.end(() => resume(Effect.unit())),
+          ),
       ),
-      Effect.map((pg): Connection => {
+      Effect.map((conn): Connection => {
         const run = (sql: string, params?: ReadonlyArray<any>) => {
-          const query = pg.unsafe<any>(sql, params as any)
-          ;(query as any).options.prepare = true
-          return query
+          return Effect.async<never, SqlError, any>(resume =>
+            conn.query(sql, params, (error, result) => {
+              if (error) {
+                resume(Effect.fail(SqlError(error.message, error)))
+              } else {
+                resume(Effect.succeed(result))
+              }
+            }),
+          )
         }
         return {
           execute(statement) {
             const [sql, params] = compiler.compile(statement)
-            return Effect.tryCatchPromiseInterrupt(
-              () => run(sql, params),
-              error =>
-                SqlError((error as PostgresError).message, {
-                  ...(error as any).__proto__,
-                }),
-            )
+            return run(sql, params)
           },
           executeValues(statement) {
             const [sql, params] = compiler.compile(statement)
-            return Effect.tryCatchPromiseInterrupt(
-              () => run(sql, params).values(),
-              error =>
-                SqlError((error as PostgresError).message, {
-                  ...(error as any).__proto__,
-                }),
+            return Effect.async<never, SqlError, any>(resume =>
+              conn.query(
+                {
+                  sql,
+                  values: params,
+                  rowsAsArray: true,
+                },
+                (error, result) => {
+                  if (error) {
+                    resume(Effect.fail(SqlError(error.message, error)))
+                  } else {
+                    resume(Effect.succeed(result))
+                  }
+                },
+              ),
             )
           },
           executeRaw(sql, params) {
-            return Effect.tryCatchPromiseInterrupt(
-              () => run(sql, params),
-              error =>
-                SqlError((error as PostgresError).message, {
-                  ...(error as any).__proto__,
-                }),
-            )
+            return run(sql, params)
           },
         }
       }),
@@ -184,5 +172,5 @@ export const make = (
  * @category constructor
  * @since 1.0.0
  */
-export const makeLayer = (config: Config.Config.Wrap<PgClientConfig>) =>
+export const makeLayer = (config: Config.Config.Wrap<MysqlClientConfig>) =>
   Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
