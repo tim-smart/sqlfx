@@ -1,5 +1,11 @@
 # @sqlfx/pg
 
+## 0.1.3
+
+### Patch Changes
+
+- [`436c026`](https://github.com/tim-smart/sqlfx/commit/436c026cdbe0d535cd3291d3ecd8e1b6d93bdeee) Thanks [@tim-smart](https://github.com/tim-smart)! - only generate FROM in update helper
+
 ## 0.1.2
 
 ### Patch Changes
