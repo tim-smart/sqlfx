@@ -6,6 +6,10 @@ import * as Layer from "@effect/io/Layer"
 import * as Sql from "@sqlfx/mysql"
 import type { SqlError } from "@sqlfx/sql/Error"
 import * as _ from "@sqlfx/sql/Migrator"
+import { execFile } from "node:child_process"
+import * as NFS from "node:fs"
+import * as Path from "node:path"
+import * as ConfigSecret from "@effect/io/Config/Secret"
 
 /**
  * @category constructor
@@ -31,13 +35,71 @@ export const run: ({
       )
     `
   },
-  lockTable(sql, table) {
-    return sql`
-      LOCK TABLES ${sql(table)} READ
-    `
-  },
-  dumpSchema() {
-    return Effect.unit()
+  dumpSchema(sql, path, table) {
+    const mysqlDump = (args: Array<string>) =>
+      Effect.map(
+        Effect.async<never, _.MigrationError, string>(resume => {
+          execFile(
+            "mysqldump",
+            [
+              ...(sql.config.username ? ["-u", sql.config.username] : []),
+              ...(sql.config.database ? [sql.config.database] : []),
+              "--skip-comments",
+              "--compact",
+              ...args,
+            ],
+            {
+              env: {
+                PATH: process.env.PATH,
+                MYSQL_HOST: sql.config.host,
+                MYSQL_TCP_PORT: sql.config.port?.toString(),
+                MYSQL_PWD: sql.config.password
+                  ? ConfigSecret.value(sql.config.password)
+                  : undefined,
+              },
+            },
+            (error, sql) => {
+              if (error) {
+                resume(
+                  Effect.fail(
+                    _.MigrationError({
+                      reason: "failed",
+                      message: `Failed to dump schema: ${error}`,
+                    }),
+                  ),
+                )
+              } else {
+                resume(Effect.succeed(sql))
+              }
+            },
+          )
+        }),
+        _ =>
+          _.replace(/^\/\*.*$/gm, "")
+            .replace(/\n{2,}/gm, "\n\n")
+            .trim(),
+      )
+
+    const dumpSchema = mysqlDump(["--no-data"])
+
+    const dumpMigrations = mysqlDump(["--no-create-info", "--tables", table])
+
+    const dumpAll = Effect.map(
+      Effect.zipPar(dumpSchema, dumpMigrations),
+      ([schema, migrations]) => schema + "\n\n" + migrations,
+    )
+
+    const dumpFile = (path: string) =>
+      Effect.flatMap(dumpAll, sql =>
+        Effect.sync(() => {
+          NFS.mkdirSync(Path.dirname(path), {
+            recursive: true,
+          })
+          NFS.writeFileSync(path, sql)
+        }),
+      )
+
+    return dumpFile(path)
   },
 })
 

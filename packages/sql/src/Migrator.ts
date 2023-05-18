@@ -36,7 +36,12 @@ export interface Migration {
  */
 export interface MigrationError extends Data.Case {
   readonly _tag: "MigrationError"
-  readonly reason: "bad-state" | "import-error" | "failed" | "duplicates"
+  readonly reason:
+    | "bad-state"
+    | "import-error"
+    | "failed"
+    | "duplicates"
+    | "locked"
   readonly message: string
 }
 /**
@@ -55,7 +60,7 @@ export const make =
     dumpSchema,
     ensureTable,
     getClient,
-    lockTable,
+    lockTable = () => Effect.unit(),
   }: {
     getClient: Effect.Effect<R, SqlError, R>
     dumpSchema: (
@@ -64,7 +69,7 @@ export const make =
       migrationsTable: string,
     ) => Effect.Effect<never, MigrationError, void>
     ensureTable: (sql: R, table: string) => Effect.Effect<never, SqlError, void>
-    lockTable: (sql: R, table: string) => Effect.Effect<never, SqlError, void>
+    lockTable?: (sql: R, table: string) => Effect.Effect<never, SqlError, void>
   }) =>
   ({
     directory,
@@ -78,17 +83,14 @@ export const make =
     Effect.gen(function* (_) {
       const sql = yield* _(getClient)
       const ensureMigrationsTable = ensureTable(sql, table)
-      const lockMigrationsTable = lockTable(sql, table)
 
-      const insertMigration = (id: number, name: string) => sql`
-      INSERT INTO ${sql(table)} (
-        migration_id,
-        name
-      ) VALUES (
-        ${id},
-        ${name}
-      )
-    `
+      const insertMigrations = (
+        rows: ReadonlyArray<[id: number, name: string]>,
+      ) => sql`
+        INSERT INTO ${sql(table)}
+        ${sql(rows.map(([migration_id, name]) => ({ migration_id, name })))}
+      `
+
       const latestMigration = Effect.map(
         sql<Migration>`
         SELECT migration_id, name, created_at FROM ${sql(
@@ -111,7 +113,7 @@ export const make =
           NFS.readdirSync(directory)
             .map(_ =>
               Option.fromNullable(
-                Path.basename(_).match(/^(\d+)_([^.]+)\.js$/),
+                Path.basename(_).match(/^(\d+)_([^.]+)\.(js|ts)$/),
               ),
             )
             .flatMap(
@@ -135,15 +137,15 @@ export const make =
         return pipe(
           Effect.tryCatchPromise(
             () => import(fullPath),
-            () =>
+            _ =>
               MigrationError({
                 reason: "import-error",
-                message: `Could not import migration: ${fullPath}`,
+                message: `Could not import migration: ${fullPath}\n\n${_}`,
               }),
           ),
           Effect.flatMap(_ =>
             _.default
-              ? Effect.succeed(_.default)
+              ? Effect.succeed(_.default?.default ?? _.default)
               : Effect.fail(
                   MigrationError({
                     reason: "import-error",
@@ -168,20 +170,17 @@ export const make =
         name: string,
         effect: Effect.Effect<never, never, unknown>,
       ) =>
-        pipe(
-          Effect.orDieWith(effect, _ =>
-            MigrationError({
-              reason: "failed",
-              message: `Migration ${id}_${name} failed: ${JSON.stringify(_)}`,
-            }),
-          ),
-          Effect.zipRight(insertMigration(id, name)),
+        Effect.orDieWith(effect, _ =>
+          MigrationError({
+            reason: "failed",
+            message: `Migration "${id}_${name}" failed: ${JSON.stringify(_)}`,
+          }),
         )
 
       // === run
 
       const run = Effect.gen(function* (_) {
-        yield* _(lockMigrationsTable)
+        yield* _(lockTable(sql, table))
 
         const [latestMigrationId, current] = yield* _(
           Effect.all(
@@ -227,6 +226,18 @@ export const make =
           ])
         }
 
+        if (required.length > 0) {
+          yield* _(
+            insertMigrations(required.map(([id, name]) => [id, name])),
+            Effect.mapError(_ =>
+              MigrationError({
+                reason: "locked",
+                message: "Migrations already running",
+              }),
+            ),
+          )
+        }
+
         yield* _(
           Effect.forEachDiscard(required, ([id, name, effect]) =>
             pipe(
@@ -257,13 +268,24 @@ export const make =
       })
 
       yield* _(ensureMigrationsTable)
-      const completed = yield* _(sql.withTransaction(run))
+      const completed = yield* _(
+        sql.withTransaction(run),
+        Effect.catchTag("MigrationError", _ =>
+          _.reason === "locked"
+            ? Effect.as(
+                Effect.logInfo(
+                  "Migrations skipped - running in another process",
+                ),
+                [],
+              )
+            : Effect.fail(_),
+        ),
+      )
 
       if (completed.length > 0) {
         yield* _(
-          Effect.ignoreLogged(
-            dumpSchema(sql, Path.join(schemaDirectory, "_schema.sql"), table),
-          ),
+          dumpSchema(sql, Path.join(schemaDirectory, "_schema.sql"), table),
+          Effect.ignoreLogged,
         )
       }
 

@@ -2,6 +2,7 @@
  * @since 1.0.0
  */
 import { Tag } from "@effect/data/Context"
+import * as Debug from "@effect/data/Debug"
 import type { Duration } from "@effect/data/Duration"
 import { minutes } from "@effect/data/Duration"
 import { pipe } from "@effect/data/Function"
@@ -104,9 +105,13 @@ export const make = (
           return Effect.async<never, SqlError, any>(resume =>
             conn.query(sql, params, (error, result) => {
               if (error) {
-                resume(Effect.fail(SqlError(error.message, error)))
+                resume(
+                  Debug.untraced(() =>
+                    Effect.fail(SqlError(error.message, error)),
+                  ),
+                )
               } else {
-                resume(Effect.succeed(result))
+                resume(Debug.untraced(() => Effect.succeed(result)))
               }
             }),
           )
