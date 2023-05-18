@@ -155,7 +155,6 @@ class RecordUpdateHelper implements _.RecordUpdateHelper {
   readonly _tag = "RecordUpdateHelper"
   constructor(
     readonly value: ReadonlyArray<Record<string, _.Primitive>>,
-    readonly idColumn: string,
     readonly alias: string,
   ) {}
 }
@@ -186,7 +185,7 @@ export const make = (acquirer: Connection.Acquirer): _.Constructor =>
         typeof strings[0] === "object"
       ) {
         if (typeof args[0] === "string") {
-          return new RecordUpdateHelper(strings, args[0], args[1])
+          return new RecordUpdateHelper(strings, args[0])
         }
 
         return new RecordInsertHelper(strings)
@@ -196,7 +195,7 @@ export const make = (acquirer: Connection.Acquirer): _.Constructor =>
       return new Identifier(strings)
     } else if (typeof strings === "object") {
       if (typeof args[0] === "string") {
-        return new RecordUpdateHelper([strings as any], args[0], args[1])
+        return new RecordUpdateHelper([strings as any], args[0])
       }
       return new RecordInsertHelper([strings as any])
     }
@@ -334,10 +333,9 @@ class Compiler implements _.Compiler {
       values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
     ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
     readonly onRecordUpdate: (
-      columns: ReadonlyArray<readonly [table: string, value: string]>,
       placeholders: ReadonlyArray<string>,
       alias: string,
-      valueColumns: ReadonlyArray<string>,
+      columns: ReadonlyArray<string>,
       values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
     ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
     readonly onCustom: (
@@ -412,12 +410,7 @@ class Compiler implements _.Compiler {
 
         case "RecordUpdateHelper": {
           const keys = Object.keys(segment.value[0])
-          const keysWithoutId = keys.filter(_ => _ !== segment.idColumn)
           const [s, b] = this.onRecordUpdate(
-            keysWithoutId.map(_ => [
-              this.onIdentifier(_),
-              this.onIdentifier(`${segment.alias}.${_}`),
-            ]),
             placeholders(
               generatePlaceholder(placeholder, keys.length),
               segment.value.length,
@@ -458,10 +451,9 @@ export const makeCompiler = (
     values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
   ) => readonly [sql: string, params: ReadonlyArray<_.Primitive>],
   onRecordUpdate: (
-    columns: ReadonlyArray<readonly [table: string, value: string]>,
     placeholders: ReadonlyArray<string>,
-    valueAlias: string,
-    valueColumns: ReadonlyArray<string>,
+    alias: string,
+    columns: ReadonlyArray<string>,
     values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
   ) => readonly [sql: string, params: ReadonlyArray<_.Primitive>],
   onCustom: (
