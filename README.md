@@ -1,8 +1,8 @@
-# pgfx
+# sqlfx
 
-A simple effect wrapper around postgres.js
+A SQL toolkit for Effect-TS
 
-https://tim-smart.github.io/pgfx/modules/index.ts.html
+https://tim-smart.github.io/sqlfx
 
 ## Basic example
 
@@ -10,7 +10,7 @@ https://tim-smart.github.io/pgfx/modules/index.ts.html
 import { pipe } from "@effect/data/Function"
 import * as Config from "@effect/io/Config"
 import * as Effect from "@effect/io/Effect"
-import * as Pg from "pgfx"
+import * as Pg from "@sqlfx/pg"
 
 const PgLive = Pg.makeLayer({
   database: Config.succeed("effect_pg_dev"),
@@ -39,7 +39,7 @@ import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
 import { SchemaClass } from "effect-schema-class"
-import * as Pg from "pgfx"
+import * as Pg from "@sqlfx/pg"
 
 class Person extends SchemaClass({
   id: Schema.number,
@@ -61,12 +61,7 @@ export const makePersonService = Effect.gen(function* (_) {
     InsertPersonSchema,
     Person.schema(),
     requests =>
-      sql<{
-        readonly id: number
-        readonly name: string
-        readonly createdAt: Date
-        readonly updatedAt: Date
-      }>`
+      sql`
         INSERT INTO people
         ${sql(requests)}
         RETURNING people.*
@@ -83,7 +78,7 @@ export const makePersonService = Effect.gen(function* (_) {
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
 import { SchemaClass } from "effect-schema-class"
-import * as Pg from "pgfx"
+import * as Pg from "@sqlfx/pg"
 
 class Person extends SchemaClass({
   id: Schema.number,
@@ -100,13 +95,7 @@ export const makePersonService = Effect.gen(function* (_) {
     Schema.number,
     Person.schema(),
     _ => _.id,
-    ids =>
-      sql<{
-        readonly id: number
-        readonly name: string
-        readonly createdAt: Date
-        readonly updatedAt: Date
-      }>`SELECT * FROM people WHERE id IN ${sql(ids)}`,
+    ids => sql`SELECT * FROM people WHERE id IN ${sql(ids)}`,
   )
 
   const getById = (id: number) =>
@@ -128,7 +117,7 @@ Here is an example migration:
 // src/migrations/0001_add_users.ts
 
 import * as Effect from "@effect/io/Effect"
-import * as Pg from "pgfx"
+import * as Pg from "@sqlfx/pg"
 
 export default Effect.flatMap(
   Pg.tag,
@@ -149,8 +138,8 @@ To run your migrations:
 // src/main.ts
 
 import * as Effect from "@effect/io/Effect"
-import * as Pg from "pgfx"
-import * as Migrator from "pgfx/Migrator"
+import * as Pg from "@sqlfx/pg"
+import * as Migrator from "@sqlfx/pg/Migrator"
 import * as Config from "@effect/io/Config"
 import { fileURLToPath } from "node:url"
 import * as Layer from "@effect/io/Layer"

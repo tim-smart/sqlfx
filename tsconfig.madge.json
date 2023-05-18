@@ -4,9 +4,23 @@
     "allowJs": true,
     "baseUrl": ".",
     "paths": {
-      "pgfx": ["./build/esm/index.js"],
-      "pgfx/*": ["./build/esm/*"]
+      "@sqlfx/sql/test/*": ["./packages/sql/build/test/*"],
+      "@sqlfx/sql/examples/*": ["./packages/sql/build/examples/*"],
+      "@sqlfx/sql/*": ["./packages/sql/build/esm/*"],
+
+      "@sqlfx/pg/test/*": ["./packages/pg/build/test/*"],
+      "@sqlfx/pg/examples/*": ["./packages/pg/build/examples/*"],
+      "@sqlfx/pg/*": ["./packages/pg/build/esm/*"],
+      "@sqlfx/pg": ["./packages/pg/build/esm/index.js"]
     }
   },
-  "include": ["./build/esm/**/*.js"]
+  "include": [
+    "./packages/sql/build/esm/**/*.js",
+    "./packages/sql/build/test/**/*.js",
+    "./packages/sql/build/examples/**/*.js",
+
+    "./packages/pg/build/esm/**/*.js",
+    "./packages/pg/build/test/**/*.js",
+    "./packages/pg/build/examples/**/*.js"
+  ]
 }
