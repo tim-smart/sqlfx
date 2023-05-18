@@ -175,73 +175,83 @@ const isPrimitive = (u: unknown): u is _.Primitive =>
 
 /** @internal */
 export const make = (acquirer: Connection.Acquirer): _.Constructor =>
-  function sql(strings: unknown, ...args: Array<any>): any {
-    if (Array.isArray(strings) && "raw" in strings) {
-      return statement(acquirer, strings as TemplateStringsArray, ...args)
-    } else if (Array.isArray(strings)) {
-      if (
-        strings.length > 0 &&
-        !isPrimitive(strings[0]) &&
-        typeof strings[0] === "object"
-      ) {
-        if (typeof args[0] === "string") {
-          return new RecordUpdateHelper(strings, args[0])
+  Debug.methodWithTrace(
+    trace =>
+      function sql(strings: unknown, ...args: Array<any>): any {
+        if (Array.isArray(strings) && "raw" in strings) {
+          return statement(
+            acquirer,
+            trace,
+            strings as TemplateStringsArray,
+            ...args,
+          )
+        } else if (Array.isArray(strings)) {
+          if (
+            strings.length > 0 &&
+            !isPrimitive(strings[0]) &&
+            typeof strings[0] === "object"
+          ) {
+            if (typeof args[0] === "string") {
+              return new RecordUpdateHelper(strings, args[0])
+            }
+
+            return new RecordInsertHelper(strings)
+          }
+          return new ArrayHelper(strings)
+        } else if (typeof strings === "string") {
+          return new Identifier(strings)
+        } else if (typeof strings === "object") {
+          if (typeof args[0] === "string") {
+            return new RecordUpdateHelper([strings as any], args[0])
+          }
+          return new RecordInsertHelper([strings as any])
         }
 
-        return new RecordInsertHelper(strings)
-      }
-      return new ArrayHelper(strings)
-    } else if (typeof strings === "string") {
-      return new Identifier(strings)
-    } else if (typeof strings === "object") {
-      if (typeof args[0] === "string") {
-        return new RecordUpdateHelper([strings as any], args[0])
-      }
-      return new RecordInsertHelper([strings as any])
+        throw "absurd"
+      },
+  )
+
+/** @internal */
+export function statement(
+  acquirer: Connection.Acquirer,
+  trace: Debug.Trace,
+  strings: TemplateStringsArray,
+  ...args: Array<_.Argument>
+): _.Statement<Row> {
+  const segments: Array<_.Segment> =
+    strings[0].length > 0 ? [new Literal(strings[0])] : []
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i]
+
+    if (isFragment(arg)) {
+      segments.push(...arg.segments)
+    } else if (isHelper(arg)) {
+      segments.push(arg)
+    } else {
+      segments.push(new Parameter(arg))
     }
 
-    throw "absurd"
+    if (strings[i + 1].length > 0) {
+      segments.push(new Literal(strings[i + 1]))
+    }
   }
 
-/** @internal */
-export const statement = Debug.methodWithTrace(
-  trace =>
-    function statement(
-      acquirer: Connection.Acquirer,
-      strings: TemplateStringsArray,
-      ...args: Array<_.Argument>
-    ): _.Statement<Row> {
-      const segments: Array<_.Segment> =
-        strings[0].length > 0 ? [new Literal(strings[0])] : []
-
-      for (let i = 0; i < args.length; i++) {
-        const arg = args[i]
-
-        if (isFragment(arg)) {
-          segments.push(...arg.segments)
-        } else if (isHelper(arg)) {
-          segments.push(arg)
-        } else {
-          segments.push(new Parameter(arg))
-        }
-
-        if (strings[i + 1].length > 0) {
-          segments.push(new Literal(strings[i + 1]))
-        }
-      }
-
-      return new StatementPrimitive<Row>(segments, acquirer).traced(trace)
-    },
-)
+  return new StatementPrimitive<Row>(segments, acquirer).traced(trace)
+}
 
 /** @internal */
-export const unsafe =
-  (acquirer: Connection.Acquirer) =>
-  <A extends object = Row>(
-    sql: string,
-    params?: ReadonlyArray<_.Primitive>,
-  ): _.Statement<A> =>
-    new StatementPrimitive([new Literal(sql, params)], acquirer)
+export const unsafe = (acquirer: Connection.Acquirer) =>
+  Debug.methodWithTrace(
+    trace =>
+      <A extends object = Row>(
+        sql: string,
+        params?: ReadonlyArray<_.Primitive>,
+      ): _.Statement<A> =>
+        new StatementPrimitive<A>([new Literal(sql, params)], acquirer).traced(
+          trace,
+        ),
+  )
 
 /** @internal */
 export const unsafeFragment = (
@@ -505,6 +515,9 @@ const generatePlaceholder = (evaluate: () => string, len: number) => {
 }
 
 /** @internal */
-export const defaultEscape = function escape(str: string) {
-  return '"' + str.replace(/"/g, '""').replace(/\./g, '"."') + '"'
+export const defaultEscape = (c: string) => {
+  const re = new RegExp(c, "g")
+  const double = c + c
+  const dot = c + "." + c
+  return (str: string) => c + str.replace(re, double).replace(/\./g, dot) + c
 }

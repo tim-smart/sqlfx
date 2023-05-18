@@ -1,15 +1,15 @@
 /**
  * @since 1.0.0
  */
-import * as ConfigSecret from "@effect/io/Config/Secret"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
-import * as Pg from "@sqlfx/pg"
+import * as Sql from "@sqlfx/mysql"
 import type { SqlError } from "@sqlfx/sql/Error"
 import * as _ from "@sqlfx/sql/Migrator"
 import { execFile } from "node:child_process"
 import * as NFS from "node:fs"
 import * as Path from "node:path"
+import * as ConfigSecret from "@effect/io/Config/Secret"
 
 /**
  * @category constructor
@@ -20,46 +20,42 @@ export const run: ({
   schemaDirectory,
   table,
 }: _.MigratorOptions) => Effect.Effect<
-  Pg.PgClient,
+  Sql.MysqlClient,
   SqlError | _.MigrationError,
   ReadonlyArray<readonly [id: number, name: string]>
 > = _.make({
-  getClient: Pg.tag,
+  getClient: Sql.tag,
   ensureTable(sql, table) {
-    return Effect.catchAll(
-      sql`select ${table}::regclass`,
-      () => sql`
-        CREATE TABLE ${sql(table)} (
-          migration_id integer primary key,
-          created_at timestamp with time zone not null default now(),
-          name text
-        )
-      `,
-    )
-  },
-  lockTable(sql, table) {
     return sql`
-      LOCK TABLE ${sql(table)} IN ACCESS EXCLUSIVE MODE
+      CREATE TABLE IF NOT EXISTS ${sql(table)} (
+        migration_id INTEGER UNSIGNED NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        name VARCHAR(255) NOT NULL,
+        PRIMARY KEY (migration_id)
+      )
     `
   },
   dumpSchema(sql, path, table) {
-    const pgDump = (args: Array<string>) =>
+    const mysqlDump = (args: Array<string>) =>
       Effect.map(
         Effect.async<never, _.MigrationError, string>(resume => {
           execFile(
-            "pg_dump",
-            [...args, "--no-owner", "--no-privileges"],
+            "mysqldump",
+            [
+              ...(sql.config.username ? ["-u", sql.config.username] : []),
+              ...(sql.config.database ? [sql.config.database] : []),
+              "--skip-comments",
+              "--compact",
+              ...args,
+            ],
             {
               env: {
                 PATH: process.env.PATH,
-                PGHOST: sql.config.host,
-                PGPORT: sql.config.port?.toString(),
-                PGUSER: sql.config.username,
-                PGPASSWORD: sql.config.password
+                MYSQL_HOST: sql.config.host,
+                MYSQL_TCP_PORT: sql.config.port?.toString(),
+                MYSQL_PWD: sql.config.password
                   ? ConfigSecret.value(sql.config.password)
                   : undefined,
-                PGDATABASE: sql.config.database,
-                PGSSLMODE: sql.config.ssl ? "require" : "prefer",
               },
             },
             (error, sql) => {
@@ -68,7 +64,7 @@ export const run: ({
                   Effect.fail(
                     _.MigrationError({
                       reason: "failed",
-                      message: "Failed to dump schema",
+                      message: `Failed to dump schema: ${error}`,
                     }),
                   ),
                 )
@@ -79,28 +75,22 @@ export const run: ({
           )
         }),
         _ =>
-          _.replace(/^--.*$/gm, "")
-            .replace(/^SET .*$/gm, "")
-            .replace(/^SELECT pg_catalog\..*$/gm, "")
+          _.replace(/^\/\*.*$/gm, "")
             .replace(/\n{2,}/gm, "\n\n")
             .trim(),
       )
 
-    const pgDumpSchema = pgDump(["--schema-only"])
+    const dumpSchema = mysqlDump(["--no-data"])
 
-    const pgDumpMigrations = pgDump([
-      "--column-inserts",
-      "--data-only",
-      `--table=${table}`,
-    ])
+    const dumpMigrations = mysqlDump(["--no-create-info", "--tables", table])
 
-    const pgDumpAll = Effect.map(
-      Effect.zipPar(pgDumpSchema, pgDumpMigrations),
+    const dumpAll = Effect.map(
+      Effect.zipPar(dumpSchema, dumpMigrations),
       ([schema, migrations]) => schema + "\n\n" + migrations,
     )
 
-    const pgDumpFile = (path: string) =>
-      Effect.flatMap(pgDumpAll, sql =>
+    const dumpFile = (path: string) =>
+      Effect.flatMap(dumpAll, sql =>
         Effect.sync(() => {
           NFS.mkdirSync(Path.dirname(path), {
             recursive: true,
@@ -109,7 +99,7 @@ export const run: ({
         }),
       )
 
-    return pgDumpFile(path)
+    return dumpFile(path)
   },
 })
 
@@ -119,5 +109,5 @@ export const run: ({
  */
 export const makeLayer = (
   options: _.MigratorOptions,
-): Layer.Layer<Pg.PgClient, _.MigrationError | SqlError, never> =>
+): Layer.Layer<Sql.MysqlClient, _.MigrationError | SqlError, never> =>
   Layer.effectDiscard(run(options))
