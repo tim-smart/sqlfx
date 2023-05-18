@@ -53,7 +53,7 @@ export const MigrationError: Data.Case.Constructor<MigrationError, "_tag"> =
 export const run = ({
   directory,
   schemaDirectory,
-  table = "pgfx_migrations",
+  table = "sqlfx_migrations",
 }: MigratorOptions): Effect.Effect<
   Pg.PgClient,
   MigrationError | SqlError,
@@ -66,7 +66,7 @@ export const run = ({
     const ensureMigrationsTable = Effect.catchAll(
       sql`select ${table}::regclass`,
       () => sql`
-        CREATE TABLE IF NOT EXISTS ${sql(table)} (
+        CREATE TABLE ${sql(table)} (
           migration_id integer primary key,
           created_at timestamp with time zone not null default now(),
           name text
