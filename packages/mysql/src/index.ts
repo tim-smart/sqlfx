@@ -5,27 +5,20 @@ import { Tag } from "@effect/data/Context"
 import type { Duration } from "@effect/data/Duration"
 import { minutes } from "@effect/data/Duration"
 import { pipe } from "@effect/data/Function"
+import * as Config from "@effect/io/Config"
 import * as ConfigSecret from "@effect/io/Config/Secret"
 import * as Effect from "@effect/io/Effect"
+import * as Layer from "@effect/io/Layer"
 import * as Pool from "@effect/io/Pool"
 import type { Scope } from "@effect/io/Scope"
 import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
-import { defaultEscape, makeCompiler } from "@sqlfx/sql/Statement"
-import * as Config from "@effect/io/Config"
-import * as Layer from "@effect/io/Layer"
+import { makeCompiler } from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
 import * as Mysql from "mysql2"
 
-export {
-  /**
-   * Column renaming helpers.
-   *
-   * @since 1.0.0
-   */
-  transform,
-}
+export { transform }
 
 /**
  * @category model
@@ -61,6 +54,10 @@ export interface MysqlClientConfig {
   readonly transformQueryNames?: (str: string) => string
 }
 
+const escape = function escape(str: string) {
+  return "`" + str.replace(/`/g, "``").replace(/\./g, "`.`") + "`"
+}
+
 /**
  * @category constructor
  * @since 1.0.0
@@ -72,8 +69,8 @@ export const make = (
     const compiler = makeCompiler(
       _ => `?`,
       options.transformQueryNames
-        ? _ => defaultEscape(options.transformQueryNames!(_))
-        : defaultEscape,
+        ? _ => escape(options.transformQueryNames!(_))
+        : escape,
       (placeholders, values) => [`(${placeholders.join(",")})`, values],
       (columns, placeholders, values) => [
         `(${columns.join(",")}) VALUES ${placeholders
@@ -81,12 +78,7 @@ export const make = (
           .join(",")}`,
         values.flat(),
       ],
-      (placeholders, valueAlias, valueColumns, values) => [
-        `(values ${placeholders
-          .map(_ => `(${_})`)
-          .join(",")}) AS ${valueAlias}(${valueColumns.join(",")})`,
-        values.flat(),
-      ],
+      () => ["", []],
       () => ["", []],
     )
 
