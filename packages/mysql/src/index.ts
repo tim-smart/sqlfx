@@ -14,7 +14,7 @@ import type { Scope } from "@effect/io/Scope"
 import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
-import { makeCompiler } from "@sqlfx/sql/Statement"
+import { defaultEscape, makeCompiler } from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
 import * as Mysql from "mysql2"
 
@@ -54,9 +54,7 @@ export interface MysqlClientConfig {
   readonly transformQueryNames?: (str: string) => string
 }
 
-const escape = function escape(str: string) {
-  return "`" + str.replace(/`/g, "``").replace(/\./g, "`.`") + "`"
-}
+const escape = defaultEscape("`")
 
 /**
  * @category constructor

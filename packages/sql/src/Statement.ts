@@ -282,4 +282,5 @@ export const makeCompiler: (
 /**
  * @since 1.0.0
  */
-export const defaultEscape: (str: string) => string = internal.defaultEscape
+export const defaultEscape: (c: string) => (str: string) => string =
+  internal.defaultEscape

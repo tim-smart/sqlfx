@@ -65,6 +65,8 @@ export interface PgClientConfig {
   readonly transformQueryNames?: (str: string) => string
 }
 
+const escape = defaultEscape('"')
+
 /**
  * @category constructor
  * @since 1.0.0
@@ -76,8 +78,8 @@ export const make = (
     const compiler = makeCompiler(
       _ => `$${_}`,
       options.transformQueryNames
-        ? _ => defaultEscape(options.transformQueryNames!(_))
-        : defaultEscape,
+        ? _ => escape(options.transformQueryNames!(_))
+        : escape,
       (placeholders, values) => [`(${placeholders.join(",")})`, values],
       (columns, placeholders, values) => [
         `(${columns.join(",")}) VALUES ${placeholders

@@ -505,6 +505,9 @@ const generatePlaceholder = (evaluate: () => string, len: number) => {
 }
 
 /** @internal */
-export const defaultEscape = function escape(str: string) {
-  return '"' + str.replace(/"/g, '""').replace(/\./g, '"."') + '"'
+export const defaultEscape = (c: string) => {
+  const re = new RegExp(c, "g")
+  const double = c + c
+  const dot = c + "." + c
+  return (str: string) => c + str.replace(re, double).replace(/\./g, dot) + c
 }
