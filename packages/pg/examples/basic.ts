@@ -11,9 +11,7 @@ const PgLive = Pg.makeLayer({
 
 const program = Effect.gen(function* (_) {
   const sql = yield* _(Pg.tag)
-  const result = yield* _(
-    sql.withTransaction(sql`SELECT * FROM people LIMIT 1`),
-  )
+  const result = yield* _(sql`SELECT * FROM people LIMIT 1`.values)
   console.log(result)
 })
 

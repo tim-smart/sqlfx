@@ -24,7 +24,7 @@ export interface MigratorOptions {
   readonly table?: string
 }
 
-type Migration = {
+interface Migration {
   readonly id: number
   readonly name: string
   readonly createdAt: Date

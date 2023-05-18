@@ -33,37 +33,43 @@ export function make(
       ([conn]) => Effect.succeed(conn),
     ),
   )
-  const withTransaction = <R, E, A>(
-    effect: Effect.Effect<R, E, A>,
-  ): Effect.Effect<R, E | SqlError, A> =>
-    Effect.scoped(
-      Effect.acquireUseRelease(
-        pipe(
-          Effect.serviceOption(TransactionConn),
-          Effect.flatMap(
-            Option.match(
-              () => Effect.map(transactionAcquirer, conn => [conn, 0] as const),
-              ([conn, count]) => Effect.succeed([conn, count + 1] as const),
+  const withTransaction = Debug.methodWithTrace(
+    trace =>
+      <R, E, A>(
+        effect: Effect.Effect<R, E, A>,
+      ): Effect.Effect<R, E | SqlError, A> =>
+        Effect.scoped(
+          Effect.acquireUseRelease(
+            pipe(
+              Effect.serviceOption(TransactionConn),
+              Effect.flatMap(
+                Option.match(
+                  () =>
+                    Effect.map(transactionAcquirer, conn => [conn, 0] as const),
+                  ([conn, count]) => Effect.succeed([conn, count + 1] as const),
+                ),
+              ),
+              Effect.tap(([conn, id]) =>
+                id > 0
+                  ? conn.executeRaw(`SAVEPOINT sqlfx${id}`)
+                  : conn.executeRaw("BEGIN"),
+              ),
             ),
+            ([conn, id]) =>
+              Effect.provideService(effect, TransactionConn, [conn, id]),
+            ([conn, id], exit) =>
+              Exit.isSuccess(exit)
+                ? id > 0
+                  ? Effect.unit()
+                  : Effect.orDie(conn.executeRaw("COMMIT"))
+                : id > 0
+                ? Effect.orDie(
+                    conn.executeRaw(`ROLLBACK TO SAVEPOINT sqlfx${id}`),
+                  )
+                : Effect.orDie(conn.executeRaw("ROLLBACK")),
           ),
-          Effect.tap(([conn, id]) =>
-            id > 0
-              ? conn.executeRaw(`SAVEPOINT sqlfx${id}`)
-              : conn.executeRaw("BEGIN"),
-          ),
-        ),
-        ([conn, id]) =>
-          Effect.provideService(effect, TransactionConn, [conn, id]),
-        ([conn, id], exit) =>
-          Exit.isSuccess(exit)
-            ? id > 0
-              ? Effect.unit()
-              : Effect.orDie(conn.executeRaw("COMMIT"))
-            : id > 0
-            ? Effect.orDie(conn.executeRaw(`ROLLBACK TO SAVEPOINT sqlfx${id}`))
-            : Effect.orDie(conn.executeRaw("ROLLBACK")),
-      ),
-    )
+        ).traced(trace),
+  )
 
   const schema = Debug.methodWithTrace(
     parentTrace =>

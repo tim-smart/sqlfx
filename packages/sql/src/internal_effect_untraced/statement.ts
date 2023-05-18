@@ -18,7 +18,7 @@ export function isFragment(u: unknown): u is _.Fragment {
 }
 
 /** @internal */
-export class StatementPrimitive<A extends Row> implements _.Statement<A> {
+export class StatementPrimitive<A> implements _.Statement<A> {
   get [FragmentId]() {
     return identity
   }
@@ -37,10 +37,8 @@ export class StatementPrimitive<A extends Row> implements _.Statement<A> {
     SqlError,
     ReadonlyArray<ReadonlyArray<_.Primitive>>
   > {
-    return Debug.bodyWithTrace(trace =>
-      Effect.scoped(Effect.flatMap(this.i1, _ => _.executeValues(this))).traced(
-        trace,
-      ),
+    return Debug.untraced(() =>
+      Effect.scoped(Effect.flatMap(this.i1, _ => _.executeValues(this as any))),
     )
   }
 
@@ -52,7 +50,9 @@ export class StatementPrimitive<A extends Row> implements _.Statement<A> {
 
   commit(): Effect.Effect<never, SqlError, ReadonlyArray<A>> {
     return Debug.untraced(() =>
-      Effect.scoped(Effect.flatMap(this.i1, _ => _.execute(this))),
+      Effect.scoped(
+        Effect.flatMap(this.i1, _ => _.execute(this as any) as any),
+      ),
     )
   }
 
@@ -66,7 +66,7 @@ export class StatementPrimitive<A extends Row> implements _.Statement<A> {
     return Hash.random(this)
   }
 
-  traced(trace: Debug.Trace): Effect.Effect<never, SqlError, ReadonlyArray<A>> {
+  traced(trace: Debug.Trace): _.Statement<A> {
     if (trace) {
       return new StatementTraced(this, this, trace)
     }
@@ -74,7 +74,7 @@ export class StatementPrimitive<A extends Row> implements _.Statement<A> {
   }
 }
 
-class StatementTraced<A extends Row> implements _.Statement<A> {
+class StatementTraced<A> implements _.Statement<A> {
   get [FragmentId]() {
     return identity
   }
@@ -108,7 +108,7 @@ class StatementTraced<A extends Row> implements _.Statement<A> {
     return Hash.random(this)
   }
 
-  traced(trace: Debug.Trace): Effect.Effect<never, SqlError, ReadonlyArray<A>> {
+  traced(trace: Debug.Trace): _.Statement<A> {
     if (trace) {
       return new StatementTraced(this, this.i1, trace)
     }
@@ -205,37 +205,40 @@ export const make = (acquirer: Connection.Acquirer): _.Constructor =>
   }
 
 /** @internal */
-export function statement(
-  acquirer: Connection.Acquirer,
-  strings: TemplateStringsArray,
-  ...args: Array<_.Argument>
-): _.Statement<Row> {
-  const segments: Array<_.Segment> =
-    strings[0].length > 0 ? [new Literal(strings[0])] : []
+export const statement = Debug.methodWithTrace(
+  trace =>
+    function statement(
+      acquirer: Connection.Acquirer,
+      strings: TemplateStringsArray,
+      ...args: Array<_.Argument>
+    ): _.Statement<Row> {
+      const segments: Array<_.Segment> =
+        strings[0].length > 0 ? [new Literal(strings[0])] : []
 
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i]
+      for (let i = 0; i < args.length; i++) {
+        const arg = args[i]
 
-    if (isFragment(arg)) {
-      segments.push(...arg.segments)
-    } else if (isHelper(arg)) {
-      segments.push(arg)
-    } else {
-      segments.push(new Parameter(arg))
-    }
+        if (isFragment(arg)) {
+          segments.push(...arg.segments)
+        } else if (isHelper(arg)) {
+          segments.push(arg)
+        } else {
+          segments.push(new Parameter(arg))
+        }
 
-    if (strings[i + 1].length > 0) {
-      segments.push(new Literal(strings[i + 1]))
-    }
-  }
+        if (strings[i + 1].length > 0) {
+          segments.push(new Literal(strings[i + 1]))
+        }
+      }
 
-  return new StatementPrimitive(segments, acquirer)
-}
+      return new StatementPrimitive<Row>(segments, acquirer).traced(trace)
+    },
+)
 
 /** @internal */
 export const unsafe =
   (acquirer: Connection.Acquirer) =>
-  <A extends Row>(
+  <A extends object = Row>(
     sql: string,
     params?: ReadonlyArray<_.Primitive>,
   ): _.Statement<A> =>

@@ -12,18 +12,18 @@ import type { Primitive, Statement } from "@sqlfx/sql/Statement"
  * @since 1.0.0
  */
 export interface Connection {
-  readonly execute: <A extends Row>(
+  readonly execute: <A extends object = Row>(
     statement: Statement<A>,
   ) => Effect.Effect<never, SqlError, ReadonlyArray<A>>
 
-  readonly executeValues: <A extends Row>(
+  readonly executeValues: <A extends object = Row>(
     statement: Statement<A>,
   ) => Effect.Effect<never, SqlError, ReadonlyArray<ReadonlyArray<Primitive>>>
 
-  readonly executeRaw: (
+  readonly executeRaw: <A extends object = Row>(
     sql: string,
     params?: ReadonlyArray<Primitive> | undefined,
-  ) => Effect.Effect<never, SqlError, ReadonlyArray<Row>>
+  ) => Effect.Effect<never, SqlError, ReadonlyArray<A>>
 }
 
 /**
