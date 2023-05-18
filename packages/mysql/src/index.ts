@@ -101,21 +101,31 @@ export const make = (
           ),
       ),
       Effect.map((conn): Connection => {
-        const run = (sql: string, params?: ReadonlyArray<any>) => {
-          return Effect.async<never, SqlError, any>(resume =>
-            conn.query(sql, params, (error, result) => {
-              if (error) {
-                resume(
-                  Debug.untraced(() =>
-                    Effect.fail(SqlError(error.message, error)),
-                  ),
-                )
-              } else {
-                resume(Debug.untraced(() => Effect.succeed(result)))
-              }
-            }),
+        const run = (
+          sql: string,
+          params?: ReadonlyArray<any>,
+          values = false,
+        ) =>
+          Effect.async<never, SqlError, any>(resume =>
+            conn.query(
+              {
+                sql,
+                values: params,
+                rowsAsArray: values,
+              },
+              (error, result) => {
+                if (error) {
+                  resume(
+                    Debug.untraced(() =>
+                      Effect.fail(SqlError(error.message, error)),
+                    ),
+                  )
+                } else {
+                  resume(Debug.untraced(() => Effect.succeed(result)))
+                }
+              },
+            ),
           )
-        }
         return {
           execute(statement) {
             const [sql, params] = compiler.compile(statement)
@@ -123,22 +133,7 @@ export const make = (
           },
           executeValues(statement) {
             const [sql, params] = compiler.compile(statement)
-            return Effect.async<never, SqlError, any>(resume =>
-              conn.query(
-                {
-                  sql,
-                  values: params,
-                  rowsAsArray: true,
-                },
-                (error, result) => {
-                  if (error) {
-                    resume(Effect.fail(SqlError(error.message, error)))
-                  } else {
-                    resume(Effect.succeed(result))
-                  }
-                },
-              ),
-            )
+            return run(sql, params, true)
           },
           executeRaw(sql, params) {
             return run(sql, params)
