@@ -56,20 +56,20 @@ Added in v1.0.0
 
 ```ts
 export declare const makeCompiler: (
-  parameterPlaceholder: string,
+  parameterPlaceholder: (index: number) => string,
   onIdentifier: (value: string) => string,
   onArray: (
-    placeholder: string,
+    placeholders: ReadonlyArray<string>,
     values: ReadonlyArray<Primitive>
   ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
   onRecordInsert: (
     columns: ReadonlyArray<string>,
-    placeholder: string,
+    placeholders: ReadonlyArray<string>,
     values: ReadonlyArray<ReadonlyArray<Primitive>>
   ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
   onRecordUpdate: (
     columns: ReadonlyArray<readonly [table: string, value: string]>,
-    placeholder: string,
+    placeholders: ReadonlyArray<string>,
     valueAlias: string,
     valueColumns: ReadonlyArray<string>,
     values: ReadonlyArray<ReadonlyArray<Primitive>>
@@ -216,13 +216,15 @@ Added in v1.0.0
 
 ```ts
 export interface Constructor {
-  (value: Array<Primitive | Record<string, Primitive>>): ArrayHelper
-  (value: Array<Record<string, Primitive>>): RecordInsertHelper
-  (value: Array<Record<string, Primitive>>, idColumn: string, identifier: string): RecordUpdateHelper
+  <A extends object = Row>(strings: TemplateStringsArray, ...args: Array<Argument>): Statement<A>
+
+  (value: string): Identifier
+
+  (value: ReadonlyArray<Primitive | Record<string, Primitive>>): ArrayHelper
+  (value: ReadonlyArray<Record<string, Primitive>>): RecordInsertHelper
+  (value: ReadonlyArray<Record<string, Primitive>>, idColumn: string, identifier: string): RecordUpdateHelper
   (value: Record<string, Primitive>): RecordInsertHelper
   (value: Record<string, Primitive>, idColumn: string, identifier: string): RecordUpdateHelper
-  (value: string): Identifier
-  <A extends object = Row>(strings: TemplateStringsArray, ...args: Array<Argument>): Statement<A>
 }
 ```
 
