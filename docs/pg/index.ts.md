@@ -15,6 +15,7 @@ Added in v1.0.0
 - [constructor](#constructor)
   - [PgClientConfig (interface)](#pgclientconfig-interface)
   - [make](#make)
+  - [makeLayer](#makelayer)
 - [model](#model)
   - [PgClient (interface)](#pgclient-interface)
 - [tag](#tag)
@@ -54,6 +55,18 @@ Added in v1.0.0
 
 ```ts
 export declare const make: (options: PgClientConfig) => Effect.Effect<Scope, never, PgClient>
+```
+
+Added in v1.0.0
+
+## makeLayer
+
+**Signature**
+
+```ts
+export declare const makeLayer: (
+  config: Config.Config.Wrap<PgClientConfig>
+) => Layer.Layer<never, ConfigError, PgClient>
 ```
 
 Added in v1.0.0

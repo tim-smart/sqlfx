@@ -1,6 +1,6 @@
 import { describe, it, assert } from "vitest"
 
-describe("pgfx", () => {
+describe("sql", () => {
   it("should work", () => {
     assert.ok(true)
   })

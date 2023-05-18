@@ -15,6 +15,8 @@ import { SqlError } from "@sqlfx/sql/Error"
 import { defaultEscape, makeCompiler } from "@sqlfx/sql/Statement"
 import type { PostgresError } from "postgres"
 import postgres from "postgres"
+import * as Config from "@effect/io/Config"
+import * as Layer from "@effect/io/Layer"
 
 export * as transform from "@sqlfx/sql/Transform"
 
@@ -143,3 +145,10 @@ export const make = (
 
     return Client.make(Effect.scoped(pool.get()), pool.get())
   })
+
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
+export const makeLayer = (config: Config.Config.Wrap<PgClientConfig>) =>
+  Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
