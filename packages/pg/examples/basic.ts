@@ -5,11 +5,15 @@ import { pipe } from "@effect/data/Function"
 
 const PgLive = Pg.makeLayer({
   database: Config.succeed("effect_pg_dev"),
+  transformQueryNames: Config.succeed(Pg.transform.fromCamel),
+  transformResultNames: Config.succeed(Pg.transform.toCamel),
 })
 
 const program = Effect.gen(function* (_) {
   const sql = yield* _(Pg.tag)
-  const result = yield* _(sql.withTransaction(sql`SELECT * FROM people`))
+  const result = yield* _(
+    sql.withTransaction(sql`SELECT * FROM people LIMIT 1`),
+  )
   console.log(result)
 })
 

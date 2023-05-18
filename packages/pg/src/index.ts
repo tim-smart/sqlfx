@@ -106,7 +106,7 @@ export const make = (
 
             transform: {
               column: {
-                to: options.transformResultNames,
+                from: options.transformResultNames,
               },
             },
 
