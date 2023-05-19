@@ -87,6 +87,9 @@ Added in v1.0.0
 ```ts
 export interface PgClient extends Client.Client {
   readonly config: PgClientConfig
+
+  readonly json: (_: unknown) => Fragment
+  readonly array: (_: ReadonlyArray<Primitive>) => Fragment
 }
 ```
 

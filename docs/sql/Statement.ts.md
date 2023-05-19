@@ -17,6 +17,7 @@ Added in v1.0.0
 - [constructor](#constructor)
   - [and](#and)
   - [csv](#csv)
+  - [custom](#custom)
   - [join](#join)
   - [make](#make)
   - [or](#or)
@@ -55,7 +56,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeCompiler: (
+export declare const makeCompiler: <C extends Custom<any, any, any> = any>(
   parameterPlaceholder: (index: number) => string,
   onIdentifier: (value: string) => string,
   onArray: (
@@ -73,7 +74,7 @@ export declare const makeCompiler: (
     columns: ReadonlyArray<string>,
     values: ReadonlyArray<ReadonlyArray<Primitive>>
   ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
-  onCustom: (kind: string, i0: unknown, i1: unknown) => readonly [sql: string, params: ReadonlyArray<Primitive>]
+  onCustom: (type: C, placeholder: () => string) => readonly [sql: string, params: ReadonlyArray<Primitive>]
 ) => Compiler
 ```
 
@@ -100,6 +101,18 @@ export declare const csv: {
   (values: ReadonlyArray<string | Fragment>): Fragment
   (prefix: string, values: ReadonlyArray<string | Fragment>): Fragment
 }
+```
+
+Added in v1.0.0
+
+## custom
+
+**Signature**
+
+```ts
+export declare const custom: <C extends Custom<any, any, any>>(
+  kind: C['kind']
+) => (i0: C['i0'], i1: C['i1']) => Fragment
 ```
 
 Added in v1.0.0
@@ -234,11 +247,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Custom {
+export interface Custom<T extends string = string, A = void, B = void> {
   readonly _tag: 'Custom'
-  readonly kind: string
-  readonly i0: unknown
-  readonly i1: unknown
+  readonly kind: T
+  readonly i0: A
+  readonly i1: B
 }
 ```
 
@@ -361,6 +374,7 @@ Added in v1.0.0
 ```ts
 export interface Statement<A> extends Fragment, Effect<never, SqlError, ReadonlyArray<A>> {
   readonly values: Effect<never, SqlError, ReadonlyArray<ReadonlyArray<Primitive>>>
+  readonly compile: Effect<never, SqlError, readonly [sql: string, params: ReadonlyArray<Primitive>]>
 }
 ```
 

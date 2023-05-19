@@ -5,37 +5,54 @@ import * as Hash from "@effect/data/Hash"
 import * as Effect from "@effect/io/Effect"
 import type { Connection, Row } from "@sqlfx/sql/Connection"
 import type { SqlError } from "@sqlfx/sql/Error"
-import type * as _ from "@sqlfx/sql/Statement"
+import type {
+  Argument,
+  ArrayHelper,
+  Compiler,
+  Constructor,
+  Custom,
+  Fragment,
+  Helper,
+  Identifier,
+  Literal,
+  Parameter,
+  Primitive,
+  RecordInsertHelper,
+  RecordUpdateHelper,
+  Segment,
+  Statement,
+  FragmentId as _FragmentId,
+} from "@sqlfx/sql/Statement"
 
 /** @internal */
-export const FragmentId: _.FragmentId = Symbol.for(
+export const FragmentId: _FragmentId = Symbol.for(
   "pgfx/Fragment",
-) as _.FragmentId
+) as _FragmentId
 
 /** @internal */
-export function isFragment(u: unknown): u is _.Fragment {
+export function isFragment(u: unknown): u is Fragment {
   return typeof u === "object" && u !== null && FragmentId in u
 }
 
 /** @internal */
-export class StatementPrimitive<A> implements _.Statement<A> {
+export class StatementPrimitive<A> implements Statement<A> {
   get [FragmentId]() {
     return identity
   }
 
   constructor(
-    readonly i0: ReadonlyArray<_.Segment>,
+    readonly i0: ReadonlyArray<Segment>,
     readonly i1: Connection.Acquirer,
   ) {}
 
-  get segments(): ReadonlyArray<_.Segment> {
+  get segments(): ReadonlyArray<Segment> {
     return this.i0
   }
 
   get values(): Effect.Effect<
     never,
     SqlError,
-    ReadonlyArray<ReadonlyArray<_.Primitive>>
+    ReadonlyArray<ReadonlyArray<Primitive>>
   > {
     return Debug.untraced(() =>
       Effect.scoped(Effect.flatMap(this.i1, _ => _.executeValues(this as any))),
@@ -45,7 +62,7 @@ export class StatementPrimitive<A> implements _.Statement<A> {
   get compile(): Effect.Effect<
     never,
     SqlError,
-    readonly [sql: string, params: ReadonlyArray<_.Primitive>]
+    readonly [sql: string, params: ReadonlyArray<Primitive>]
   > {
     return Debug.untraced(() =>
       Effect.scoped(Effect.flatMap(this.i1, _ => _.compile(this as any))),
@@ -76,7 +93,7 @@ export class StatementPrimitive<A> implements _.Statement<A> {
     return Hash.random(this)
   }
 
-  traced(trace: Debug.Trace): _.Statement<A> {
+  traced(trace: Debug.Trace): Statement<A> {
     if (trace) {
       return new StatementTraced(this, this, trace)
     }
@@ -84,7 +101,7 @@ export class StatementPrimitive<A> implements _.Statement<A> {
   }
 }
 
-class StatementTraced<A> implements _.Statement<A> {
+class StatementTraced<A> implements Statement<A> {
   get [FragmentId]() {
     return identity
   }
@@ -95,7 +112,7 @@ class StatementTraced<A> implements _.Statement<A> {
     readonly trace: Debug.Trace,
   ) {}
 
-  get segments(): ReadonlyArray<_.Segment> {
+  get segments(): ReadonlyArray<Segment> {
     return this.i1.segments
   }
 
@@ -122,7 +139,7 @@ class StatementTraced<A> implements _.Statement<A> {
     return Hash.random(this)
   }
 
-  traced(trace: Debug.Trace): _.Statement<A> {
+  traced(trace: Debug.Trace): Statement<A> {
     if (trace) {
       return new StatementTraced(this, this.i1, trace)
     }
@@ -130,56 +147,67 @@ class StatementTraced<A> implements _.Statement<A> {
   }
 }
 
-class Fragment implements _.Fragment {
+class FragmentImpl implements Fragment {
   get [FragmentId]() {
     return identity
   }
-  constructor(readonly segments: ReadonlyArray<_.Segment>) {}
+  constructor(readonly segments: ReadonlyArray<Segment>) {}
 }
 
-class Literal implements _.Literal {
+class LiteralImpl implements Literal {
   readonly _tag = "Literal"
   constructor(
     readonly value: string,
-    readonly params?: ReadonlyArray<_.Primitive>,
+    readonly params?: ReadonlyArray<Primitive>,
   ) {}
 }
 
-class Identifier implements _.Identifier {
+class IdentifierImpl implements Identifier {
   readonly _tag = "Identifier"
   constructor(readonly value: string) {}
 }
 
-class Parameter implements _.Parameter {
+class ParameterImpl implements Parameter {
   readonly _tag = "Parameter"
-  constructor(readonly value: _.Primitive) {}
+  constructor(readonly value: Primitive) {}
 }
 
-class ArrayHelper implements _.ArrayHelper {
+class ArrayHelperImpl implements ArrayHelper {
   readonly _tag = "ArrayHelper"
-  constructor(readonly value: Array<_.Primitive>) {}
+  constructor(readonly value: Array<Primitive>) {}
 }
 
-class RecordInsertHelper implements _.RecordInsertHelper {
+class RecordInsertHelperImpl implements RecordInsertHelper {
   readonly _tag = "RecordInsertHelper"
-  constructor(readonly value: ReadonlyArray<Record<string, _.Primitive>>) {}
+  constructor(readonly value: ReadonlyArray<Record<string, Primitive>>) {}
 }
 
-class RecordUpdateHelper implements _.RecordUpdateHelper {
+class RecordUpdateHelperImpl implements RecordUpdateHelper {
   readonly _tag = "RecordUpdateHelper"
   constructor(
-    readonly value: ReadonlyArray<Record<string, _.Primitive>>,
+    readonly value: ReadonlyArray<Record<string, Primitive>>,
     readonly alias: string,
   ) {}
 }
 
-const isHelper = (u: unknown): u is _.Helper =>
-  u instanceof ArrayHelper ||
-  u instanceof RecordInsertHelper ||
-  u instanceof RecordUpdateHelper ||
-  u instanceof Identifier
+class CustomImpl<T extends string, A, B> implements Custom<T, A, B> {
+  readonly _tag = "Custom"
+  constructor(readonly kind: T, readonly i0: A, readonly i1: B) {}
+}
 
-const isPrimitive = (u: unknown): u is _.Primitive =>
+/** @internal */
+export const custom =
+  <C extends Custom<any, any, any>>(kind: C["kind"]) =>
+  (i0: C["i0"], i1: C["i1"]): Fragment =>
+    new FragmentImpl([new CustomImpl(kind, i0, i1)])
+
+const isHelper = (u: unknown): u is Helper =>
+  u instanceof ArrayHelperImpl ||
+  u instanceof RecordInsertHelperImpl ||
+  u instanceof RecordUpdateHelperImpl ||
+  u instanceof IdentifierImpl
+
+const isPrimitive = (u: unknown): u is Primitive =>
   typeof u === "string" ||
   typeof u === "number" ||
   typeof u === "boolean" ||
@@ -188,7 +216,7 @@ const isPrimitive = (u: unknown): u is _.Primitive =>
   u === undefined
 
 /** @internal */
-export const make = (acquirer: Connection.Acquirer): _.Constructor =>
+export const make = (acquirer: Connection.Acquirer): Constructor =>
   Debug.methodWithTrace(
     trace =>
       function sql(strings: unknown, ...args: Array<any>): any {
@@ -206,19 +234,19 @@ export const make = (acquirer: Connection.Acquirer): _.Constructor =>
             typeof strings[0] === "object"
           ) {
             if (typeof args[0] === "string") {
-              return new RecordUpdateHelper(strings, args[0])
+              return new RecordUpdateHelperImpl(strings, args[0])
             }
 
-            return new RecordInsertHelper(strings)
+            return new RecordInsertHelperImpl(strings)
           }
-          return new ArrayHelper(strings)
+          return new ArrayHelperImpl(strings)
         } else if (typeof strings === "string") {
-          return new Identifier(strings)
+          return new IdentifierImpl(strings)
         } else if (typeof strings === "object") {
           if (typeof args[0] === "string") {
-            return new RecordUpdateHelper([strings as any], args[0])
+            return new RecordUpdateHelperImpl([strings as any], args[0])
           }
-          return new RecordInsertHelper([strings as any])
+          return new RecordInsertHelperImpl([strings as any])
         }
 
         throw "absurd"
@@ -230,10 +258,10 @@ export function statement(
   acquirer: Connection.Acquirer,
   trace: Debug.Trace,
   strings: TemplateStringsArray,
-  ...args: Array<_.Argument>
-): _.Statement<Row> {
-  const segments: Array<_.Segment> =
-    strings[0].length > 0 ? [new Literal(strings[0])] : []
+  ...args: Array<Argument>
+): Statement<Row> {
+  const segments: Array<Segment> =
+    strings[0].length > 0 ? [new LiteralImpl(strings[0])] : []
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]
@@ -243,11 +271,11 @@ export function statement(
     } else if (isHelper(arg)) {
       segments.push(arg)
     } else {
-      segments.push(new Parameter(arg))
+      segments.push(new ParameterImpl(arg))
     }
 
     if (strings[i + 1].length > 0) {
-      segments.push(new Literal(strings[i + 1]))
+      segments.push(new LiteralImpl(strings[i + 1]))
     }
   }
 
@@ -260,43 +288,42 @@ export const unsafe = (acquirer: Connection.Acquirer) =>
     trace =>
       <A extends object = Row>(
         sql: string,
-        params?: ReadonlyArray<_.Primitive>,
-      ): _.Statement<A> =>
-        new StatementPrimitive<A>([new Literal(sql, params)], acquirer).traced(
-          trace,
-        ),
+        params?: ReadonlyArray<Primitive>,
+      ): Statement<A> =>
+        new StatementPrimitive<A>(
+          [new LiteralImpl(sql, params)],
+          acquirer,
+        ).traced(trace),
   )
 
 /** @internal */
 export const unsafeFragment = (
   sql: string,
-  params?: ReadonlyArray<_.Primitive>,
-): _.Fragment => new Fragment([new Literal(sql, params)])
+  params?: ReadonlyArray<Primitive>,
+): Fragment => new FragmentImpl([new LiteralImpl(sql, params)])
 
-function convertLiteralOrFragment(
-  clause: string | _.Fragment,
-): Array<_.Segment> {
+function convertLiteralOrFragment(clause: string | Fragment): Array<Segment> {
   if (typeof clause === "string") {
-    return [new Literal(clause)]
+    return [new LiteralImpl(clause)]
   }
-  return clause.segments as Array<_.Segment>
+  return clause.segments as Array<Segment>
 }
 
 /** @internal */
 export function join(literal: string, addParens = true, fallback = "") {
-  const literalSegment = new Literal(literal)
+  const literalSegment = new LiteralImpl(literal)
 
-  return function (clauses: ReadonlyArray<string | _.Fragment>): _.Fragment {
+  return function (clauses: ReadonlyArray<string | Fragment>): Fragment {
     if (clauses.length === 0) {
       return unsafeFragment(fallback)
     } else if (clauses.length === 1) {
-      return new Fragment(convertLiteralOrFragment(clauses[0]))
+      return new FragmentImpl(convertLiteralOrFragment(clauses[0]))
     }
 
-    const segments: Array<_.Segment> = []
+    const segments: Array<Segment> = []
 
     if (addParens) {
-      segments.push(new Literal("("))
+      segments.push(new LiteralImpl("("))
     }
 
     segments.push.apply(segments, convertLiteralOrFragment(clauses[0]))
@@ -307,10 +334,10 @@ export function join(literal: string, addParens = true, fallback = "") {
     }
 
     if (addParens) {
-      segments.push(new Literal(")"))
+      segments.push(new LiteralImpl(")"))
     }
 
-    return new Fragment(segments)
+    return new FragmentImpl(segments)
   }
 }
 
@@ -324,12 +351,12 @@ const csvRaw = join(", ", false)
 
 /** @internal */
 export const csv: {
-  (values: ReadonlyArray<string | _.Fragment>): _.Fragment
-  (prefix: string, values: ReadonlyArray<string | _.Fragment>): _.Fragment
+  (values: ReadonlyArray<string | Fragment>): Fragment
+  (prefix: string, values: ReadonlyArray<string | Fragment>): Fragment
 } = (
   ...args:
-    | [values: ReadonlyArray<string | _.Fragment>]
-    | [prefix: string, values: ReadonlyArray<string | _.Fragment>]
+    | [values: ReadonlyArray<string | Fragment>]
+    | [prefix: string, values: ReadonlyArray<string | Fragment>]
 ) => {
   if (args[args.length - 1].length === 0) {
     return unsafeFragment("")
@@ -339,39 +366,41 @@ export const csv: {
     return csvRaw(args[0])
   }
 
-  return new Fragment([new Literal(`${args[0]} `), ...csvRaw(args[1]).segments])
+  return new FragmentImpl([
+    new LiteralImpl(`${args[0]} `),
+    ...csvRaw(args[1]).segments,
+  ])
 }
 
 /** @internal */
-class Compiler implements _.Compiler {
+class CompilerImpl implements Compiler {
   constructor(
     readonly parameterPlaceholder: (index: number) => string,
     readonly onIdentifier: (value: string) => string,
     readonly onArray: (
       placeholders: ReadonlyArray<string>,
-      values: ReadonlyArray<_.Primitive>,
-    ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
+      values: ReadonlyArray<Primitive>,
+    ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
     readonly onRecordInsert: (
       columns: ReadonlyArray<string>,
       placeholders: ReadonlyArray<string>,
-      values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
-    ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
+      values: ReadonlyArray<ReadonlyArray<Primitive>>,
+    ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
     readonly onRecordUpdate: (
       placeholders: ReadonlyArray<string>,
       alias: string,
       columns: ReadonlyArray<string>,
-      values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
-    ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
+      values: ReadonlyArray<ReadonlyArray<Primitive>>,
+    ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
     readonly onCustom: (
-      kind: string,
-      i0: unknown,
-      i1: unknown,
-    ) => readonly [sql: string, binds: ReadonlyArray<_.Primitive>],
+      type: Custom<string, unknown, unknown>,
+      placeholder: () => string,
+    ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
   ) {}
 
   compile(
-    statement: _.Fragment,
-  ): readonly [sql: string, binds: ReadonlyArray<_.Primitive>] {
+    statement: Fragment,
+  ): readonly [sql: string, binds: ReadonlyArray<Primitive>] {
     if ((statement as any).__compiled) {
       return (statement as any).__compiled
     }
@@ -380,7 +409,7 @@ class Compiler implements _.Compiler {
     const len = segments.length
 
     let sql = ""
-    const binds: Array<_.Primitive> = []
+    const binds: Array<Primitive> = []
     let placeholderCount = 0
     const placeholder = () => this.parameterPlaceholder(++placeholderCount)
 
@@ -449,7 +478,7 @@ class Compiler implements _.Compiler {
         }
 
         case "Custom": {
-          const [s, b] = this.onCustom(segment.kind, segment.i0, segment.i1)
+          const [s, b] = this.onCustom(segment, placeholder)
           sql += s
           binds.push.apply(binds, b as any)
           break
@@ -462,37 +491,36 @@ class Compiler implements _.Compiler {
 }
 
 /** @internal */
-export const makeCompiler = (
+export const makeCompiler = <C extends Custom<any, any, any> = any>(
   parameterPlaceholder: (index: number) => string,
   onIdentifier: (value: string) => string,
   onArray: (
     placeholders: ReadonlyArray<string>,
-    values: ReadonlyArray<_.Primitive>,
-  ) => readonly [sql: string, params: ReadonlyArray<_.Primitive>],
+    values: ReadonlyArray<Primitive>,
+  ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
   onRecordInsert: (
     columns: ReadonlyArray<string>,
     placeholders: ReadonlyArray<string>,
-    values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
-  ) => readonly [sql: string, params: ReadonlyArray<_.Primitive>],
+    values: ReadonlyArray<ReadonlyArray<Primitive>>,
+  ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
   onRecordUpdate: (
     placeholders: ReadonlyArray<string>,
     alias: string,
     columns: ReadonlyArray<string>,
-    values: ReadonlyArray<ReadonlyArray<_.Primitive>>,
-  ) => readonly [sql: string, params: ReadonlyArray<_.Primitive>],
+    values: ReadonlyArray<ReadonlyArray<Primitive>>,
+  ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
   onCustom: (
-    kind: string,
-    i0: unknown,
-    i1: unknown,
-  ) => readonly [sql: string, params: ReadonlyArray<_.Primitive>],
-) =>
-  new Compiler(
+    type: C,
+    placeholder: () => string,
+  ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
+): Compiler =>
+  new CompilerImpl(
     parameterPlaceholder,
     onIdentifier,
     onArray,
     onRecordInsert,
     onRecordUpdate,
-    onCustom,
+    onCustom as any,
   )
 
 const placeholders = (

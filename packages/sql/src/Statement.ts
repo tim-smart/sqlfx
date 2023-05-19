@@ -125,12 +125,33 @@ export interface RecordUpdateHelper {
  * @category model
  * @since 1.0.0
  */
-export interface Custom {
+export interface Custom<T extends string = string, A = void, B = void> {
   readonly _tag: "Custom"
-  readonly kind: string
-  readonly i0: unknown
-  readonly i1: unknown
+  readonly kind: T
+  readonly i0: A
+  readonly i1: B
 }
+
+/**
+ * @since 1.0.0
+ */
+export namespace Custom {
+  export type ToArgs<C extends Custom<any, any, any>> = C extends Custom<
+    infer K,
+    infer A,
+    infer B
+  >
+    ? readonly [K, A, B]
+    : never
+}
+
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
+export const custom: <C extends Custom<any, any, any>>(
+  kind: C["kind"],
+) => (i0: C["i0"], i1: C["i1"]) => Fragment = internal.custom
 
 /**
  * @category model
@@ -259,7 +280,7 @@ export interface Compiler {
  * @category compiler
  * @since 1.0.0
  */
-export const makeCompiler: (
+export const makeCompiler: <C extends Custom<any, any, any> = any>(
   parameterPlaceholder: (index: number) => string,
   onIdentifier: (value: string) => string,
   onArray: (
@@ -278,9 +299,8 @@ export const makeCompiler: (
     values: ReadonlyArray<ReadonlyArray<Primitive>>,
   ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
   onCustom: (
-    kind: string,
-    i0: unknown,
-    i1: unknown,
+    type: C,
+    placeholder: () => string,
   ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
 ) => Compiler = internal.makeCompiler
 

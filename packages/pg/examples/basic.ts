@@ -11,7 +11,15 @@ const PgLive = Pg.makeLayer({
 
 const program = Effect.gen(function* (_) {
   const sql = yield* _(Pg.tag)
-  const result = yield* _(sql`SELECT * FROM ${"people"} LIMIT 1`)
+  const query = yield* _(sql`SELECT ${sql.array([1, 2, "test"])} as test_arr`)
+  console.log(query)
+
+  const jsonQuery = yield* _(
+    sql`SELECT ${sql.json({ name: "Tim", age: 18 })} as user`,
+  )
+  console.log(jsonQuery)
+
+  const result = yield* _(sql`SELECT * FROM ${sql("people")} LIMIT 1`)
   console.log(result)
 })
 

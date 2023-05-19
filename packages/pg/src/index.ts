@@ -12,7 +12,8 @@ import type { Scope } from "@effect/io/Scope"
 import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
-import { defaultEscape, makeCompiler } from "@sqlfx/sql/Statement"
+import type { Custom, Fragment, Primitive } from "@sqlfx/sql/Statement"
+import { custom, defaultEscape, makeCompiler } from "@sqlfx/sql/Statement"
 import type { PostgresError } from "postgres"
 import postgres from "postgres"
 import * as Config from "@effect/io/Config"
@@ -34,6 +35,9 @@ export {
  */
 export interface PgClient extends Client.Client {
   readonly config: PgClientConfig
+
+  readonly json: (_: unknown) => Fragment
+  readonly array: (_: ReadonlyArray<Primitive>) => Fragment
 }
 
 /**
@@ -77,7 +81,9 @@ export const make = (
   options: PgClientConfig,
 ): Effect.Effect<Scope, never, PgClient> =>
   Effect.gen(function* (_) {
-    const compiler = makeCompiler(
+    const pg = postgres({ max: 0 })
+
+    const compiler = makeCompiler<PgCustom>(
       _ => `$${_}`,
       options.transformQueryNames
         ? _ => escape(options.transformQueryNames!(_))
@@ -95,7 +101,16 @@ export const make = (
           .join(",")}) AS ${valueAlias}(${valueColumns.join(",")})`,
         values.flat(),
       ],
-      () => ["", []],
+      (type, placeholder) => {
+        switch (type.kind) {
+          case "PgJson": {
+            return [placeholder(), [pg.json(type.i0 as any) as any]]
+          }
+          case "PgArray": {
+            return [`ARRAY [${type.i0.map(placeholder).join(",")}]`, type.i0]
+          }
+        }
+      },
     )
 
     const opts: postgres.Options<{}> = {
@@ -188,6 +203,8 @@ export const make = (
 
     return Object.assign(Client.make(Effect.scoped(pool.get()), pool.get()), {
       config: options,
+      json: (_: unknown) => PgJson(_),
+      array: (_: ReadonlyArray<Primitive>) => PgArray(_),
     })
   })
 
@@ -197,3 +214,17 @@ export const make = (
  */
 export const makeLayer = (config: Config.Config.Wrap<PgClientConfig>) =>
   Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
+
+// custom types
+
+type PgCustom = PgJson | PgArray
+
+/** @internal */
+interface PgJson extends Custom<"PgJson", unknown> {}
+/** @internal */
+const PgJson = custom<PgJson>("PgJson")
+
+/** @internal */
+interface PgArray extends Custom<"PgArray", ReadonlyArray<Primitive>> {}
+/** @internal */
+const PgArray = custom<PgArray>("PgArray")
