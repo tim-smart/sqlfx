@@ -47,6 +47,11 @@ export const tag = Tag<MysqlClient>()
  * @since 1.0.0
  */
 export interface MysqlClientConfig {
+  /**
+   * Connection URI. Setting this will override the other connection options
+   */
+  readonly url?: ConfigSecret.ConfigSecret
+
   readonly host?: string
   readonly port?: number
   readonly database?: string
@@ -91,16 +96,18 @@ export const make = (
     const makeConnection = pipe(
       Effect.acquireRelease(
         Effect.sync(() =>
-          Mysql.createConnection({
-            host: options.host,
-            port: options.port,
-            database: options.database,
-            user: options.username,
-            password: options.password
-              ? ConfigSecret.value(options.password)
-              : undefined,
-            connectTimeout: options.connectTimeout?.millis,
-          }),
+          options.url
+            ? Mysql.createConnection(ConfigSecret.value(options.url))
+            : Mysql.createConnection({
+                host: options.host,
+                port: options.port,
+                database: options.database,
+                user: options.username,
+                password: options.password
+                  ? ConfigSecret.value(options.password)
+                  : undefined,
+                connectTimeout: options.connectTimeout?.millis,
+              }),
         ),
         _ =>
           Effect.async<never, never, void>(resume =>

@@ -47,6 +47,8 @@ export const tag = Tag<PgClient>()
  * @since 1.0.0
  */
 export interface PgClientConfig {
+  readonly url?: ConfigSecret.ConfigSecret
+
   readonly host?: string
   readonly port?: number
   readonly path?: string
@@ -96,35 +98,39 @@ export const make = (
       () => ["", []],
     )
 
+    const opts: postgres.Options<{}> = {
+      max: 1,
+      max_lifetime: 0,
+      idle_timeout: options.idleTimeout
+        ? Math.round(options.idleTimeout.millis / 1000)
+        : undefined,
+      connect_timeout: options.connectTimeout
+        ? Math.round(options.connectTimeout.millis / 1000)
+        : undefined,
+
+      transform: {
+        column: {
+          from: options.transformResultNames,
+        },
+      },
+
+      host: options.host,
+      port: options.port,
+      ssl: options.ssl,
+      path: options.path,
+      database: options.database,
+      username: options.username,
+      password: options.password
+        ? ConfigSecret.value(options.password)
+        : undefined,
+    }
+
     const makeConnection = pipe(
       Effect.acquireRelease(
         Effect.sync(() =>
-          postgres({
-            max: 1,
-            max_lifetime: 0,
-            idle_timeout: options.idleTimeout
-              ? Math.round(options.idleTimeout.millis / 1000)
-              : undefined,
-            connect_timeout: options.connectTimeout
-              ? Math.round(options.connectTimeout.millis / 1000)
-              : undefined,
-
-            transform: {
-              column: {
-                from: options.transformResultNames,
-              },
-            },
-
-            host: options.host,
-            port: options.port,
-            ssl: options.ssl,
-            path: options.path,
-            database: options.database,
-            username: options.username,
-            password: options.password
-              ? ConfigSecret.value(options.password)
-              : undefined,
-          }),
+          options.url
+            ? postgres(ConfigSecret.value(options.url), opts)
+            : postgres(opts),
         ),
         pg => Effect.promise(() => pg.end()),
       ),
