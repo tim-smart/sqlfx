@@ -33,6 +33,11 @@ Added in v1.0.0
 
 ```ts
 export interface MysqlClientConfig {
+  /**
+   * Connection URI. Setting this will override the other connection options
+   */
+  readonly url?: ConfigSecret.ConfigSecret
+
   readonly host?: string
   readonly port?: number
   readonly database?: string

@@ -19,6 +19,8 @@ Added in v1.0.0
 - [models](#models)
   - [Request (interface)](#request-interface)
   - [Resolver (interface)](#resolver-interface)
+- [utils](#utils)
+  - [defaultRowTransform](#defaultrowtransform)
 
 ---
 
@@ -247,6 +249,20 @@ export interface Resolver<T extends string, II, IA, A, E> {
   readonly populateCache: (id: II, _: A) => Effect.Effect<never, never, void>
   readonly invalidateCache: (id: II) => Effect.Effect<never, never, void>
 }
+```
+
+Added in v1.0.0
+
+# utils
+
+## defaultRowTransform
+
+**Signature**
+
+```ts
+export declare const defaultRowTransform: (
+  transformer: (str: string) => string
+) => (rows: ReadonlyArray<Row>) => ReadonlyArray<Row>
 ```
 
 Added in v1.0.0

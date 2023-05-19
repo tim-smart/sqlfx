@@ -33,6 +33,8 @@ Added in v1.0.0
 
 ```ts
 export interface PgClientConfig {
+  readonly url?: ConfigSecret.ConfigSecret
+
   readonly host?: string
   readonly port?: number
   readonly path?: string
