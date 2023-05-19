@@ -15,6 +15,7 @@ Added in v1.0.0
 - [constructor](#constructor)
   - [PgClientConfig (interface)](#pgclientconfig-interface)
   - [make](#make)
+  - [makeCompiler](#makecompiler)
   - [makeLayer](#makelayer)
 - [model](#model)
   - [PgClient (interface)](#pgclient-interface)
@@ -62,6 +63,16 @@ Added in v1.0.0
 
 ```ts
 export declare const make: (options: PgClientConfig) => Effect.Effect<Scope, never, PgClient>
+```
+
+Added in v1.0.0
+
+## makeCompiler
+
+**Signature**
+
+```ts
+export declare const makeCompiler: (transform?: ((_: string) => string) | undefined) => Statement.Compiler
 ```
 
 Added in v1.0.0
