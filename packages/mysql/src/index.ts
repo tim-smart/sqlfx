@@ -108,6 +108,7 @@ export const make = (
         const run = (
           sql: string,
           params?: ReadonlyArray<any>,
+          transform = true,
           values = false,
         ) =>
           Effect.async<never, SqlError, any>(resume =>
@@ -125,9 +126,8 @@ export const make = (
                     ),
                   )
                 } else if (
-                  Array.isArray(result) &&
-                  result[0] &&
-                  !Array.isArray(result[0]) &&
+                  transform &&
+                  !values &&
                   options.transformResultNames
                 ) {
                   resume(
@@ -144,9 +144,13 @@ export const make = (
             const [sql, params] = compiler.compile(statement)
             return run(sql, params)
           },
+          executeWithoutTransform(statement) {
+            const [sql, params] = compiler.compile(statement)
+            return run(sql, params, false)
+          },
           executeValues(statement) {
             const [sql, params] = compiler.compile(statement)
-            return run(sql, params, true)
+            return run(sql, params, true, true)
           },
           executeRaw(sql, params) {
             return run(sql, params)

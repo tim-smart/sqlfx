@@ -16,7 +16,12 @@
       "@sqlfx/mysql/test/*": ["./packages/mysql/build/test/*"],
       "@sqlfx/mysql/examples/*": ["./packages/mysql/build/examples/*"],
       "@sqlfx/mysql/*": ["./packages/mysql/build/esm/*"],
-      "@sqlfx/mysql": ["./packages/mysql/build/esm/index.js"]
+      "@sqlfx/mysql": ["./packages/mysql/build/esm/index.js"],
+
+      "@sqlfx/sqlite/test/*": ["./packages/sqlite/build/test/*"],
+      "@sqlfx/sqlite/examples/*": ["./packages/sqlite/build/examples/*"],
+      "@sqlfx/sqlite/*": ["./packages/sqlite/build/esm/*"],
+      "@sqlfx/sqlite": ["./packages/sqlite/build/esm/index.js"]
     }
   },
   "include": [
@@ -26,6 +31,14 @@
 
     "./packages/pg/build/esm/**/*.js",
     "./packages/pg/build/test/**/*.js",
-    "./packages/pg/build/examples/**/*.js"
+    "./packages/pg/build/examples/**/*.js",
+
+    "./packages/mysql/build/esm/**/*.js",
+    "./packages/mysql/build/test/**/*.js",
+    "./packages/mysql/build/examples/**/*.js",
+
+    "./packages/sqlite/build/esm/**/*.js",
+    "./packages/sqlite/build/test/**/*.js",
+    "./packages/sqlite/build/examples/**/*.js"
   ]
 }

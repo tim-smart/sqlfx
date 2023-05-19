@@ -92,18 +92,18 @@ export const make =
       `
 
       const latestMigration = Effect.map(
-        sql<Migration>`
+        sql<{ migration_id: number; name: string; created_at: Date }>`
         SELECT migration_id, name, created_at FROM ${sql(
           table,
         )} ORDER BY migration_id DESC LIMIT 1
-      `.values,
+      `.withoutTransform,
         _ =>
           Option.map(
             Option.fromNullable(_[0] as any),
-            ([id, name, createdAt]: [number, string, Date]): Migration => ({
-              id,
+            ({ created_at, migration_id, name }): Migration => ({
+              id: migration_id,
               name,
-              createdAt,
+              createdAt: created_at,
             }),
           ),
       )

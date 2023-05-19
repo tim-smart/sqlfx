@@ -49,13 +49,21 @@ export class StatementPrimitive<A> implements Statement<A> {
     return this.i0
   }
 
+  get withoutTransform(): Effect.Effect<never, SqlError, ReadonlyArray<A>> {
+    return Debug.untraced(() =>
+      Effect.scoped(
+        Effect.flatMap(this.i1, _ => _.executeWithoutTransform<any>(this)),
+      ),
+    )
+  }
+
   get values(): Effect.Effect<
     never,
     SqlError,
     ReadonlyArray<ReadonlyArray<Primitive>>
   > {
     return Debug.untraced(() =>
-      Effect.scoped(Effect.flatMap(this.i1, _ => _.executeValues(this as any))),
+      Effect.scoped(Effect.flatMap(this.i1, _ => _.executeValues<any>(this))),
     )
   }
 
@@ -114,6 +122,10 @@ class StatementTraced<A> implements Statement<A> {
 
   get segments(): ReadonlyArray<Segment> {
     return this.i1.segments
+  }
+
+  get withoutTransform() {
+    return this.i1.withoutTransform
   }
 
   get values() {

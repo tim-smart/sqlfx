@@ -262,7 +262,7 @@ Added in v1.0.0
 ```ts
 export declare const defaultRowTransform: (
   transformer: (str: string) => string
-) => (rows: ReadonlyArray<Row>) => ReadonlyArray<Row>
+) => <A extends object>(rows: readonly A[]) => readonly A[]
 ```
 
 Added in v1.0.0

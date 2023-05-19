@@ -248,5 +248,5 @@ export interface Resolver<T extends string, II, IA, A, E> {
  */
 export const defaultRowTransform: (
   transformer: (str: string) => string,
-) => (rows: ReadonlyArray<Row>) => ReadonlyArray<Row> =
+) => <A extends object>(rows: ReadonlyArray<A>) => ReadonlyArray<A> =
   internal.defaultRowTransform
