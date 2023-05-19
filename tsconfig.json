@@ -3,6 +3,7 @@
   "references": [
     { "path": "packages/sql" },
     { "path": "packages/pg" },
-    { "path": "packages/mysql" }
+    { "path": "packages/mysql" },
+    { "path": "packages/sqlite" }
   ]
 }

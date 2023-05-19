@@ -34,6 +34,7 @@ export interface Fragment {
 export interface Statement<A>
   extends Fragment,
     Effect<never, SqlError, ReadonlyArray<A>> {
+  readonly withoutTransform: Effect<never, SqlError, ReadonlyArray<A>>
   readonly values: Effect<
     never,
     SqlError,

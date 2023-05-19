@@ -16,6 +16,10 @@ export interface Connection {
     statement: Statement<A>,
   ) => Effect.Effect<never, SqlError, ReadonlyArray<A>>
 
+  readonly executeWithoutTransform: <A extends object = Row>(
+    statement: Statement<A>,
+  ) => Effect.Effect<never, SqlError, ReadonlyArray<A>>
+
   readonly executeValues: <A extends object = Row>(
     statement: Statement<A>,
   ) => Effect.Effect<never, SqlError, ReadonlyArray<ReadonlyArray<Primitive>>>

@@ -20,6 +20,12 @@ export default defineConfig({
 
       "@sqlfx/pg/test": path.join(__dirname, "packages/pg/test"),
       "@sqlfx/pg": path.join(__dirname, "packages/pg/src"),
+
+      "@sqlfx/mysql/test": path.join(__dirname, "packages/mysql/test"),
+      "@sqlfx/mysql": path.join(__dirname, "packages/mysql/src"),
+
+      "@sqlfx/sqlite/test": path.join(__dirname, "packages/sqlite/test"),
+      "@sqlfx/sqlite": path.join(__dirname, "packages/sqlite/src"),
     },
   },
 })

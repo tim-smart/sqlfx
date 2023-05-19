@@ -83,6 +83,10 @@ export const make = (
   Effect.gen(function* (_) {
     const compiler = makeCompiler(options.transformQueryNames)
 
+    const transformRows = Client.defaultRowTransform(
+      options.transformResultNames!,
+    )
+
     const opts: postgres.Options<{}> = {
       max: 1,
       max_lifetime: 0,
@@ -92,12 +96,6 @@ export const make = (
       connect_timeout: options.connectTimeout
         ? Math.round(options.connectTimeout.millis / 1000)
         : undefined,
-
-      transform: {
-        column: {
-          from: options.transformResultNames,
-        },
-      },
 
       host: options.host,
       port: options.port,
@@ -125,16 +123,22 @@ export const make = (
           ;(query as any).options.prepare = true
           return query
         }
+        const runDefault = (sql: string, params?: ReadonlyArray<any>) =>
+          Effect.tryCatchPromiseInterrupt(
+            () => run(sql, params) as Promise<ReadonlyArray<any>>,
+            error =>
+              SqlError((error as PostgresError).message, {
+                ...(error as any).__proto__,
+              }),
+          )
         return {
           execute(statement) {
             const [sql, params] = compiler.compile(statement)
-            return Effect.tryCatchPromiseInterrupt(
-              () => run(sql, params),
-              error =>
-                SqlError((error as PostgresError).message, {
-                  ...(error as any).__proto__,
-                }),
-            )
+            return Effect.map(runDefault(sql, params), transformRows)
+          },
+          executeWithoutTransform(statement) {
+            const [sql, params] = compiler.compile(statement)
+            return runDefault(sql, params)
           },
           executeValues(statement) {
             const [sql, params] = compiler.compile(statement)
@@ -147,13 +151,7 @@ export const make = (
             )
           },
           executeRaw(sql, params) {
-            return Effect.tryCatchPromiseInterrupt(
-              () => run(sql, params),
-              error =>
-                SqlError((error as PostgresError).message, {
-                  ...(error as any).__proto__,
-                }),
-            )
+            return runDefault(sql, params)
           },
           compile(statement) {
             return Effect.sync(() => compiler.compile(statement))

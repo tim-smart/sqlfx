@@ -49,7 +49,12 @@
       "@sqlfx/mysql/test/*": ["./packages/mysql/test/*"],
       "@sqlfx/mysql/examples/*": ["./packages/mysql/examples/*"],
       "@sqlfx/mysql/*": ["./packages/mysql/src/*"],
-      "@sqlfx/mysql": ["./packages/mysql/src/index.js"]
+      "@sqlfx/mysql": ["./packages/mysql/src/index.js"],
+
+      "@sqlfx/sqlite/test/*": ["./packages/sqlite/test/*"],
+      "@sqlfx/sqlite/examples/*": ["./packages/sqlite/examples/*"],
+      "@sqlfx/sqlite/*": ["./packages/sqlite/src/*"],
+      "@sqlfx/sqlite": ["./packages/sqlite/src/index.js"]
     },
     "plugins": [{ "name": "@effect/language-service" }]
   },

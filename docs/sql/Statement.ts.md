@@ -364,6 +364,7 @@ Added in v1.0.0
 
 ```ts
 export interface Statement<A> extends Fragment, Effect<never, SqlError, ReadonlyArray<A>> {
+  readonly withoutTransform: Effect<never, SqlError, ReadonlyArray<A>>
   readonly values: Effect<never, SqlError, ReadonlyArray<ReadonlyArray<Primitive>>>
   readonly compile: Effect<never, SqlError, readonly [sql: string, params: ReadonlyArray<Primitive>]>
 }

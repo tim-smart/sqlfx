@@ -502,11 +502,11 @@ export function make(
 
 /** @internal */
 export function defaultRowTransform(transformer: (str: string) => string) {
-  return (rows: ReadonlyArray<Row>): ReadonlyArray<Row> => {
-    const newRows: Array<Row> = []
+  return <A extends object>(rows: ReadonlyArray<A>): ReadonlyArray<A> => {
+    const newRows: Array<A> = []
     for (let i = 0, len = rows.length; i < len; i++) {
       const row = rows[i]
-      const obj: Record<string, any> = {}
+      const obj: any = {}
       for (const key in row) {
         obj[transformer(key)] = row[key]
       }
