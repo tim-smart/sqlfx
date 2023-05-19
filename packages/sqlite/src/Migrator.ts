@@ -39,7 +39,6 @@ export const run: ({
         Effect.async<never, _.MigrationError, string>(resume => {
           execFile("sqlite3", [sql.config.filename, ...args], (error, sql) => {
             if (error) {
-              console.log(error)
               resume(
                 Effect.fail(
                   _.MigrationError({
