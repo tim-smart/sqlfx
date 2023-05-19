@@ -1,5 +1,5 @@
-# @sqlfx/mysql
+# @sqlfx/sqlite
 
-A MySQL client for Effect-TS.
+A sqlite3 client for Effect-TS.
 
 See https://tim-smart.github.io/sqlfx/ for more information.
