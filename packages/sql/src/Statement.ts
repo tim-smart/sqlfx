@@ -283,19 +283,10 @@ export interface Compiler {
 export const makeCompiler: <C extends Custom<any, any, any> = any>(
   parameterPlaceholder: (index: number) => string,
   onIdentifier: (value: string) => string,
-  onArray: (
-    placeholders: ReadonlyArray<string>,
-    values: ReadonlyArray<Primitive>,
-  ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
-  onRecordInsert: (
-    columns: ReadonlyArray<string>,
-    placeholders: ReadonlyArray<string>,
-    values: ReadonlyArray<ReadonlyArray<Primitive>>,
-  ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
   onRecordUpdate: (
-    placeholders: ReadonlyArray<string>,
+    placeholders: string,
     alias: string,
-    columns: ReadonlyArray<string>,
+    columns: string,
     values: ReadonlyArray<ReadonlyArray<Primitive>>,
   ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
   onCustom: (

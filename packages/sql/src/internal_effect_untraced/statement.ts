@@ -377,19 +377,10 @@ class CompilerImpl implements Compiler {
   constructor(
     readonly parameterPlaceholder: (index: number) => string,
     readonly onIdentifier: (value: string) => string,
-    readonly onArray: (
-      placeholders: ReadonlyArray<string>,
-      values: ReadonlyArray<Primitive>,
-    ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
-    readonly onRecordInsert: (
-      columns: ReadonlyArray<string>,
-      placeholders: ReadonlyArray<string>,
-      values: ReadonlyArray<ReadonlyArray<Primitive>>,
-    ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
     readonly onRecordUpdate: (
-      placeholders: ReadonlyArray<string>,
+      placeholders: string,
       alias: string,
-      columns: ReadonlyArray<string>,
+      columns: string,
       values: ReadonlyArray<ReadonlyArray<Primitive>>,
     ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
     readonly onCustom: (
@@ -437,27 +428,27 @@ class CompilerImpl implements Compiler {
         }
 
         case "ArrayHelper": {
-          const [s, b] = this.onArray(
-            placeholders(placeholder, segment.value.length),
-            segment.value,
-          )
-          sql += s
-          binds.push.apply(binds, b as any)
+          sql += `(${generatePlaceholder(placeholder, segment.value.length)()})`
+          binds.push.apply(binds, segment.value as any)
           break
         }
 
         case "RecordInsertHelper": {
           const keys = Object.keys(segment.value[0])
-          const [s, b] = this.onRecordInsert(
-            keys.map(this.onIdentifier),
-            placeholders(
-              generatePlaceholder(placeholder, keys.length),
-              segment.value.length,
-            ),
-            segment.value.map(record => keys.map(key => record?.[key])),
-          )
-          sql += s
-          binds.push.apply(binds, b as any)
+
+          sql += `${generateColumns(
+            keys,
+            this.onIdentifier,
+          )} VALUES ${placeholders(
+            generatePlaceholder(placeholder, keys.length),
+            segment.value.length,
+          )}`
+
+          for (let i = 0, len = segment.value.length; i < len; i++) {
+            for (let j = 0, len = keys.length; j < len; j++) {
+              binds.push(segment.value[i]?.[keys[j]] ?? null)
+            }
+          }
           break
         }
 
@@ -469,7 +460,7 @@ class CompilerImpl implements Compiler {
               segment.value.length,
             ),
             segment.alias,
-            keys.map(this.onIdentifier),
+            generateColumns(keys, this.onIdentifier),
             segment.value.map(record => keys.map(key => record?.[key])),
           )
           sql += s
@@ -494,19 +485,10 @@ class CompilerImpl implements Compiler {
 export const makeCompiler = <C extends Custom<any, any, any> = any>(
   parameterPlaceholder: (index: number) => string,
   onIdentifier: (value: string) => string,
-  onArray: (
-    placeholders: ReadonlyArray<string>,
-    values: ReadonlyArray<Primitive>,
-  ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
-  onRecordInsert: (
-    columns: ReadonlyArray<string>,
-    placeholders: ReadonlyArray<string>,
-    values: ReadonlyArray<ReadonlyArray<Primitive>>,
-  ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
   onRecordUpdate: (
-    placeholders: ReadonlyArray<string>,
+    placeholders: string,
     alias: string,
-    columns: ReadonlyArray<string>,
+    columns: string,
     values: ReadonlyArray<ReadonlyArray<Primitive>>,
   ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
   onCustom: (
@@ -517,23 +499,18 @@ export const makeCompiler = <C extends Custom<any, any, any> = any>(
   new CompilerImpl(
     parameterPlaceholder,
     onIdentifier,
-    onArray,
-    onRecordInsert,
     onRecordUpdate,
     onCustom as any,
   )
 
-const placeholders = (
-  evaluate: () => string,
-  count: number,
-): ReadonlyArray<string> => {
+const placeholders = (evaluate: () => string, count: number): string => {
   if (count === 0) {
-    return []
+    return ""
   }
 
-  const result: Array<string> = []
-  for (let i = 0; i < count; i++) {
-    result.push(evaluate())
+  let result = `(${evaluate()})`
+  for (let i = 1; i < count; i++) {
+    result += `,(${evaluate()})`
   }
 
   return result
@@ -554,6 +531,21 @@ const generatePlaceholder = (evaluate: () => string, len: number) => {
 
     return result
   }
+}
+
+const generateColumns = (
+  keys: ReadonlyArray<string>,
+  escape: (_: string) => string,
+) => {
+  if (keys.length === 0) {
+    return "()"
+  }
+
+  let str = `(${escape(keys[0])}`
+  for (let i = 1; i < keys.length; i++) {
+    str += `,${escape(keys[i])}`
+  }
+  return str + ")"
 }
 
 /** @internal */

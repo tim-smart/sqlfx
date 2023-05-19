@@ -14,8 +14,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@sqlfx/sql/test": path.join(__dirname, "test"),
-      "@sqlfx/sql": path.join(__dirname, "src"),
+      "@sqlfx/sql": path.join(__dirname, "../sql/src"),
+      "@sqlfx/pg/test": path.join(__dirname, "test"),
+      "@sqlfx/pg": path.join(__dirname, "src"),
     },
   },
 })

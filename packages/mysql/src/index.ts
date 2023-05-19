@@ -15,7 +15,7 @@ import type { Scope } from "@effect/io/Scope"
 import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
-import { defaultEscape, makeCompiler } from "@sqlfx/sql/Statement"
+import * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
 import * as Mysql from "mysql2"
 
@@ -67,7 +67,7 @@ export interface MysqlClientConfig {
   readonly transformQueryNames?: (str: string) => string
 }
 
-const escape = defaultEscape("`")
+const escape = Statement.defaultEscape("`")
 
 /**
  * @category constructor
@@ -77,21 +77,7 @@ export const make = (
   options: MysqlClientConfig,
 ): Effect.Effect<Scope, never, MysqlClient> =>
   Effect.gen(function* (_) {
-    const compiler = makeCompiler(
-      _ => `?`,
-      options.transformQueryNames
-        ? _ => escape(options.transformQueryNames!(_))
-        : escape,
-      (placeholders, values) => [`(${placeholders.join(",")})`, values],
-      (columns, placeholders, values) => [
-        `(${columns.join(",")}) VALUES ${placeholders
-          .map(_ => `(${_})`)
-          .join(",")}`,
-        values.flat(),
-      ],
-      () => ["", []],
-      () => ["", []],
-    )
+    const compiler = makeCompiler(options.transformQueryNames)
 
     const transformRows = Client.defaultRowTransform(
       options.transformResultNames!,
@@ -192,3 +178,15 @@ export const make = (
  */
 export const makeLayer = (config: Config.Config.Wrap<MysqlClientConfig>) =>
   Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
+
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
+export const makeCompiler = (transform?: (_: string) => string) =>
+  Statement.makeCompiler(
+    _ => `?`,
+    transform ? _ => escape(transform(_)) : escape,
+    () => ["", []],
+    () => ["", []],
+  )

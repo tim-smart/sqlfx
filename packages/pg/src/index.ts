@@ -13,7 +13,7 @@ import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
 import type { Custom, Fragment, Primitive } from "@sqlfx/sql/Statement"
-import { custom, defaultEscape, makeCompiler } from "@sqlfx/sql/Statement"
+import * as Statement from "@sqlfx/sql/Statement"
 import type { PostgresError } from "postgres"
 import postgres from "postgres"
 import * as Config from "@effect/io/Config"
@@ -71,7 +71,7 @@ export interface PgClientConfig {
   readonly transformQueryNames?: (str: string) => string
 }
 
-const escape = defaultEscape('"')
+const escape = Statement.defaultEscape('"')
 
 /**
  * @category constructor
@@ -81,37 +81,7 @@ export const make = (
   options: PgClientConfig,
 ): Effect.Effect<Scope, never, PgClient> =>
   Effect.gen(function* (_) {
-    const pg = postgres({ max: 0 })
-
-    const compiler = makeCompiler<PgCustom>(
-      _ => `$${_}`,
-      options.transformQueryNames
-        ? _ => escape(options.transformQueryNames!(_))
-        : escape,
-      (placeholders, values) => [`(${placeholders.join(",")})`, values],
-      (columns, placeholders, values) => [
-        `(${columns.join(",")}) VALUES ${placeholders
-          .map(_ => `(${_})`)
-          .join(",")}`,
-        values.flat(),
-      ],
-      (placeholders, valueAlias, valueColumns, values) => [
-        `(values ${placeholders
-          .map(_ => `(${_})`)
-          .join(",")}) AS ${valueAlias}(${valueColumns.join(",")})`,
-        values.flat(),
-      ],
-      (type, placeholder) => {
-        switch (type.kind) {
-          case "PgJson": {
-            return [placeholder(), [pg.json(type.i0 as any) as any]]
-          }
-          case "PgArray": {
-            return [`ARRAY [${type.i0.map(placeholder).join(",")}]`, type.i0]
-          }
-        }
-      },
-    )
+    const compiler = makeCompiler(options.transformQueryNames)
 
     const opts: postgres.Options<{}> = {
       max: 1,
@@ -215,6 +185,32 @@ export const make = (
 export const makeLayer = (config: Config.Config.Wrap<PgClientConfig>) =>
   Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
 
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
+export const makeCompiler = (transform?: (_: string) => string) => {
+  const pg = postgres({ max: 0 })
+  return Statement.makeCompiler<PgCustom>(
+    _ => `$${_}`,
+    transform ? _ => escape(transform(_)) : escape,
+    (placeholders, valueAlias, valueColumns, values) => [
+      `(values ${placeholders}) AS ${valueAlias}${valueColumns}`,
+      values.flat(),
+    ],
+    (type, placeholder) => {
+      switch (type.kind) {
+        case "PgJson": {
+          return [placeholder(), [pg.json(type.i0 as any) as any]]
+        }
+        case "PgArray": {
+          return [`ARRAY [${type.i0.map(placeholder).join(",")}]`, type.i0]
+        }
+      }
+    },
+  )
+}
+
 // custom types
 
 type PgCustom = PgJson | PgArray
@@ -222,9 +218,9 @@ type PgCustom = PgJson | PgArray
 /** @internal */
 interface PgJson extends Custom<"PgJson", unknown> {}
 /** @internal */
-const PgJson = custom<PgJson>("PgJson")
+const PgJson = Statement.custom<PgJson>("PgJson")
 
 /** @internal */
 interface PgArray extends Custom<"PgArray", ReadonlyArray<Primitive>> {}
 /** @internal */
-const PgArray = custom<PgArray>("PgArray")
+const PgArray = Statement.custom<PgArray>("PgArray")
