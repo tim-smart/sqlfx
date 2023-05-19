@@ -131,10 +131,15 @@ export const make = (
                 ...(error as any).__proto__,
               }),
           )
+        const runTransform = options.transformResultNames
+          ? (sql: string, params?: ReadonlyArray<any>) =>
+              Effect.map(runDefault(sql, params), transformRows)
+          : runDefault
+
         return {
           execute(statement) {
             const [sql, params] = compiler.compile(statement)
-            return Effect.map(runDefault(sql, params), transformRows)
+            return runTransform(sql, params)
           },
           executeWithoutTransform(statement) {
             const [sql, params] = compiler.compile(statement)
@@ -151,7 +156,7 @@ export const make = (
             )
           },
           executeRaw(sql, params) {
-            return runDefault(sql, params)
+            return runTransform(sql, params)
           },
           compile(statement) {
             return Effect.sync(() => compiler.compile(statement))
