@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.2.1
+
+### Patch Changes
+
+- [`6b3d397`](https://github.com/tim-smart/sqlfx/commit/6b3d397ef48211aaf511166d896f6bfed82a9426) Thanks [@tim-smart](https://github.com/tim-smart)! - fix mysql value column renaming
+
 ## 0.2.0
 
 ### Minor Changes
