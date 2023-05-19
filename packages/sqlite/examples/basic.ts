@@ -11,9 +11,14 @@ const SqlLive = Sql.makeLayer({
 
 const program = Effect.gen(function* (_) {
   const sql = yield* _(Sql.tag)
-  const result = yield* _(
-    sql.withTransaction(sql`SELECT * FROM ${sql("people")} LIMIT 1`),
+  yield* _(
+    sql`INSERT INTO people ${sql([
+      { name: "John" },
+      { name: "Jane" },
+      { name: "Fred" },
+    ])}`.compile,
   )
+  const result = yield* _(sql`SELECT * FROM people`)
   console.log(result)
 })
 
