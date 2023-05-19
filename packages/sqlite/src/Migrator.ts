@@ -53,7 +53,10 @@ export const run: ({
             }
           })
         }),
-        _ => _.replace(/\n{2,}/gm, "\n\n").trim(),
+        _ =>
+          _.replace(/^create table sqlite_sequence\(.*$/im, "")
+            .replace(/\n{2,}/gm, "\n\n")
+            .trim(),
       )
 
     const dumpSchema = sqliteDump([".schema"])
