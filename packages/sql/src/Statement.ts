@@ -39,6 +39,11 @@ export interface Statement<A>
     SqlError,
     ReadonlyArray<ReadonlyArray<Primitive>>
   >
+  readonly compile: Effect<
+    never,
+    SqlError,
+    readonly [sql: string, params: ReadonlyArray<Primitive>]
+  >
 }
 
 /**

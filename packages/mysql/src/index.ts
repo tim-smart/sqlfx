@@ -138,14 +138,16 @@ export const make = (
                       Effect.fail(SqlError(error.message, error)),
                     ),
                   )
+                } else if (
+                  Array.isArray(result) &&
+                  result[0] &&
+                  !Array.isArray(result[0]) &&
+                  options.transformResultNames
+                ) {
+                  resume(
+                    Debug.untraced(() => Effect.succeed(transformRows(result))),
+                  )
                 } else {
-                  if (
-                    Array.isArray(result) &&
-                    !Array.isArray(result[0]) &&
-                    options.transformResultNames
-                  ) {
-                    result = transformRows(result as any)
-                  }
                   resume(Debug.untraced(() => Effect.succeed(result)))
                 }
               },
@@ -162,6 +164,9 @@ export const make = (
           },
           executeRaw(sql, params) {
             return run(sql, params)
+          },
+          compile(statement) {
+            return Effect.sync(() => compiler.compile(statement))
           },
         }
       }),

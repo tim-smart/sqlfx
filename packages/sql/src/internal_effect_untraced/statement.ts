@@ -42,6 +42,16 @@ export class StatementPrimitive<A> implements _.Statement<A> {
     )
   }
 
+  get compile(): Effect.Effect<
+    never,
+    SqlError,
+    readonly [sql: string, params: ReadonlyArray<_.Primitive>]
+  > {
+    return Debug.untraced(() =>
+      Effect.scoped(Effect.flatMap(this.i1, _ => _.compile(this as any))),
+    )
+  }
+
   // Make it a valid effect
   public _tag = "Commit" // OP_COMMIT
   public i2: any = undefined
@@ -91,6 +101,10 @@ class StatementTraced<A> implements _.Statement<A> {
 
   get values() {
     return this.i1.values
+  }
+
+  get compile() {
+    return this.i1.compile
   }
 
   // Make it a valid effect

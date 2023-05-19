@@ -170,6 +170,9 @@ export const make = (
                 }),
             )
           },
+          compile(statement) {
+            return Effect.sync(() => compiler.compile(statement))
+          },
         }
       }),
     )
