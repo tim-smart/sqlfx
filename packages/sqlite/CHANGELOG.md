@@ -1,5 +1,11 @@
 # @sqlfx/sqlite
 
+## 0.1.1
+
+### Patch Changes
+
+- [`4eb37dc`](https://github.com/tim-smart/sqlfx/commit/4eb37dcdaff84c3b9a3ddd92756c1239d9da4f7f) Thanks [@tim-smart](https://github.com/tim-smart)! - remove console.log
+
 ## 0.1.0
 
 ### Minor Changes
