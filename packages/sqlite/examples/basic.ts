@@ -16,7 +16,7 @@ const program = Effect.gen(function* (_) {
       { name: "John" },
       { name: "Jane" },
       { name: "Fred" },
-    ])}`.compile,
+    ])}`,
   )
   const result = yield* _(sql`SELECT * FROM people`)
   console.log(result)
