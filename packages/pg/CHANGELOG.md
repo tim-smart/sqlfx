@@ -1,5 +1,16 @@
 # @sqlfx/pg
 
+## 0.2.2
+
+### Patch Changes
+
+- [`6e87756`](https://github.com/tim-smart/sqlfx/commit/6e877564a8c69301531b79dc11ff062d176a7029) Thanks [@tim-smart](https://github.com/tim-smart)! - add json and array helpers to pg
+
+- [`7faf16b`](https://github.com/tim-smart/sqlfx/commit/7faf16babc4161971113849cff7003d53491205c) Thanks [@tim-smart](https://github.com/tim-smart)! - add compile helper
+
+- Updated dependencies [[`6e87756`](https://github.com/tim-smart/sqlfx/commit/6e877564a8c69301531b79dc11ff062d176a7029), [`7faf16b`](https://github.com/tim-smart/sqlfx/commit/7faf16babc4161971113849cff7003d53491205c)]:
+  - @sqlfx/sql@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes
