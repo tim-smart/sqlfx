@@ -499,3 +499,19 @@ export function make(
 
   return client
 }
+
+/** @internal */
+export function defaultRowTransform(transformer: (str: string) => string) {
+  return (rows: ReadonlyArray<Row>): ReadonlyArray<Row> => {
+    const newRows: Array<Row> = []
+    for (let i = 0, len = rows.length; i < len; i++) {
+      const row = rows[i]
+      const obj: Record<string, any> = {}
+      for (const key in row) {
+        obj[transformer(key)] = row[key]
+      }
+      newRows.push(obj)
+    }
+    return newRows
+  }
+}

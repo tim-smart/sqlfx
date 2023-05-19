@@ -242,3 +242,11 @@ export interface Resolver<T extends string, II, IA, A, E> {
   readonly populateCache: (id: II, _: A) => Effect.Effect<never, never, void>
   readonly invalidateCache: (id: II) => Effect.Effect<never, never, void>
 }
+
+/**
+ * @since 1.0.0
+ */
+export const defaultRowTransform: (
+  transformer: (str: string) => string,
+) => (rows: ReadonlyArray<Row>) => ReadonlyArray<Row> =
+  internal.defaultRowTransform

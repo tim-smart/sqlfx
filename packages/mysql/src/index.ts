@@ -93,6 +93,10 @@ export const make = (
       () => ["", []],
     )
 
+    const transformRows = Client.defaultRowTransform(
+      options.transformResultNames!,
+    )
+
     const makeConnection = pipe(
       Effect.acquireRelease(
         Effect.sync(() =>
@@ -127,7 +131,7 @@ export const make = (
                 values: params,
                 rowsAsArray: values,
               },
-              (error, result) => {
+              (error, result: any) => {
                 if (error) {
                   resume(
                     Debug.untraced(() =>
@@ -135,6 +139,13 @@ export const make = (
                     ),
                   )
                 } else {
+                  if (
+                    Array.isArray(result) &&
+                    !Array.isArray(result[0]) &&
+                    options.transformResultNames
+                  ) {
+                    result = transformRows(result as any)
+                  }
                   resume(Debug.untraced(() => Effect.succeed(result)))
                 }
               },
