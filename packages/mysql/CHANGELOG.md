@@ -1,5 +1,14 @@
 # @sqlfx/mysql
 
+## 0.1.3
+
+### Patch Changes
+
+- [`4210d6f`](https://github.com/tim-smart/sqlfx/commit/4210d6f8e1e94072c3b43adf29ad1e19972513c1) Thanks [@tim-smart](https://github.com/tim-smart)! - optimize compiler
+
+- Updated dependencies [[`4210d6f`](https://github.com/tim-smart/sqlfx/commit/4210d6f8e1e94072c3b43adf29ad1e19972513c1)]:
+  - @sqlfx/sql@0.2.3
+
 ## 0.1.2
 
 ### Patch Changes
