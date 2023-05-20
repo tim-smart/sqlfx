@@ -12,9 +12,11 @@ import * as Pool from "@effect/io/Pool"
 import type { Scope } from "@effect/io/Scope"
 import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
+import { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
 import * as internal from "@sqlfx/sqlite/internal/client"
+import type { SqliteError } from "better-sqlite3"
 import Sqlite from "better-sqlite3"
 
 export {
@@ -86,13 +88,18 @@ export const make = (
         sql: string,
         params: ReadonlyArray<Statement.Primitive> = [],
       ) =>
-        Effect.map(prepareCache.get(sql), _ => {
-          if (_.reader) {
-            return _.all(...params) as ReadonlyArray<any>
-          }
-          _.run(...params)
-          return []
-        })
+        Effect.flatMap(prepareCache.get(sql), _ =>
+          Effect.tryCatch(
+            () => {
+              if (_.reader) {
+                return _.all(...params) as ReadonlyArray<any>
+              }
+              _.run(...params)
+              return []
+            },
+            (error: any) => SqlError(error.toString(), { ...error }),
+          ),
+        )
 
       const runTransform = options.transformResultNames
         ? (sql: string, params?: ReadonlyArray<Statement.Primitive>) =>
@@ -106,15 +113,18 @@ export const make = (
         Effect.acquireUseRelease(
           Effect.map(prepareCache.get(sql), _ => _.raw(true)),
           statement =>
-            Effect.sync(() => {
-              if (statement.reader) {
-                return statement.all(...params) as ReadonlyArray<
-                  ReadonlyArray<Statement.Primitive>
-                >
-              }
-              statement.run(...params)
-              return []
-            }),
+            Effect.tryCatch(
+              () => {
+                if (statement.reader) {
+                  return statement.all(...params) as ReadonlyArray<
+                    ReadonlyArray<Statement.Primitive>
+                  >
+                }
+                statement.run(...params)
+                return []
+              },
+              (error: any) => SqlError(error.toString(), { ...error }),
+            ),
           statement => Effect.sync(() => statement.raw(false)),
         )
 
