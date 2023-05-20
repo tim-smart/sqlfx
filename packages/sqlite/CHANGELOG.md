@@ -1,5 +1,11 @@
 # @sqlfx/sqlite
 
+## 0.3.2
+
+### Patch Changes
+
+- [`1f4ac8e`](https://github.com/tim-smart/sqlfx/commit/1f4ac8ee3051dd8035e7049ffd4ba991ec00f159) Thanks [@tim-smart](https://github.com/tim-smart)! - catch errors in sqlite
+
 ## 0.3.1
 
 ### Patch Changes
