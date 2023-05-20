@@ -9,7 +9,7 @@ const program = Effect.gen(function* (_) {
   const sql = yield* _(Sql.tag)
 
   const [{ id }] = yield* _(
-    sql`INSERT INTO people (name) VALUES ('John') RETURNING *`,
+    sql`INSERT INTO people ${sql({ name: "John" })} RETURNING *`,
   )
 
   const person = yield* _(sql`SELECT * FROM people WHERE id = ${id}`)
