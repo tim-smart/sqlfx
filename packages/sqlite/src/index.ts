@@ -84,12 +84,15 @@ export const make = (
         ),
       )
 
-      const run = (sql: string, params?: ReadonlyArray<Statement.Primitive>) =>
+      const run = (
+        sql: string,
+        params: ReadonlyArray<Statement.Primitive> = [],
+      ) =>
         Effect.map(prepareCache.get(sql), _ => {
           if (_.reader) {
-            return _.all(params) as ReadonlyArray<any>
+            return _.all(...params) as ReadonlyArray<any>
           }
-          _.run(params)
+          _.run(...params)
           return []
         })
 
@@ -107,11 +110,11 @@ export const make = (
           statement =>
             Effect.sync(() => {
               if (statement.reader) {
-                return statement.all(params) as ReadonlyArray<
+                return statement.all(...params) as ReadonlyArray<
                   ReadonlyArray<Statement.Primitive>
                 >
               }
-              statement.run(params)
+              statement.run(...params)
               return []
             }),
           statement => Effect.sync(() => statement.raw(false)),
