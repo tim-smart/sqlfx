@@ -112,7 +112,7 @@ export const make = (
           values = false,
         ) =>
           Effect.async<never, SqlError, any>(resume =>
-            conn.query(
+            conn.execute(
               {
                 sql,
                 values: params,

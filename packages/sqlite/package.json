@@ -55,10 +55,11 @@
     "@effect/data": "^0.12",
     "@effect/io": "^0.25.12",
     "@sqlfx/sql": "workspace:*",
-    "sqlite3": "^5.1.6"
+    "better-sqlite3": "^8.3.0"
   },
   "devDependencies": {
     "@effect/schema": "^0.19.2",
+    "@types/better-sqlite3": "^7.6.4",
     "effect-schema-class": "^0.2.4"
   }
 }

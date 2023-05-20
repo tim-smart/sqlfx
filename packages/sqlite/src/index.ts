@@ -2,19 +2,18 @@
  * @since 1.0.0
  */
 import { Tag } from "@effect/data/Context"
-import * as Debug from "@effect/data/Debug"
-import { pipe } from "@effect/data/Function"
+import * as Duration from "@effect/data/Duration"
+import { identity } from "@effect/data/Function"
+import * as Cache from "@effect/io/Cache"
 import * as Config from "@effect/io/Config"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Pool from "@effect/io/Pool"
 import type { Scope } from "@effect/io/Scope"
 import * as Client from "@sqlfx/sql/Client"
-import type { Connection, Row } from "@sqlfx/sql/Connection"
-import { SqlError } from "@sqlfx/sql/Error"
+import type { Connection } from "@sqlfx/sql/Connection"
 import * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
-import * as Sqlite from "sqlite3"
 
 export {
   /**
@@ -45,22 +44,11 @@ export const tag = Tag<SqliteClient>()
  */
 export interface SqliteClientConfig {
   readonly filename: string
-  readonly mode?: ReadonlyArray<SqliteOpenMode>
+  readonly readonly?: boolean
+  readonly prepareCacheSize?: number
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
 }
-
-/**
- * @category model
- * @since 1.0.0
- */
-export type SqliteOpenMode =
-  | "OPEN_READONLY"
-  | "OPEN_READWRITE"
-  | "OPEN_CREATE"
-  | "OPEN_FULLMUTEX"
-  | "OPEN_SHAREDCACHE"
-  | "OPEN_PRIVATECACHE"
 
 const escape = Statement.defaultEscape('"')
 
@@ -72,66 +60,82 @@ export const make = (
   options: SqliteClientConfig,
 ): Effect.Effect<Scope, never, SqliteClient> =>
   Effect.gen(function* (_) {
-    const compiler = makeCompiler(options.transformQueryNames)
+    const Sqlite = yield* _(Effect.promise(() => import("better-sqlite3")))
 
+    const compiler = makeCompiler(options.transformQueryNames)
     const transformRows = Client.defaultRowTransform(
       options.transformResultNames!,
     )
 
-    const mode = options.mode?.reduce((acc, _) => acc | Sqlite[_], 0)
+    // const prepareCache = yield* _()
+    const makeConnection = Effect.gen(function* (_) {
+      const db = new Sqlite.default(options.filename, {
+        readonly: options.readonly ?? false,
+      })
+      yield* _(Effect.addFinalizer(() => Effect.sync(() => db.close())))
 
-    const makeConnection = pipe(
-      Effect.acquireRelease(
-        Effect.sync(() => new Sqlite.Database(options.filename, mode)),
-        _ =>
-          Effect.async<never, never, void>(resume =>
-            _.close(() => resume(Effect.unit())),
-          ),
-      ),
-      Effect.map((db): Connection => {
-        const run = (
-          sql: string,
-          params?: ReadonlyArray<any>,
-          transform = true,
-        ) =>
-          Effect.async<never, SqlError, any>(resume =>
-            db.all<Row>(sql, params, (error, result) => {
-              if (error) {
-                resume(
-                  Debug.untraced(() =>
-                    Effect.fail(SqlError(error.message, error)),
-                  ),
-                )
-              } else if (transform && options.transformResultNames) {
-                resume(
-                  Debug.untraced(() => Effect.succeed(transformRows(result))),
-                )
-              } else {
-                resume(Debug.untraced(() => Effect.succeed(result)))
+      const prepareCache = yield* _(
+        Cache.make(
+          options.prepareCacheSize ?? 200,
+          Duration.minutes(45),
+          (sql: string) => Effect.sync(() => db.prepare(sql)),
+        ),
+      )
+
+      const run = (sql: string, params?: ReadonlyArray<Statement.Primitive>) =>
+        Effect.map(prepareCache.get(sql), _ => {
+          if (_.reader) {
+            return _.all(params) as ReadonlyArray<any>
+          }
+          _.run(params)
+          return []
+        })
+
+      const runTransform = options.transformResultNames
+        ? (sql: string, params?: ReadonlyArray<Statement.Primitive>) =>
+            Effect.map(run(sql, params), transformRows)
+        : run
+
+      const runValues = (
+        sql: string,
+        params: ReadonlyArray<Statement.Primitive>,
+      ) =>
+        Effect.acquireUseRelease(
+          Effect.map(prepareCache.get(sql), _ => _.raw(true)),
+          statement =>
+            Effect.sync(() => {
+              if (statement.reader) {
+                return statement.all(params) as ReadonlyArray<
+                  ReadonlyArray<Statement.Primitive>
+                >
               }
+              statement.run(params)
+              return []
             }),
-          )
-        return {
-          execute(statement) {
-            const [sql, params] = compiler.compile(statement)
-            return run(sql, params)
-          },
-          executeWithoutTransform(statement) {
-            const [sql, params] = compiler.compile(statement)
-            return run(sql, params, false)
-          },
-          executeValues() {
-            return Effect.dieMessage("unimplemented")
-          },
-          executeRaw(sql, params) {
-            return run(sql, params)
-          },
-          compile(statement) {
-            return Effect.sync(() => compiler.compile(statement))
-          },
-        }
-      }),
-    )
+          statement => Effect.sync(() => statement.raw(false)),
+        )
+
+      return identity<Connection>({
+        execute(statement) {
+          const [sql, params] = compiler.compile(statement)
+          return runTransform(sql, params)
+        },
+        executeValues(statement) {
+          const [sql, params] = compiler.compile(statement)
+          return runValues(sql, params)
+        },
+        executeWithoutTransform(statement) {
+          const [sql, params] = compiler.compile(statement)
+          return run(sql, params)
+        },
+        executeRaw(sql, params) {
+          return runTransform(sql, params)
+        },
+        compile(statement) {
+          return Effect.sync(() => compiler.compile(statement))
+        },
+      })
+    })
 
     const pool = yield* _(Pool.make(makeConnection, 1))
 
