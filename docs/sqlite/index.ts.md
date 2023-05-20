@@ -19,7 +19,6 @@ Added in v1.0.0
   - [makeLayer](#makelayer)
 - [model](#model)
   - [SqliteClient (interface)](#sqliteclient-interface)
-  - [SqliteOpenMode (type alias)](#sqliteopenmode-type-alias)
 - [tag](#tag)
   - [tag](#tag-1)
 - [utils](#utils)
@@ -36,7 +35,8 @@ Added in v1.0.0
 ```ts
 export interface SqliteClientConfig {
   readonly filename: string
-  readonly mode?: ReadonlyArray<SqliteOpenMode>
+  readonly readonly?: boolean
+  readonly prepareCacheSize?: number
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
 }
@@ -86,22 +86,6 @@ Added in v1.0.0
 export interface SqliteClient extends Client.Client {
   readonly config: SqliteClientConfig
 }
-```
-
-Added in v1.0.0
-
-## SqliteOpenMode (type alias)
-
-**Signature**
-
-```ts
-export type SqliteOpenMode =
-  | 'OPEN_READONLY'
-  | 'OPEN_READWRITE'
-  | 'OPEN_CREATE'
-  | 'OPEN_FULLMUTEX'
-  | 'OPEN_SHAREDCACHE'
-  | 'OPEN_PRIVATECACHE'
 ```
 
 Added in v1.0.0
