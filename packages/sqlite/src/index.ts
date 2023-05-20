@@ -74,6 +74,8 @@ export const make = (
       })
       yield* _(Effect.addFinalizer(() => Effect.sync(() => db.close())))
 
+      db.pragma("journal_mode = WAL")
+
       const prepareCache = yield* _(
         Cache.make(
           options.prepareCacheSize ?? 200,
