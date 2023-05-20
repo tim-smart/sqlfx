@@ -13,14 +13,30 @@ import type { SqlError } from "@sqlfx/sql/Error"
  * @since 1.0.0
  */
 export interface MigratorOptions {
-  readonly loader: Effect.Effect<
-    never,
-    MigrationError,
-    ReadonlyArray<readonly [number, string, string]>
-  >
+  readonly loader: Loader
   readonly schemaDirectory?: string
   readonly table?: string
 }
+
+/**
+ * @category model
+ * @since 1.0.0
+ */
+export type Loader = Effect.Effect<
+  never,
+  MigrationError,
+  ReadonlyArray<ResolvedMigration>
+>
+
+/**
+ * @category model
+ * @since 1.0.0
+ */
+export type ResolvedMigration = readonly [
+  id: number,
+  name: string,
+  load: Effect.Effect<never, never, any>,
+]
 
 /**
  * @category model
@@ -110,15 +126,15 @@ export const make =
           ),
       )
 
-      const loadMigration = (path: string) =>
+      const loadMigration = ([id, name, load]: ResolvedMigration) =>
         pipe(
-          Effect.tryCatchPromise(
-            () => import(path),
-            _ =>
+          Effect.catchAllDefect(load, _ =>
+            Effect.fail(
               MigrationError({
                 reason: "import-error",
-                message: `Could not import migration: ${path}\n\n${_}`,
+                message: `Could not import migration "${id}_${name}"\n\n${_}`,
               }),
+            ),
           ),
           Effect.flatMap(_ =>
             _.default
@@ -126,7 +142,7 @@ export const make =
               : Effect.fail(
                   MigrationError({
                     reason: "import-error",
-                    message: `Default export not found for migration: ${path}`,
+                    message: `Default export not found for migration "${id}_${name}"`,
                   }),
                 ),
           ),
@@ -136,7 +152,7 @@ export const make =
             () =>
               MigrationError({
                 reason: "import-error",
-                message: `Default export was not an Effect for migration: ${path}`,
+                message: `Default export was not an Effect for migration "${id}_${name}"`,
               }),
           ),
         )
@@ -190,7 +206,8 @@ export const make =
           ]
         > = []
 
-        for (const [currentId, currentName, basename] of current) {
+        for (const resolved of current) {
+          const [currentId, currentName] = resolved
           if (currentId <= latestMigrationId) {
             continue
           }
@@ -198,7 +215,7 @@ export const make =
           required.push([
             currentId,
             currentName,
-            yield* _(loadMigration(basename)),
+            yield* _(loadMigration(resolved)),
           ])
         }
 
@@ -271,7 +288,7 @@ export const make =
 /**
  * @since 1.0.0
  */
-export const fromDisk = (directory: string) =>
+export const fromDisk = (directory: string): Loader =>
   pipe(
     Effect.promise(() => import("node:fs")),
     Effect.map(NFS =>
@@ -282,7 +299,14 @@ export const fromDisk = (directory: string) =>
         .flatMap(
           Option.match(
             () => [],
-            ([basename, id, name]) => [[Number(id), name, `${directory}/${basename}`]] as const,
+            ([basename, id, name]): ReadonlyArray<ResolvedMigration> =>
+              [
+                [
+                  Number(id),
+                  name,
+                  Effect.promise(() => import(`${directory}/${basename}`)),
+                ],
+              ] as const,
           ),
         )
         .sort(([a], [b]) => a - b),
@@ -298,7 +322,9 @@ export const fromDisk = (directory: string) =>
 /**
  * @since 1.0.0
  */
-export const fromGlob = (migrations: Record<string, () => Promise<any>>) =>
+export const fromGlob = (
+  migrations: Record<string, () => Promise<any>>,
+): Loader =>
   Effect.succeed(
     Object.keys(migrations)
       .map(_ =>
@@ -307,7 +333,10 @@ export const fromGlob = (migrations: Record<string, () => Promise<any>>) =>
       .flatMap(
         Option.match(
           () => [],
-          ([basename, id, name]) => [[Number(id), name, basename]] as const,
+          ([key, id, name]) =>
+            [
+              [Number(id), name, Effect.promise(() => migrations[key]())],
+            ] as const,
         ),
       )
       .sort(([a], [b]) => a - b),
