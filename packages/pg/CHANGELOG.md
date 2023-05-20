@@ -1,5 +1,16 @@
 # @sqlfx/pg
 
+## 0.3.0
+
+### Minor Changes
+
+- [#35](https://github.com/tim-smart/sqlfx/pull/35) [`fe1e7c4`](https://github.com/tim-smart/sqlfx/commit/fe1e7c40f3f7cb6031edd90eec3c880a06aeda40) Thanks [@tim-smart](https://github.com/tim-smart)! - decouple migration loading from Migrator
+
+### Patch Changes
+
+- Updated dependencies [[`fe1e7c4`](https://github.com/tim-smart/sqlfx/commit/fe1e7c40f3f7cb6031edd90eec3c880a06aeda40)]:
+  - @sqlfx/sql@0.3.0
+
 ## 0.2.4
 
 ### Patch Changes
