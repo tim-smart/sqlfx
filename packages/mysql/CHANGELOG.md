@@ -1,5 +1,11 @@
 # @sqlfx/mysql
 
+## 0.2.1
+
+### Patch Changes
+
+- [`d237eca`](https://github.com/tim-smart/sqlfx/commit/d237ecac35d1570af80bd41daf8c546e301ebb64) Thanks [@tim-smart](https://github.com/tim-smart)! - use execute for mysql queries
+
 ## 0.2.0
 
 ### Minor Changes
