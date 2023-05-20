@@ -15,6 +15,9 @@ Added in v1.0.0
 - [constructor](#constructor)
   - [makeLayer](#makelayer)
   - [run](#run)
+- [loader](#loader)
+  - [fromDisk](#fromdisk)
+  - [fromGlob](#fromglob)
 
 ---
 
@@ -37,15 +40,31 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const run: ({
-  directory,
-  schemaDirectory,
-  table,
-}: _.MigratorOptions) => Effect.Effect<
-  Sql.SqliteClient,
-  SqlError | _.MigrationError,
-  ReadonlyArray<readonly [id: number, name: string]>
->
+export declare const run: (
+  options: _.MigratorOptions
+) => Effect.Effect<Sql.SqliteClient, SqlError | _.MigrationError, ReadonlyArray<readonly [id: number, name: string]>>
+```
+
+Added in v1.0.0
+
+# loader
+
+## fromDisk
+
+**Signature**
+
+```ts
+export declare const fromDisk: (directory: string) => _.Loader
+```
+
+Added in v1.0.0
+
+## fromGlob
+
+**Signature**
+
+```ts
+export declare const fromGlob: (migrations: Record<string, () => Promise<any>>) => _.Loader
 ```
 
 Added in v1.0.0

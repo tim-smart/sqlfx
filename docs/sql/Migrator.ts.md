@@ -18,8 +18,13 @@ Added in v1.0.0
   - [MigrationError](#migrationerror)
   - [MigrationError (interface)](#migrationerror-interface)
 - [model](#model)
+  - [Loader (type alias)](#loader-type-alias)
   - [Migration (interface)](#migration-interface)
   - [MigratorOptions (interface)](#migratoroptions-interface)
+  - [ResolvedMigration (type alias)](#resolvedmigration-type-alias)
+- [utils](#utils)
+  - [fromDisk](#fromdisk)
+  - [fromGlob](#fromglob)
 
 ---
 
@@ -41,7 +46,7 @@ export declare const make: <R extends Client>({
   ensureTable: (sql: R, table: string) => Effect.Effect<never, SqlError, void>
   lockTable?: ((sql: R, table: string) => Effect.Effect<never, SqlError, void>) | undefined
 }) => ({
-  directory,
+  loader,
   schemaDirectory,
   table,
 }: MigratorOptions) => Effect.Effect<R, SqlError | MigrationError, readonly (readonly [id: number, name: string])[]>
@@ -77,6 +82,16 @@ Added in v1.0.0
 
 # model
 
+## Loader (type alias)
+
+**Signature**
+
+```ts
+export type Loader = Effect.Effect<never, MigrationError, ReadonlyArray<ResolvedMigration>>
+```
+
+Added in v1.0.0
+
 ## Migration (interface)
 
 **Signature**
@@ -97,10 +112,42 @@ Added in v1.0.0
 
 ```ts
 export interface MigratorOptions {
-  readonly directory: string
-  readonly schemaDirectory: string
+  readonly loader: Loader
+  readonly schemaDirectory?: string
   readonly table?: string
 }
+```
+
+Added in v1.0.0
+
+## ResolvedMigration (type alias)
+
+**Signature**
+
+```ts
+export type ResolvedMigration = readonly [id: number, name: string, load: Effect.Effect<never, never, any>]
+```
+
+Added in v1.0.0
+
+# utils
+
+## fromDisk
+
+**Signature**
+
+```ts
+export declare const fromDisk: (directory: string) => Loader
+```
+
+Added in v1.0.0
+
+## fromGlob
+
+**Signature**
+
+```ts
+export declare const fromGlob: (migrations: Record<string, () => Promise<any>>) => Loader
 ```
 
 Added in v1.0.0

@@ -13,4 +13,4 @@ CREATE TABLE `sqlfx_migrations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO `sqlfx_migrations` VALUES
-(1,'2023-05-18 23:16:10','create people');
+(1,'2023-05-20 01:03:50','create people');
