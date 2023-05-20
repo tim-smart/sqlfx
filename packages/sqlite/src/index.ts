@@ -12,8 +12,10 @@ import * as Pool from "@effect/io/Pool"
 import type { Scope } from "@effect/io/Scope"
 import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
-import * as Statement from "@sqlfx/sql/Statement"
+import type * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
+import * as internal from "@sqlfx/sqlite/internal/client"
+import Sqlite from "better-sqlite3"
 
 export {
   /**
@@ -50,8 +52,6 @@ export interface SqliteClientConfig {
   readonly transformQueryNames?: (str: string) => string
 }
 
-const escape = Statement.defaultEscape('"')
-
 /**
  * @category constructor
  * @since 1.0.0
@@ -60,8 +60,6 @@ export const make = (
   options: SqliteClientConfig,
 ): Effect.Effect<Scope, never, SqliteClient> =>
   Effect.gen(function* (_) {
-    const Sqlite = yield* _(Effect.promise(() => import("better-sqlite3")))
-
     const compiler = makeCompiler(options.transformQueryNames)
     const transformRows = Client.defaultRowTransform(
       options.transformResultNames!,
@@ -69,7 +67,7 @@ export const make = (
 
     // const prepareCache = yield* _()
     const makeConnection = Effect.gen(function* (_) {
-      const db = new Sqlite.default(options.filename, {
+      const db = new Sqlite(options.filename, {
         readonly: options.readonly ?? false,
       })
       yield* _(Effect.addFinalizer(() => Effect.sync(() => db.close())))
@@ -160,10 +158,6 @@ export const makeLayer = (config: Config.Config.Wrap<SqliteClientConfig>) =>
  * @category constructor
  * @since 1.0.0
  */
-export const makeCompiler = (transform?: (_: string) => string) =>
-  Statement.makeCompiler(
-    _ => `?`,
-    transform ? _ => escape(transform(_)) : escape,
-    () => ["", []],
-    () => ["", []],
-  )
+export const makeCompiler: (
+  transform?: ((_: string) => string) | undefined,
+) => Statement.Compiler = internal.makeCompiler
