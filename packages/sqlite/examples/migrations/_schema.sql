@@ -9,4 +9,4 @@ CREATE TABLE people (
         created_at datetime NOT NULL DEFAULT current_timestamp
       );
 
-INSERT INTO sqlfx_migrations VALUES(1,'2023-05-19 11:27:13','create people');
+INSERT INTO sqlfx_migrations VALUES(1,'2023-05-20 00:03:29','create people');

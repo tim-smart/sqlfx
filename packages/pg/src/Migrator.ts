@@ -11,15 +11,28 @@ import { execFile } from "node:child_process"
 import * as NFS from "node:fs"
 import * as Path from "node:path"
 
+const { fromDisk, fromGlob } = _
+
+export {
+  /**
+   * @category loader
+   * @since 1.0.0
+   */
+  fromDisk,
+  /**
+   * @category loader
+   * @since 1.0.0
+   */
+  fromGlob,
+}
+
 /**
  * @category constructor
  * @since 1.0.0
  */
-export const run: ({
-  directory,
-  schemaDirectory,
-  table,
-}: _.MigratorOptions) => Effect.Effect<
+export const run: (
+  options: _.MigratorOptions,
+) => Effect.Effect<
   Pg.PgClient,
   SqlError | _.MigrationError,
   ReadonlyArray<readonly [id: number, name: string]>

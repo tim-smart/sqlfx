@@ -3,7 +3,6 @@ import * as Config from "@effect/io/Config"
 import * as Effect from "@effect/io/Effect"
 import * as Sql from "@sqlfx/sqlite"
 import * as Migrator from "@sqlfx/sqlite/Migrator"
-import * as Path from "path"
 import * as Layer from "@effect/io/Layer"
 
 const program = Effect.gen(function* (_) {
@@ -26,7 +25,7 @@ const SqlLive = Sql.makeLayer({
 const MigratorLive = Layer.provide(
   SqlLive,
   Migrator.makeLayer({
-    directory: Path.join(__dirname, "migrations"),
+    loader: Migrator.fromDisk(`${__dirname}/migrations`),
     schemaDirectory: "examples/migrations",
   }),
 )

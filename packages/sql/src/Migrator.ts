@@ -5,18 +5,20 @@ import * as Data from "@effect/data/Data"
 import { pipe } from "@effect/data/Function"
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
-import * as NFS from "node:fs"
-import * as Path from "node:path"
-import type { SqlError } from "@sqlfx/sql/Error"
 import type { Client } from "@sqlfx/sql/Client"
+import type { SqlError } from "@sqlfx/sql/Error"
 
 /**
  * @category model
  * @since 1.0.0
  */
 export interface MigratorOptions {
-  readonly directory: string
-  readonly schemaDirectory: string
+  readonly loader: Effect.Effect<
+    never,
+    MigrationError,
+    ReadonlyArray<readonly [number, string, string]>
+  >
+  readonly schemaDirectory?: string
   readonly table?: string
 }
 
@@ -72,7 +74,7 @@ export const make =
     lockTable?: (sql: R, table: string) => Effect.Effect<never, SqlError, void>
   }) =>
   ({
-    directory,
+    loader,
     schemaDirectory,
     table = "sqlfx_migrations",
   }: MigratorOptions): Effect.Effect<
@@ -108,39 +110,14 @@ export const make =
           ),
       )
 
-      const migrationsFromDisk = Effect.catchAllDefect(
-        Effect.sync(() =>
-          NFS.readdirSync(directory)
-            .map(_ =>
-              Option.fromNullable(
-                Path.basename(_).match(/^(\d+)_([^.]+)\.(js|ts)$/),
-              ),
-            )
-            .flatMap(
-              Option.match(
-                () => [],
-                ([basename, id, name]) =>
-                  [[Number(id), name, basename]] as const,
-              ),
-            )
-            .sort(([a], [b]) => a - b),
-        ),
-        _ =>
-          Effect.as(
-            Effect.logInfo(`Could not load migrations from disk: ${_}`),
-            [],
-          ),
-      )
-
-      const loadMigration = (path: string) => {
-        const fullPath = Path.join(directory, path)
-        return pipe(
+      const loadMigration = (path: string) =>
+        pipe(
           Effect.tryCatchPromise(
-            () => import(fullPath),
+            () => import(path),
             _ =>
               MigrationError({
                 reason: "import-error",
-                message: `Could not import migration: ${fullPath}\n\n${_}`,
+                message: `Could not import migration: ${path}\n\n${_}`,
               }),
           ),
           Effect.flatMap(_ =>
@@ -149,7 +126,7 @@ export const make =
               : Effect.fail(
                   MigrationError({
                     reason: "import-error",
-                    message: `Default export not found for migration: ${fullPath}`,
+                    message: `Default export not found for migration: ${path}`,
                   }),
                 ),
           ),
@@ -159,11 +136,10 @@ export const make =
             () =>
               MigrationError({
                 reason: "import-error",
-                message: `Default export was not an Effect for migration: ${fullPath}`,
+                message: `Default export was not an Effect for migration: ${path}`,
               }),
           ),
         )
-      }
 
       const runMigration = (
         id: number,
@@ -191,7 +167,7 @@ export const make =
                 _ => _.id,
               ),
             ),
-            migrationsFromDisk,
+            loader,
           ),
         )
 
@@ -282,12 +258,57 @@ export const make =
         ),
       )
 
-      if (completed.length > 0) {
+      if (schemaDirectory && completed.length > 0) {
         yield* _(
-          dumpSchema(sql, Path.join(schemaDirectory, "_schema.sql"), table),
+          dumpSchema(sql, `${schemaDirectory}/_schema.sql`, table),
           Effect.ignoreLogged,
         )
       }
 
       return completed
     })
+
+/**
+ * @since 1.0.0
+ */
+export const fromDisk = (directory: string) =>
+  pipe(
+    Effect.promise(() => import("node:fs")),
+    Effect.map(NFS =>
+      NFS.readdirSync(directory)
+        .map(_ =>
+          Option.fromNullable(_.match(/^(?:.*\/)?(\d+)_([^.]+)\.(js|ts)$/)),
+        )
+        .flatMap(
+          Option.match(
+            () => [],
+            ([basename, id, name]) => [[Number(id), name, `${directory}/${basename}`]] as const,
+          ),
+        )
+        .sort(([a], [b]) => a - b),
+    ),
+    Effect.catchAllDefect(_ =>
+      Effect.as(
+        Effect.logInfo(`Could not load migrations from disk: ${_}`),
+        [],
+      ),
+    ),
+  )
+
+/**
+ * @since 1.0.0
+ */
+export const fromGlob = (migrations: Record<string, () => Promise<any>>) =>
+  Effect.succeed(
+    Object.keys(migrations)
+      .map(_ =>
+        Option.fromNullable(_.match(/^(?:.*\/)?(\d+)_([^.]+)\.(js|ts)$/)),
+      )
+      .flatMap(
+        Option.match(
+          () => [],
+          ([basename, id, name]) => [[Number(id), name, basename]] as const,
+        ),
+      )
+      .sort(([a], [b]) => a - b),
+  )

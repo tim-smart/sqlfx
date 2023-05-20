@@ -4,7 +4,6 @@ import * as ConfigSecret from "@effect/io/Config/Secret"
 import * as Effect from "@effect/io/Effect"
 import * as Sql from "@sqlfx/mysql"
 import * as Migrator from "@sqlfx/mysql/Migrator"
-import * as Path from "path"
 import * as Layer from "@effect/io/Layer"
 
 const program = Effect.gen(function* (_) {
@@ -32,7 +31,7 @@ const SqlLive = Sql.makeLayer({
 const MigratorLive = Layer.provide(
   SqlLive,
   Migrator.makeLayer({
-    directory: Path.join(__dirname, "migrations"),
+    loader: Migrator.fromDisk(`${__dirname}/migrations`),
     schemaDirectory: "examples/migrations",
   }),
 )
