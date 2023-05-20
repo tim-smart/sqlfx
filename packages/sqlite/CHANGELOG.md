@@ -1,5 +1,11 @@
 # @sqlfx/sqlite
 
+## 0.3.0
+
+### Minor Changes
+
+- [`62bb6cb`](https://github.com/tim-smart/sqlfx/commit/62bb6cb765138fcf0b57736ac504c9d6c8c2d229) Thanks [@tim-smart](https://github.com/tim-smart)! - use better-sqlite3
+
 ## 0.2.0
 
 ### Minor Changes
