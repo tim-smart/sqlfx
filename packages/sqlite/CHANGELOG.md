@@ -1,5 +1,11 @@
 # @sqlfx/sqlite
 
+## 0.3.1
+
+### Patch Changes
+
+- [`de3160d`](https://github.com/tim-smart/sqlfx/commit/de3160ddecc532fef094a6ee4bc6ef1ac70e4969) Thanks [@tim-smart](https://github.com/tim-smart)! - fix sqlite params
+
 ## 0.3.0
 
 ### Minor Changes
