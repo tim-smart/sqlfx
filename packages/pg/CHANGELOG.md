@@ -1,5 +1,14 @@
 # @sqlfx/pg
 
+## 0.3.3
+
+### Patch Changes
+
+- [`b2f9bf9`](https://github.com/tim-smart/sqlfx/commit/b2f9bf95a5a2a9fd273a6e98aad509aa5c56411d) Thanks [@tim-smart](https://github.com/tim-smart)! - support interruption in pg client
+
+- Updated dependencies [[`b2f9bf9`](https://github.com/tim-smart/sqlfx/commit/b2f9bf95a5a2a9fd273a6e98aad509aa5c56411d)]:
+  - @sqlfx/sql@0.4.2
+
 ## 0.3.2
 
 ### Patch Changes
