@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.4.1
+
+### Patch Changes
+
+- [`bf1f922`](https://github.com/tim-smart/sqlfx/commit/bf1f92215118312cd14e59e6c497f386ed6c703e) Thanks [@tim-smart](https://github.com/tim-smart)! - general api cleanup
+
 ## 0.4.0
 
 ### Minor Changes
