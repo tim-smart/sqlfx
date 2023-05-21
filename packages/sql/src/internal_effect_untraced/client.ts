@@ -153,54 +153,49 @@ export function make(
       },
   )
 
-  const makeExecuteRequest = <E, A, RI, RA>(
-    parentTrace: Debug.Trace,
-    Request: request.Request.Constructor<
-      request.Request<SchemaError | E, A> & { i0: RI }
-    >,
-    Resolver: RequestResolver.RequestResolver<any>,
-    schema: Schema.Schema<RI, RA>,
-    context = Context.empty() as Context.Context<any>,
-  ) => {
-    const encodeRequest = SqlSchema.encode(schema, "request")
-    const resolverWithSql = Effect.map(
-      Effect.serviceOption(TransactionConn),
-      _ =>
-        RequestResolver.provideContext(
-          Resolver,
-          Option.match(
-            _,
-            () => context,
-            tconn => Context.add(context, TransactionConn, tconn),
+  const makeExecuteRequest =
+    <E, A, RA>(
+      Request: request.Request.Constructor<
+        request.Request<SchemaError | E, A> & { i0: RA }
+      >,
+    ) =>
+    (
+      Resolver: RequestResolver.RequestResolver<any>,
+      context = Context.empty() as Context.Context<any>,
+    ) => {
+      const resolverWithSql = Effect.map(
+        Effect.serviceOption(TransactionConn),
+        _ =>
+          RequestResolver.provideContext(
+            Resolver,
+            Option.match(
+              _,
+              () => context,
+              tconn => Context.add(context, TransactionConn, tconn),
+            ),
           ),
-        ),
-    )
-    return Debug.methodWithTrace(
-      trace => (_: RA) =>
-        Effect.flatMap(
-          Effect.zip(encodeRequest(_), resolverWithSql),
-          ([i0, resolver]) => Effect.request(Request({ i0 }), resolver),
-        )
-          .traced(trace)
-          .traced(parentTrace),
-    )
-  }
+      )
+      return Debug.methodWithTrace(
+        trace => (i0: RA) =>
+          Effect.flatMap(resolverWithSql, resolver =>
+            Effect.request(Request({ i0 }), resolver),
+          ).traced(trace),
+      )
+    }
 
   const makePopulateCache = <E, A, RI>(
-    parentTrace: Debug.Trace,
     Request: request.Request.Constructor<
       request.Request<SchemaError | E, A> & { i0: RI }
     >,
   ) =>
     Debug.methodWithTrace(
       trace => (id: RI, _: A) =>
-        Effect.cacheRequestResult(Request({ i0: id }), Exit.succeed(_))
-          .traced(trace)
-          .traced(parentTrace),
+        Effect.cacheRequestResult(Request({ i0: id }), Exit.succeed(_)).traced(
+          trace,
+        ),
     )
 
   const makeInvalidateCache = <E, A, RI>(
-    parentTrace: Debug.Trace,
     Request: request.Request.Constructor<
       request.Request<SchemaError | E, A> & { i0: RI }
     >,
@@ -209,69 +204,72 @@ export function make(
       trace => (id: RI) =>
         Effect.flatMap(FiberRef.get(FiberRef.currentRequestCache), cache =>
           cache.invalidate(Request({ i0: id })),
-        )
-          .traced(trace)
-          .traced(parentTrace),
+        ).traced(trace),
     )
 
-  const resolver = Debug.methodWithTrace(
-    parentTrace =>
-      function makeResolver<T extends string, II, IA, AI extends Row, A, E>(
-        tag: T,
-        requestSchema: Schema.Schema<II, IA>,
-        resultSchema: Schema.Schema<AI, A>,
-        run: (
-          requests: ReadonlyArray<II>,
-        ) => Effect.Effect<never, E, ReadonlyArray<Row>>,
-        context?: Context.Context<any>,
-      ): Resolver<T, II, IA, A, E | ResultLengthMismatch> {
-        const Request =
-          request.tagged<Request<T, II, E | ResultLengthMismatch, A>>(tag)
-        const decodeResult = SqlSchema.parse(resultSchema, "result")
-        const Resolver = RequestResolver.makeBatched(
-          (requests: Array<Request<T, II, E | ResultLengthMismatch, A>>) =>
-            pipe(
-              run(requests.map(_ => _.i0)),
-              Effect.filterOrElseWith(
-                results => results.length === requests.length,
-                _ =>
-                  Effect.fail(ResultLengthMismatch(requests.length, _.length)),
-              ),
-              Effect.flatMap(results =>
-                Effect.forEachWithIndex(results, (result, i) =>
-                  pipe(
-                    decodeResult(result),
-                    Effect.flatMap(result =>
-                      request.succeed(requests[i], result),
-                    ),
-                    Effect.catchAll(error =>
-                      request.fail(requests[i], error as any),
-                    ),
-                  ),
-                ),
-              ),
-              Effect.catchAll(error =>
-                Effect.forEachDiscard(requests, req =>
-                  request.fail(req, error),
+  const resolver = function makeResolver<
+    T extends string,
+    II,
+    IA,
+    AI extends Row,
+    A,
+    E,
+  >(
+    tag: T,
+    requestSchema: Schema.Schema<II, IA>,
+    resultSchema: Schema.Schema<AI, A>,
+    run: (
+      requests: ReadonlyArray<II>,
+    ) => Effect.Effect<never, E, ReadonlyArray<Row>>,
+  ): Resolver<T, II, IA, A, E | ResultLengthMismatch> {
+    const Request =
+      request.tagged<Request<T, II, E | ResultLengthMismatch, A>>(tag)
+    const encodeRequests = SqlSchema.encode(
+      Schema.array(requestSchema),
+      "request",
+    )
+    const decodeResult = SqlSchema.parse(resultSchema, "result")
+    const Resolver = RequestResolver.makeBatched(
+      (requests: Array<Request<T, IA, E | ResultLengthMismatch, A>>) =>
+        pipe(
+          encodeRequests(requests.map(_ => _.i0)),
+          Effect.flatMap(run),
+          Effect.filterOrElseWith(
+            results => results.length === requests.length,
+            _ => Effect.fail(ResultLengthMismatch(requests.length, _.length)),
+          ),
+          Effect.flatMap(results =>
+            Effect.forEachWithIndex(results, (result, i) =>
+              pipe(
+                decodeResult(result),
+                Effect.flatMap(result => request.succeed(requests[i], result)),
+                Effect.catchAll(error =>
+                  request.fail(requests[i], error as any),
                 ),
               ),
             ),
-        )
+          ),
+          Effect.catchAll(error =>
+            Effect.forEachDiscard(requests, req => request.fail(req, error)),
+          ),
+        ),
+    )
 
-        const execute = makeExecuteRequest(
-          parentTrace,
-          Request,
-          Resolver,
-          requestSchema,
-          context,
-        )
+    const makeExecute = makeExecuteRequest(Request)
+    const execute = makeExecute(Resolver)
 
-        const populateCache = makePopulateCache(parentTrace, Request)
-        const invalidateCache = makeInvalidateCache(parentTrace, Request)
+    const populateCache = makePopulateCache(Request)
+    const invalidateCache = makeInvalidateCache(Request)
 
-        return { Request, Resolver, execute, populateCache, invalidateCache }
-      },
-  )
+    return {
+      Request,
+      Resolver,
+      execute,
+      makeExecute,
+      populateCache,
+      invalidateCache,
+    }
+  }
 
   const singleResolverOption = Debug.methodWithTrace(
     parentTrace =>

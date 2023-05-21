@@ -131,7 +131,6 @@ export interface Client extends Constructor {
     run: (
       requests: ReadonlyArray<II>,
     ) => Effect.Effect<never, E, ReadonlyArray<Row>>,
-    context?: Context<any>,
   ): Resolver<T, II, IA, A, E | ResultLengthMismatch>
 
   /**
@@ -236,9 +235,10 @@ export interface Request<T extends string, I, E, A>
  * @since 1.0.0
  */
 export interface Resolver<T extends string, II, IA, A, E> {
-  readonly Request: request.Request.Constructor<Request<T, II, E, A>, "_tag">
-  readonly Resolver: RequestResolver.RequestResolver<Request<T, II, E, A>>
+  readonly Request: request.Request.Constructor<Request<T, IA, E, A>, "_tag">
+  readonly Resolver: RequestResolver.RequestResolver<Request<T, IA, E, A>>
   readonly execute: (_: IA) => Effect.Effect<never, SchemaError | E, A>
+  readonly makeExecute: (_: IA) => Effect.Effect<never, SchemaError | E, A>
   readonly populateCache: (id: II, _: A) => Effect.Effect<never, never, void>
   readonly invalidateCache: (id: II) => Effect.Effect<never, never, void>
 }
