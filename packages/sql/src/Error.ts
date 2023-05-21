@@ -21,6 +21,7 @@ export interface SqlError extends Data.Case {
   readonly [SqlFxErrorId]: SqlFxErrorId
   readonly _tag: "SqlError"
   readonly message: string
+  readonly code?: string
   readonly error: unknown
 }
 
@@ -32,6 +33,13 @@ export const SqlError = (message: string, error: unknown) =>
   Data.tagged<SqlError>("SqlError")({
     [SqlFxErrorId]: SqlFxErrorId,
     message,
+    code:
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      typeof error.code === "string"
+        ? error["code"]
+        : undefined,
     error,
   })
 

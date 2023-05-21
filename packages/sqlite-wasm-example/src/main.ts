@@ -17,6 +17,8 @@ const program = Effect.gen(function* (_) {
   )
   const result = yield* _(sql`SELECT * FROM people`)
   console.log(result)
+
+  console.log(yield* _(sql.export))
 })
 
 const SqlLive = Sql.makeLayer({

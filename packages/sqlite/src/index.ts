@@ -33,6 +33,7 @@ export {
  */
 export interface SqliteClient extends Client.Client {
   readonly config: SqliteClientConfig
+  readonly export: Effect.Effect<never, SqlError, Uint8Array>
 }
 
 /**
@@ -122,7 +123,11 @@ export const make = (
           statement => Effect.sync(() => statement.raw(false)),
         )
 
-      return identity<Connection>({
+      return identity<
+        Connection & {
+          readonly export: Effect.Effect<never, SqlError, Uint8Array>
+        }
+      >({
         execute(statement) {
           const [sql, params] = compiler.compile(statement)
           return runTransform(sql, params)
@@ -141,6 +146,7 @@ export const make = (
         compile(statement) {
           return Effect.sync(() => compiler.compile(statement))
         },
+        export: Effect.tryCatch(() => db.serialize(), handleError),
       })
     })
 
@@ -148,6 +154,7 @@ export const make = (
 
     return Object.assign(Client.make(Effect.scoped(pool.get()), pool.get()), {
       config: options,
+      export: Effect.scoped(Effect.flatMap(pool.get(), _ => _.export)),
     })
   })
 

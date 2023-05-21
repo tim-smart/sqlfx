@@ -66,6 +66,7 @@ export interface PgClientConfig {
 
   readonly minConnections?: number
   readonly maxConnections?: number
+  readonly connectionTTL?: Duration
 
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
@@ -168,9 +169,9 @@ export const make = (
     const pool = yield* _(
       Pool.makeWithTTL(
         makeConnection,
-        options.minConnections ?? 0,
+        options.minConnections ?? 1,
         options.maxConnections ?? 10,
-        minutes(60),
+        options.connectionTTL ?? minutes(45),
       ),
     )
 

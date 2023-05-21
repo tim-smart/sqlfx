@@ -111,10 +111,10 @@ export const make =
 
       const latestMigration = Effect.map(
         sql<{ migration_id: number; name: string; created_at: Date }>`
-        SELECT migration_id, name, created_at FROM ${sql(
-          table,
-        )} ORDER BY migration_id DESC LIMIT 1
-      `.withoutTransform,
+          SELECT migration_id, name, created_at FROM ${sql(
+            table,
+          )} ORDER BY migration_id DESC LIMIT 1
+        `.withoutTransform,
         _ =>
           Option.map(
             Option.fromNullable(_[0] as any),
@@ -198,13 +198,7 @@ export const make =
           )
         }
 
-        const required: Array<
-          readonly [
-            id: number,
-            name: string,
-            effect: Effect.Effect<never, never, unknown>,
-          ]
-        > = []
+        const required: Array<ResolvedMigration> = []
 
         for (const resolved of current) {
           const [currentId, currentName] = resolved
@@ -261,16 +255,12 @@ export const make =
       })
 
       yield* _(ensureMigrationsTable)
+
       const completed = yield* _(
         sql.withTransaction(run),
         Effect.catchTag("MigrationError", _ =>
           _.reason === "locked"
-            ? Effect.as(
-                Effect.logInfo(
-                  "Migrations skipped - running in another process",
-                ),
-                [],
-              )
+            ? Effect.as(Effect.logInfo(_.message), [])
             : Effect.fail(_),
         ),
       )

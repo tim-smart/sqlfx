@@ -73,6 +73,7 @@ export const make = (
 
     const makeConnection = Effect.gen(function* (_) {
       const sqlite3 = yield* _(initEffect)
+
       let db: DB
       if (options.mode === "opfs") {
         if (!sqlite3.oo1.OpfsDb) {
@@ -106,7 +107,11 @@ export const make = (
             Effect.map(run(sql, params), transformRows)
         : run
 
-      return identity<Connection>({
+      return identity<
+        Connection & {
+          readonly export: Effect.Effect<never, SqlError, Uint8Array>
+        }
+      >({
         execute(statement) {
           const [sql, params] = compiler.compile(statement)
           return runTransform(sql, params)
@@ -125,6 +130,10 @@ export const make = (
         compile(statement) {
           return Effect.sync(() => compiler.compile(statement))
         },
+        export: Effect.tryCatch(
+          () => sqlite3.capi.sqlite3_js_db_export(db.pointer),
+          handleError,
+        ),
       })
     })
 
@@ -132,6 +141,7 @@ export const make = (
 
     return Object.assign(Client.make(Effect.scoped(pool.get()), pool.get()), {
       config: options as any,
+      export: Effect.scoped(Effect.flatMap(pool.get(), _ => _.export)),
     })
   })
 

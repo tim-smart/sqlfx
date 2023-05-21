@@ -45,7 +45,7 @@ export const run: (
         CREATE TABLE ${sql(table)} (
           migration_id integer primary key,
           created_at timestamp with time zone not null default now(),
-          name text
+          name text not null
         )
       `,
     )

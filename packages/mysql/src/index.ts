@@ -62,6 +62,7 @@ export interface MysqlClientConfig {
 
   readonly minConnections?: number
   readonly maxConnections?: number
+  readonly connectionTTL?: Duration
 
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
@@ -107,38 +108,32 @@ export const make = (
       Effect.map((conn): Connection => {
         const run = (
           sql: string,
-          params?: ReadonlyArray<any>,
+          values?: ReadonlyArray<any>,
           transform = true,
-          values = false,
+          rowsAsArray = false,
         ) =>
           Effect.async<never, SqlError, any>(resume =>
-            conn.execute(
-              {
-                sql,
-                values: params,
-                rowsAsArray: values,
-              },
-              (error, result: any) => {
-                if (error) {
-                  resume(
-                    Debug.untraced(() =>
-                      Effect.fail(SqlError(error.message, error)),
-                    ),
-                  )
-                } else if (
-                  transform &&
-                  !values &&
-                  options.transformResultNames
-                ) {
-                  resume(
-                    Debug.untraced(() => Effect.succeed(transformRows(result))),
-                  )
-                } else {
-                  resume(Debug.untraced(() => Effect.succeed(result)))
-                }
-              },
-            ),
+            conn.execute({ sql, values, rowsAsArray }, (error, result: any) => {
+              if (error) {
+                resume(
+                  Debug.untraced(() =>
+                    Effect.fail(SqlError(error.message, error)),
+                  ),
+                )
+              } else if (
+                transform &&
+                !rowsAsArray &&
+                options.transformResultNames
+              ) {
+                resume(
+                  Debug.untraced(() => Effect.succeed(transformRows(result))),
+                )
+              } else {
+                resume(Debug.untraced(() => Effect.succeed(result)))
+              }
+            }),
           )
+
         return {
           execute(statement) {
             const [sql, params] = compiler.compile(statement)
@@ -165,9 +160,9 @@ export const make = (
     const pool = yield* _(
       Pool.makeWithTTL(
         makeConnection,
-        options.minConnections ?? 0,
+        options.minConnections ?? 1,
         options.maxConnections ?? 10,
-        minutes(60),
+        options.connectionTTL ?? minutes(45),
       ),
     )
 

@@ -134,19 +134,6 @@ export interface Custom<T extends string = string, A = void, B = void> {
 }
 
 /**
- * @since 1.0.0
- */
-export namespace Custom {
-  export type ToArgs<C extends Custom<any, any, any>> = C extends Custom<
-    infer K,
-    infer A,
-    infer B
-  >
-    ? readonly [K, A, B]
-    : never
-}
-
-/**
  * @category constructor
  * @since 1.0.0
  */
