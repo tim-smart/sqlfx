@@ -1,0 +1,20 @@
+{
+  "name": "sqlite-wasm-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@effect/data": "^0.12.2",
+    "@effect/io": "^0.25.12",
+    "@sqlfx/sqlite": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.2",
+    "vite": "^4.3.2"
+  }
+}

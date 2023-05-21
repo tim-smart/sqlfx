@@ -1,4 +1,9 @@
+import { Tag } from "@effect/data/Context"
 import * as Statement from "@sqlfx/sql/Statement"
+import type { SqliteClient } from "@sqlfx/sqlite"
+
+/** @internal */
+export const tag = Tag<SqliteClient>()
 
 const escape = Statement.defaultEscape('"')
 
