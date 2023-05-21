@@ -49,6 +49,7 @@ export interface MysqlClientConfig {
 
   readonly minConnections?: number
   readonly maxConnections?: number
+  readonly connectionTTL?: Duration
 
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string

@@ -104,6 +104,7 @@ export interface SqlError extends Data.Case {
   readonly [SqlFxErrorId]: SqlFxErrorId
   readonly _tag: 'SqlError'
   readonly message: string
+  readonly code?: string
   readonly error: unknown
 }
 ```

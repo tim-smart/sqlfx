@@ -85,6 +85,7 @@ Added in v1.0.0
 ```ts
 export interface SqliteClient extends Client.Client {
   readonly config: SqliteClientConfig
+  readonly export: Effect.Effect<never, SqlError, Uint8Array>
 }
 ```
 
