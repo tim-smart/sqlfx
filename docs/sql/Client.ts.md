@@ -141,9 +141,8 @@ export interface Client extends Constructor {
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (requests: ReadonlyArray<II>) => Effect.Effect<never, E, ReadonlyArray<Row>>,
-    context?: Context<any>
-  ): Resolver<T, II, IA, A, E | ResultLengthMismatch>
+    run: (requests: ReadonlyArray<II>) => Effect.Effect<never, E, ReadonlyArray<Row>>
+  ): Resolver<T, IA, A, E | ResultLengthMismatch>
 
   /**
    * Create a resolver for a sql query with a request schema and a result schema.
@@ -160,9 +159,8 @@ export interface Client extends Constructor {
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (request: II) => Effect.Effect<never, E, ReadonlyArray<Row>>,
-    context?: Context<any>
-  ): Resolver<T, II, IA, Option<A>, E>
+    run: (request: II) => Effect.Effect<never, E, ReadonlyArray<Row>>
+  ): Resolver<T, IA, Option<A>, E>
 
   /**
    * Create a resolver for a sql query with a request schema and a result schema.
@@ -179,9 +177,8 @@ export interface Client extends Constructor {
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (request: II) => Effect.Effect<never, E, ReadonlyArray<Row>>,
-    context?: Context<any>
-  ): Resolver<T, II, IA, A, E>
+    run: (request: II) => Effect.Effect<never, E, ReadonlyArray<Row>>
+  ): Resolver<T, IA, A, E>
 
   /**
    * Create a resolver for a sql query with a request schema.
@@ -196,9 +193,8 @@ export interface Client extends Constructor {
   voidResolver<T extends string, II, IA, E>(
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
-    run: (requests: ReadonlyArray<II>) => Effect.Effect<never, E, ReadonlyArray<Row>>,
-    context?: Context<any>
-  ): Resolver<T, II, IA, void, E>
+    run: (requests: ReadonlyArray<II>) => Effect.Effect<never, E, ReadonlyArray<Row>>
+  ): Resolver<T, IA, void, E>
 
   /**
    * Create a resolver for a sql query with a request schema and a result schema.
@@ -213,10 +209,9 @@ export interface Client extends Constructor {
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    resultId: (_: AI) => II,
-    run: (requests: ReadonlyArray<II>) => Effect.Effect<never, E, ReadonlyArray<AI>>,
-    context?: Context<any>
-  ): Resolver<T, II, IA, Option<A>, E>
+    resultId: (_: AI) => IA,
+    run: (requests: ReadonlyArray<II>) => Effect.Effect<never, E, ReadonlyArray<AI>>
+  ): Resolver<T, IA, Option<A>, E>
 }
 ```
 
@@ -242,12 +237,16 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Resolver<T extends string, II, IA, A, E> {
-  readonly Request: request.Request.Constructor<Request<T, II, E, A>, '_tag'>
-  readonly Resolver: RequestResolver.RequestResolver<Request<T, II, E, A>>
-  readonly execute: (_: IA) => Effect.Effect<never, SchemaError | E, A>
-  readonly populateCache: (id: II, _: A) => Effect.Effect<never, never, void>
-  readonly invalidateCache: (id: II) => Effect.Effect<never, never, void>
+export interface Resolver<T extends string, I, A, E> {
+  readonly Request: request.Request.Constructor<Request<T, I, E, A>, '_tag'>
+  readonly Resolver: RequestResolver.RequestResolver<Request<T, I, E, A>>
+  readonly execute: (_: I) => Effect.Effect<never, SchemaError | E, A>
+  readonly makeExecute: (
+    Resolver: RequestResolver.RequestResolver<any, never>,
+    context?: Context<any>
+  ) => (i0: I) => Effect.Effect<never, SchemaError | ResultLengthMismatch | E, A>
+  readonly populateCache: (id: I, _: A) => Effect.Effect<never, never, void>
+  readonly invalidateCache: (id: I) => Effect.Effect<never, never, void>
 }
 ```
 
