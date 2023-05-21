@@ -1,3 +1,7 @@
+/**
+ * @since 1.0.0
+ */
+
 declare module "@sqlite.org/sqlite-wasm" {
   export type OpenMode = "c" | "w" | "r" | "t"
   export type RowMode = "object" | "array" | "stmt"
