@@ -1,5 +1,15 @@
 # @sqlfx/sql
 
+## 0.4.0
+
+### Minor Changes
+
+- [#40](https://github.com/tim-smart/sqlfx/pull/40) [`b4e1f3a`](https://github.com/tim-smart/sqlfx/commit/b4e1f3acb6e8c5cfa506909f0dc3260f58a7efa5) Thanks [@tim-smart](https://github.com/tim-smart)! - simplify resolvers
+
+### Patch Changes
+
+- [#42](https://github.com/tim-smart/sqlfx/pull/42) [`a2c0ab8`](https://github.com/tim-smart/sqlfx/commit/a2c0ab859201c1f6433609488a6ff133f5b6d54f) Thanks [@tim-smart](https://github.com/tim-smart)! - add wasm module to sqlite
+
 ## 0.3.0
 
 ### Minor Changes
