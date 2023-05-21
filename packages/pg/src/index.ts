@@ -2,11 +2,14 @@
  * @since 1.0.0
  */
 import { Tag } from "@effect/data/Context"
+import * as Debug from "@effect/data/Debug"
 import type { Duration } from "@effect/data/Duration"
 import { minutes } from "@effect/data/Duration"
 import { pipe } from "@effect/data/Function"
+import * as Config from "@effect/io/Config"
 import * as ConfigSecret from "@effect/io/Config/Secret"
 import * as Effect from "@effect/io/Effect"
+import * as Layer from "@effect/io/Layer"
 import * as Pool from "@effect/io/Pool"
 import type { Scope } from "@effect/io/Scope"
 import * as Client from "@sqlfx/sql/Client"
@@ -14,11 +17,9 @@ import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
 import type { Custom, Fragment, Primitive } from "@sqlfx/sql/Statement"
 import * as Statement from "@sqlfx/sql/Statement"
-import type { PostgresError } from "postgres"
-import postgres from "postgres"
-import * as Config from "@effect/io/Config"
-import * as Layer from "@effect/io/Layer"
 import * as transform from "@sqlfx/sql/Transform"
+import type { PendingQuery, PendingValuesQuery } from "postgres"
+import postgres from "postgres"
 
 export {
   /**
@@ -119,45 +120,41 @@ export const make = (
         pg => Effect.promise(() => pg.end()),
       ),
       Effect.map((pg): Connection => {
-        const run = (sql: string, params?: ReadonlyArray<any>) => {
-          const query = pg.unsafe<any>(sql, params as any)
-          ;(query as any).options.prepare = true
-          return query
-        }
-        const runDefault = (sql: string, params?: ReadonlyArray<any>) =>
-          Effect.tryCatchPromiseInterrupt(
-            () => run(sql, params) as Promise<ReadonlyArray<any>>,
-            error =>
-              SqlError((error as PostgresError).message, {
-                ...(error as any).__proto__,
-              }),
-          )
+        const run = (query: PendingQuery<any> | PendingValuesQuery<any>) =>
+          Effect.asyncInterrupt<never, SqlError, ReadonlyArray<any>>(resume => {
+            query
+              .then(_ => resume(Debug.untraced(() => Effect.succeed(_))))
+              .catch(error =>
+                resume(
+                  Debug.untraced(() =>
+                    Effect.fail(
+                      SqlError(error.message, { ...error.__proto__ }),
+                    ),
+                  ),
+                ),
+              )
+            return Effect.sync(() => query.cancel())
+          })
+
         const runTransform = options.transformResultNames
-          ? (sql: string, params?: ReadonlyArray<any>) =>
-              Effect.map(runDefault(sql, params), transformRows)
-          : runDefault
+          ? (query: PendingQuery<any>) => Effect.map(run(query), transformRows)
+          : run
 
         return {
           execute(statement) {
             const [sql, params] = compiler.compile(statement)
-            return runTransform(sql, params)
+            return runTransform(pg.unsafe(sql, params as any))
           },
           executeWithoutTransform(statement) {
             const [sql, params] = compiler.compile(statement)
-            return runDefault(sql, params)
+            return run(pg.unsafe(sql, params as any))
           },
           executeValues(statement) {
             const [sql, params] = compiler.compile(statement)
-            return Effect.tryCatchPromiseInterrupt(
-              () => run(sql, params).values(),
-              error =>
-                SqlError((error as PostgresError).message, {
-                  ...(error as any).__proto__,
-                }),
-            )
+            return run(pg.unsafe(sql, params as any).values())
           },
           executeRaw(sql, params) {
-            return runTransform(sql, params)
+            return runTransform(pg.unsafe(sql, params as any))
           },
           compile(statement) {
             return Effect.sync(() => compiler.compile(statement))

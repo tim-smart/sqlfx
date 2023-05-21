@@ -155,6 +155,7 @@ export function make(
 
   const makeExecuteRequest =
     <E, A, RA>(
+      parentTrace: Debug.Trace,
       Request: request.Request.Constructor<
         request.Request<SchemaError | E, A> & { i0: RA }
       >,
@@ -179,7 +180,9 @@ export function make(
         trace => (i0: RA) =>
           Effect.flatMap(resolverWithSql, resolver =>
             Effect.request(Request({ i0 }), resolver),
-          ).traced(trace),
+          )
+            .traced(trace)
+            .traced(parentTrace),
       )
     }
 
@@ -207,284 +210,292 @@ export function make(
         ).traced(trace),
     )
 
-  const resolver = function makeResolver<
-    T extends string,
-    II,
-    IA,
-    AI extends Row,
-    A,
-    E,
-  >(
-    tag: T,
-    requestSchema: Schema.Schema<II, IA>,
-    resultSchema: Schema.Schema<AI, A>,
-    run: (
-      requests: ReadonlyArray<II>,
-    ) => Effect.Effect<never, E, ReadonlyArray<Row>>,
-  ): Resolver<T, IA, A, E | ResultLengthMismatch> {
-    const Request =
-      request.tagged<Request<T, IA, E | ResultLengthMismatch, A>>(tag)
-    const encodeRequests = SqlSchema.encode(
-      Schema.array(requestSchema),
-      "request",
-    )
-    const decodeResult = SqlSchema.parse(resultSchema, "result")
-    const Resolver = RequestResolver.makeBatched(
-      (requests: Array<Request<T, IA, E | ResultLengthMismatch, A>>) =>
-        pipe(
-          encodeRequests(requests.map(_ => _.i0)),
-          Effect.flatMap(run),
-          Effect.filterOrElseWith(
-            results => results.length === requests.length,
-            _ => Effect.fail(ResultLengthMismatch(requests.length, _.length)),
-          ),
-          Effect.flatMap(results =>
-            Effect.forEachWithIndex(results, (result, i) =>
-              pipe(
-                decodeResult(result),
-                Effect.flatMap(result => request.succeed(requests[i], result)),
-                Effect.catchAll(error =>
-                  request.fail(requests[i], error as any),
-                ),
-              ),
-            ),
-          ),
-          Effect.catchAll(error =>
-            Effect.forEachDiscard(requests, req => request.fail(req, error)),
-          ),
-        ),
-    )
-
-    const makeExecute = makeExecuteRequest(Request)
-    const execute = makeExecute(Resolver)
-
-    const populateCache = makePopulateCache(Request)
-    const invalidateCache = makeInvalidateCache(Request)
-
-    return {
-      Request,
-      Resolver,
-      execute,
-      makeExecute,
-      populateCache,
-      invalidateCache,
-    }
-  }
-
-  const singleResolverOption = function makeSingleResolver<
-    T extends string,
-    II,
-    IA,
-    AI extends Row,
-    A,
-    E,
-  >(
-    tag: T,
-    requestSchema: Schema.Schema<II, IA>,
-    resultSchema: Schema.Schema<AI, A>,
-    run: (request: II) => Effect.Effect<never, E, ReadonlyArray<Row>>,
-  ): Resolver<T, IA, Option.Option<A>, E> {
-    const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
-    const encodeRequest = SqlSchema.encode(requestSchema, "request")
-    const decodeResult = SqlSchema.parse(resultSchema, "result")
-    const Resolver = RequestResolver.fromFunctionEffect(
-      (req: Request<T, IA, E, Option.Option<A>>) =>
-        pipe(
-          encodeRequest(req.i0),
-          Effect.flatMap(run),
-          Effect.map(ROA.head),
-          Effect.flatMap(
-            Option.match(
-              () => Effect.succeedNone(),
-              result => Effect.asSome(decodeResult(result)),
-            ),
-          ),
-        ),
-    )
-
-    const makeExecute = makeExecuteRequest(Request)
-    const execute = makeExecute(Resolver)
-    const populateCache = makePopulateCache(Request)
-    const invalidateCache = makeInvalidateCache(Request)
-
-    return {
-      Request,
-      Resolver,
-      execute,
-      makeExecute,
-      populateCache,
-      invalidateCache,
-    }
-  }
-
-  const singleResolver = function makeSingleResolver<
-    T extends string,
-    II,
-    IA,
-    AI extends Row,
-    A,
-    E,
-  >(
-    tag: T,
-    requestSchema: Schema.Schema<II, IA>,
-    resultSchema: Schema.Schema<AI, A>,
-    run: (request: II) => Effect.Effect<never, E, ReadonlyArray<Row>>,
-  ): Resolver<T, IA, A, E> {
-    const Request = request.tagged<Request<T, IA, E, A>>(tag)
-    const encodeRequest = SqlSchema.encode(requestSchema, "request")
-    const decodeResult = SqlSchema.parse(resultSchema, "result")
-    const Resolver = RequestResolver.fromFunctionEffect(
-      (req: Request<T, IA, E, A>) =>
-        pipe(
-          encodeRequest(req.i0),
-          Effect.flatMap(run),
-          Effect.flatMap(_ => Effect.orDie(ROA.head(_))),
-          Effect.flatMap(decodeResult),
-        ),
-    )
-
-    const makeExecute = makeExecuteRequest(Request)
-    const execute = makeExecute(Resolver)
-    const populateCache = makePopulateCache(Request)
-    const invalidateCache = makeInvalidateCache(Request)
-
-    return {
-      Request,
-      Resolver,
-      execute,
-      makeExecute,
-      populateCache,
-      invalidateCache,
-    }
-  }
-
-  const voidResolver = function makeVoidResolver<T extends string, II, IA, E>(
-    tag: T,
-    requestSchema: Schema.Schema<II, IA>,
-    run: (
-      requests: ReadonlyArray<II>,
-    ) => Effect.Effect<never, E, ReadonlyArray<Row>>,
-  ): Resolver<T, IA, void, E> {
-    const Request = request.tagged<Request<T, IA, E, void>>(tag)
-    const encodeRequests = SqlSchema.encode(
-      Schema.array(requestSchema),
-      "request",
-    )
-    const Resolver = RequestResolver.makeBatched(
-      (requests: Array<Request<T, IA, E, void>>) =>
-        pipe(
-          encodeRequests(requests.map(_ => _.i0)),
-          Effect.flatMap(run),
-          Effect.zipRight(
-            Effect.forEachDiscard(requests, req =>
-              request.succeed(req, void 0 as any),
-            ),
-          ),
-          Effect.catchAll(error =>
-            Effect.forEachDiscard(requests, req => request.fail(req, error)),
-          ),
-        ),
-    )
-
-    const makeExecute = makeExecuteRequest(Request)
-    const execute = makeExecute(Resolver)
-    const populateCache = makePopulateCache(Request)
-    const invalidateCache = makeInvalidateCache(Request)
-
-    return {
-      Request,
-      Resolver,
-      execute,
-      makeExecute,
-      populateCache,
-      invalidateCache,
-    }
-  }
-
-  const idResolver = function makeIdResolver<
-    T extends string,
-    II,
-    IA,
-    AI extends Row,
-    A,
-    E,
-  >(
-    tag: T,
-    requestSchema: Schema.Schema<II, IA>,
-    resultSchema: Schema.Schema<AI, A>,
-    resultId: (_: AI) => IA,
-    run: (
-      requests: ReadonlyArray<II>,
-    ) => Effect.Effect<never, E, ReadonlyArray<AI>>,
-  ): Resolver<T, IA, Option.Option<A>, E> {
-    const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
-    const encodeRequests = SqlSchema.encode(
-      Schema.array(requestSchema),
-      "request",
-    )
-    const decodeResult = SqlSchema.parse(resultSchema, "result")
-    const Resolver = RequestResolver.makeBatched(
-      (requests: Array<Request<T, IA, E, Option.Option<A>>>) =>
-        pipe(
-          Effect.all({
-            results: Effect.flatMap(
+  const resolver = Debug.methodWithTrace(
+    parentTrace =>
+      function makeResolver<T extends string, II, IA, AI extends Row, A, E>(
+        tag: T,
+        requestSchema: Schema.Schema<II, IA>,
+        resultSchema: Schema.Schema<AI, A>,
+        run: (
+          requests: ReadonlyArray<II>,
+        ) => Effect.Effect<never, E, ReadonlyArray<Row>>,
+      ): Resolver<T, IA, A, E | ResultLengthMismatch> {
+        const Request =
+          request.tagged<Request<T, IA, E | ResultLengthMismatch, A>>(tag)
+        const encodeRequests = SqlSchema.encode(
+          Schema.array(requestSchema),
+          "request",
+        )
+        const decodeResult = SqlSchema.parse(resultSchema, "result")
+        const Resolver = RequestResolver.makeBatched(
+          (requests: Array<Request<T, IA, E | ResultLengthMismatch, A>>) =>
+            pipe(
               encodeRequests(requests.map(_ => _.i0)),
-              run,
-            ),
-            requestsMap: Effect.sync(() =>
-              requests.reduce(
-                (acc, request) => acc.set(request.i0, request),
-                new Map<IA, Request<T, IA, E, Option.Option<A>>>(),
+              Effect.flatMap(run),
+              Effect.filterOrElseWith(
+                results => results.length === requests.length,
+                _ =>
+                  Effect.fail(ResultLengthMismatch(requests.length, _.length)),
+              ),
+              Effect.flatMap(results =>
+                Effect.forEachWithIndex(results, (result, i) =>
+                  pipe(
+                    decodeResult(result),
+                    Effect.flatMap(result =>
+                      request.succeed(requests[i], result),
+                    ),
+                    Effect.catchAll(error =>
+                      request.fail(requests[i], error as any),
+                    ),
+                  ),
+                ),
+              ),
+              Effect.catchAll(error =>
+                Effect.forEachDiscard(requests, req =>
+                  request.fail(req, error),
+                ),
               ),
             ),
-          }),
-          Effect.tap(({ requestsMap, results }) =>
-            Effect.forEachParDiscard(results, result => {
-              const id = resultId(result)
-              const req = requestsMap.get(id)
+        )
 
-              if (!req) {
-                return Effect.unit()
-              }
+        const makeExecute = makeExecuteRequest(parentTrace, Request)
+        const execute = makeExecute(Resolver)
 
-              requestsMap.delete(id)
+        const populateCache = makePopulateCache(Request)
+        const invalidateCache = makeInvalidateCache(Request)
 
-              return pipe(
-                decodeResult(result),
-                Effect.flatMap(result =>
-                  request.succeed(req, Option.some(result)),
+        return {
+          Request,
+          Resolver,
+          execute,
+          makeExecute,
+          populateCache,
+          invalidateCache,
+        }
+      },
+  )
+
+  const singleResolverOption = Debug.methodWithTrace(
+    parentTrace =>
+      function makeSingleResolver<
+        T extends string,
+        II,
+        IA,
+        AI extends Row,
+        A,
+        E,
+      >(
+        tag: T,
+        requestSchema: Schema.Schema<II, IA>,
+        resultSchema: Schema.Schema<AI, A>,
+        run: (request: II) => Effect.Effect<never, E, ReadonlyArray<Row>>,
+      ): Resolver<T, IA, Option.Option<A>, E> {
+        const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
+        const encodeRequest = SqlSchema.encode(requestSchema, "request")
+        const decodeResult = SqlSchema.parse(resultSchema, "result")
+        const Resolver = RequestResolver.fromFunctionEffect(
+          (req: Request<T, IA, E, Option.Option<A>>) =>
+            pipe(
+              encodeRequest(req.i0),
+              Effect.flatMap(run),
+              Effect.map(ROA.head),
+              Effect.flatMap(
+                Option.match(
+                  () => Effect.succeedNone(),
+                  result => Effect.asSome(decodeResult(result)),
                 ),
-                Effect.catchAll(error => request.fail(req, error as any)),
-              )
-            }),
-          ),
-          Effect.tap(({ requestsMap }) =>
-            Effect.forEachDiscard(requestsMap.values(), req =>
-              request.succeed(req, Option.none()),
+              ),
             ),
-          ),
-          Effect.catchAll(error =>
-            Effect.forEachDiscard(requests, req =>
-              request.fail(req, error as any),
+        )
+
+        const makeExecute = makeExecuteRequest(parentTrace, Request)
+        const execute = makeExecute(Resolver)
+        const populateCache = makePopulateCache(Request)
+        const invalidateCache = makeInvalidateCache(Request)
+
+        return {
+          Request,
+          Resolver,
+          execute,
+          makeExecute,
+          populateCache,
+          invalidateCache,
+        }
+      },
+  )
+
+  const singleResolver = Debug.methodWithTrace(
+    parentTrace =>
+      function makeSingleResolver<
+        T extends string,
+        II,
+        IA,
+        AI extends Row,
+        A,
+        E,
+      >(
+        tag: T,
+        requestSchema: Schema.Schema<II, IA>,
+        resultSchema: Schema.Schema<AI, A>,
+        run: (request: II) => Effect.Effect<never, E, ReadonlyArray<Row>>,
+      ): Resolver<T, IA, A, E> {
+        const Request = request.tagged<Request<T, IA, E, A>>(tag)
+        const encodeRequest = SqlSchema.encode(requestSchema, "request")
+        const decodeResult = SqlSchema.parse(resultSchema, "result")
+        const Resolver = RequestResolver.fromFunctionEffect(
+          (req: Request<T, IA, E, A>) =>
+            pipe(
+              encodeRequest(req.i0),
+              Effect.flatMap(run),
+              Effect.flatMap(_ => Effect.orDie(ROA.head(_))),
+              Effect.flatMap(decodeResult),
             ),
-          ),
-        ),
-    )
+        )
 
-    const makeExecute = makeExecuteRequest(Request)
-    const execute = makeExecute(Resolver)
-    const populateCache = makePopulateCache(Request)
-    const invalidateCache = makeInvalidateCache(Request)
+        const makeExecute = makeExecuteRequest(parentTrace, Request)
+        const execute = makeExecute(Resolver)
+        const populateCache = makePopulateCache(Request)
+        const invalidateCache = makeInvalidateCache(Request)
 
-    return {
-      Request,
-      Resolver,
-      execute,
-      makeExecute,
-      populateCache,
-      invalidateCache,
-    }
-  }
+        return {
+          Request,
+          Resolver,
+          execute,
+          makeExecute,
+          populateCache,
+          invalidateCache,
+        }
+      },
+  )
+
+  const voidResolver = Debug.methodWithTrace(
+    parentTrace =>
+      function makeVoidResolver<T extends string, II, IA, E>(
+        tag: T,
+        requestSchema: Schema.Schema<II, IA>,
+        run: (
+          requests: ReadonlyArray<II>,
+        ) => Effect.Effect<never, E, ReadonlyArray<Row>>,
+      ): Resolver<T, IA, void, E> {
+        const Request = request.tagged<Request<T, IA, E, void>>(tag)
+        const encodeRequests = SqlSchema.encode(
+          Schema.array(requestSchema),
+          "request",
+        )
+        const Resolver = RequestResolver.makeBatched(
+          (requests: Array<Request<T, IA, E, void>>) =>
+            pipe(
+              encodeRequests(requests.map(_ => _.i0)),
+              Effect.flatMap(run),
+              Effect.zipRight(
+                Effect.forEachDiscard(requests, req =>
+                  request.succeed(req, void 0 as any),
+                ),
+              ),
+              Effect.catchAll(error =>
+                Effect.forEachDiscard(requests, req =>
+                  request.fail(req, error),
+                ),
+              ),
+            ),
+        )
+
+        const makeExecute = makeExecuteRequest(parentTrace, Request)
+        const execute = makeExecute(Resolver)
+        const populateCache = makePopulateCache(Request)
+        const invalidateCache = makeInvalidateCache(Request)
+
+        return {
+          Request,
+          Resolver,
+          execute,
+          makeExecute,
+          populateCache,
+          invalidateCache,
+        }
+      },
+  )
+
+  const idResolver = Debug.methodWithTrace(
+    parentTrace =>
+      function makeIdResolver<T extends string, II, IA, AI extends Row, A, E>(
+        tag: T,
+        requestSchema: Schema.Schema<II, IA>,
+        resultSchema: Schema.Schema<AI, A>,
+        resultId: (_: AI) => IA,
+        run: (
+          requests: ReadonlyArray<II>,
+        ) => Effect.Effect<never, E, ReadonlyArray<AI>>,
+      ): Resolver<T, IA, Option.Option<A>, E> {
+        const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
+        const encodeRequests = SqlSchema.encode(
+          Schema.array(requestSchema),
+          "request",
+        )
+        const decodeResult = SqlSchema.parse(resultSchema, "result")
+        const Resolver = RequestResolver.makeBatched(
+          (requests: Array<Request<T, IA, E, Option.Option<A>>>) =>
+            pipe(
+              Effect.all({
+                results: Effect.flatMap(
+                  encodeRequests(requests.map(_ => _.i0)),
+                  run,
+                ),
+                requestsMap: Effect.sync(() =>
+                  requests.reduce(
+                    (acc, request) => acc.set(request.i0, request),
+                    new Map<IA, Request<T, IA, E, Option.Option<A>>>(),
+                  ),
+                ),
+              }),
+              Effect.tap(({ requestsMap, results }) =>
+                Effect.forEachParDiscard(results, result => {
+                  const id = resultId(result)
+                  const req = requestsMap.get(id)
+
+                  if (!req) {
+                    return Effect.unit()
+                  }
+
+                  requestsMap.delete(id)
+
+                  return pipe(
+                    decodeResult(result),
+                    Effect.flatMap(result =>
+                      request.succeed(req, Option.some(result)),
+                    ),
+                    Effect.catchAll(error => request.fail(req, error as any)),
+                  )
+                }),
+              ),
+              Effect.tap(({ requestsMap }) =>
+                Effect.forEachDiscard(requestsMap.values(), req =>
+                  request.succeed(req, Option.none()),
+                ),
+              ),
+              Effect.catchAll(error =>
+                Effect.forEachDiscard(requests, req =>
+                  request.fail(req, error as any),
+                ),
+              ),
+            ),
+        )
+
+        const makeExecute = makeExecuteRequest(parentTrace, Request)
+        const execute = makeExecute(Resolver)
+        const populateCache = makePopulateCache(Request)
+        const invalidateCache = makeInvalidateCache(Request)
+
+        return {
+          Request,
+          Resolver,
+          execute,
+          makeExecute,
+          populateCache,
+          invalidateCache,
+        }
+      },
+  )
 
   const client: Client = Object.assign(Statement.make(getConnection), {
     safe: undefined as any,
