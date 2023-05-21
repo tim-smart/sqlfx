@@ -304,7 +304,13 @@ export const fromDisk = (directory: string): Loader =>
                 [
                   Number(id),
                   name,
-                  Effect.promise(() => import(`${directory}/${basename}`)),
+                  Effect.promise(
+                    () =>
+                      import(
+                        /* @vite-ignore */
+                        `${directory}/${basename}`
+                      ),
+                  ),
                 ],
               ] as const,
           ),

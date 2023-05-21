@@ -5,7 +5,8 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import type { SqlError } from "@sqlfx/sql/Error"
 import * as _ from "@sqlfx/sql/Migrator"
-import * as Sql from "@sqlfx/sqlite"
+import type { SqliteClient } from "@sqlfx/sqlite"
+import * as internal from "@sqlfx/sqlite/internal/client"
 
 const { fromDisk, fromGlob } = _
 
@@ -29,11 +30,11 @@ export {
 export const run: (
   options: _.MigratorOptions,
 ) => Effect.Effect<
-  Sql.SqliteClient,
+  SqliteClient,
   SqlError | _.MigrationError,
   ReadonlyArray<readonly [id: number, name: string]>
 > = _.make({
-  getClient: Sql.tag,
+  getClient: internal.tag,
   ensureTable(sql, table) {
     return sql`
       CREATE TABLE IF NOT EXISTS ${sql(table)} (
@@ -112,5 +113,5 @@ export const run: (
  */
 export const makeLayer = (
   options: _.MigratorOptions,
-): Layer.Layer<Sql.SqliteClient, _.MigrationError | SqlError, never> =>
+): Layer.Layer<SqliteClient, _.MigrationError | SqlError, never> =>
   Layer.effectDiscard(run(options))

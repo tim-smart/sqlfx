@@ -2,10 +2,7 @@
  * @since 1.0.0
  */
 import type { Tag } from "@effect/data/Context"
-import * as Duration from "@effect/data/Duration"
 import { identity } from "@effect/data/Function"
-import * as Cache from "@effect/io/Cache"
-import * as Config from "@effect/io/Config"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Pool from "@effect/io/Pool"
@@ -16,7 +13,9 @@ import { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
 import * as internal from "@sqlfx/sqlite/internal/client"
-import Sqlite from "better-sqlite3"
+import type { DB, OpenMode, RowMode } from "@sqlite.org/sqlite-wasm"
+import sqliteInit from "@sqlite.org/sqlite-wasm"
+import type { SqliteClient } from "@sqlfx/sqlite"
 
 export {
   /**
@@ -25,14 +24,6 @@ export {
    * @since 1.0.0
    */
   transform,
-}
-
-/**
- * @category model
- * @since 1.0.0
- */
-export interface SqliteClient extends Client.Client {
-  readonly config: SqliteClientConfig
 }
 
 /**
@@ -45,20 +36,32 @@ export const tag: Tag<SqliteClient, SqliteClient> = internal.tag
  * @category constructor
  * @since 1.0.0
  */
-export interface SqliteClientConfig {
-  readonly filename: string
-  readonly readonly?: boolean
-  readonly prepareCacheSize?: number
-  readonly transformResultNames?: (str: string) => string
-  readonly transformQueryNames?: (str: string) => string
-}
+export type SqliteWasmClientConfig =
+  | {
+      readonly mode?: "vfs"
+      readonly dbName?: string
+      readonly openMode?: OpenMode
+      readonly transformResultNames?: (str: string) => string
+      readonly transformQueryNames?: (str: string) => string
+    }
+  | {
+      readonly mode: "opfs"
+      readonly dbName: string
+      readonly openMode?: OpenMode
+      readonly transformResultNames?: (str: string) => string
+      readonly transformQueryNames?: (str: string) => string
+    }
+
+const initEffect = Effect.runSync(
+  Effect.cached(Effect.promise(() => sqliteInit())),
+)
 
 /**
  * @category constructor
  * @since 1.0.0
  */
 export const make = (
-  options: SqliteClientConfig,
+  options: SqliteWasmClientConfig,
 ): Effect.Effect<Scope, never, SqliteClient> =>
   Effect.gen(function* (_) {
     const compiler = makeCompiler(options.transformQueryNames)
@@ -69,58 +72,39 @@ export const make = (
     const handleError = (error: any) => SqlError(error.message, { ...error })
 
     const makeConnection = Effect.gen(function* (_) {
-      const db = new Sqlite(options.filename, {
-        readonly: options.readonly ?? false,
-      })
+      const sqlite3 = yield* _(initEffect)
+      let db: DB
+      if (options.mode === "opfs") {
+        if (!sqlite3.oo1.OpfsDb) {
+          yield* _(Effect.dieMessage("opfs mode not available"))
+        }
+        db = new sqlite3.oo1.OpfsDb!(options.dbName, options.openMode ?? "c")
+      } else {
+        db = new sqlite3.oo1.DB(options.dbName, options.openMode)
+      }
+
       yield* _(Effect.addFinalizer(() => Effect.sync(() => db.close())))
-
-      db.pragma("journal_mode = WAL")
-
-      const prepareCache = yield* _(
-        Cache.make(
-          options.prepareCacheSize ?? 200,
-          Duration.minutes(45),
-          (sql: string) => Effect.tryCatch(() => db.prepare(sql), handleError),
-        ),
-      )
 
       const run = (
         sql: string,
         params: ReadonlyArray<Statement.Primitive> = [],
+        rowMode: RowMode = "object",
       ) =>
-        Effect.flatMap(prepareCache.get(sql), _ =>
-          Effect.tryCatch(() => {
-            if (_.reader) {
-              return _.all(...params) as ReadonlyArray<any>
-            }
-            _.run(...params)
-            return []
-          }, handleError),
-        )
+        Effect.tryCatch(() => {
+          const results: Array<any> = []
+          db.exec({
+            sql,
+            bind: params.length ? params : undefined,
+            rowMode,
+            resultRows: results,
+          })
+          return results
+        }, handleError)
 
       const runTransform = options.transformResultNames
         ? (sql: string, params?: ReadonlyArray<Statement.Primitive>) =>
             Effect.map(run(sql, params), transformRows)
         : run
-
-      const runValues = (
-        sql: string,
-        params: ReadonlyArray<Statement.Primitive>,
-      ) =>
-        Effect.acquireUseRelease(
-          Effect.map(prepareCache.get(sql), _ => _.raw(true)),
-          statement =>
-            Effect.tryCatch(() => {
-              if (statement.reader) {
-                return statement.all(...params) as ReadonlyArray<
-                  ReadonlyArray<Statement.Primitive>
-                >
-              }
-              statement.run(...params)
-              return []
-            }, handleError),
-          statement => Effect.sync(() => statement.raw(false)),
-        )
 
       return identity<Connection>({
         execute(statement) {
@@ -129,7 +113,7 @@ export const make = (
         },
         executeValues(statement) {
           const [sql, params] = compiler.compile(statement)
-          return runValues(sql, params)
+          return run(sql, params, "array")
         },
         executeWithoutTransform(statement) {
           const [sql, params] = compiler.compile(statement)
@@ -147,7 +131,7 @@ export const make = (
     const pool = yield* _(Pool.make(makeConnection, 1))
 
     return Object.assign(Client.make(Effect.scoped(pool.get()), pool.get()), {
-      config: options,
+      config: options as any,
     })
   })
 
@@ -155,8 +139,8 @@ export const make = (
  * @category constructor
  * @since 1.0.0
  */
-export const makeLayer = (config: Config.Config.Wrap<SqliteClientConfig>) =>
-  Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
+export const makeLayer = (config: SqliteWasmClientConfig) =>
+  Layer.scoped(tag, make(config))
 
 /**
  * @category constructor

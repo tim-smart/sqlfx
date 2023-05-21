@@ -180,6 +180,10 @@ importers:
       better-sqlite3:
         specifier: ^8.3.0
         version: 8.3.0
+    optionalDependencies:
+      '@sqlite.org/sqlite-wasm':
+        specifier: '3'
+        version: 3.41.2
     devDependencies:
       '@effect/schema':
         specifier: ^0.19.2
@@ -191,6 +195,25 @@ importers:
         specifier: ^0.2.4
         version: 0.2.4
     publishDirectory: dist
+
+  packages/sqlite-wasm-example:
+    dependencies:
+      '@effect/data':
+        specifier: ^0.12.2
+        version: 0.12.2
+      '@effect/io':
+        specifier: ^0.25.12
+        version: 0.25.12
+      '@sqlfx/sqlite':
+        specifier: workspace:*
+        version: link:../sqlite/dist
+    devDependencies:
+      typescript:
+        specifier: ^5.0.2
+        version: 5.0.4
+      vite:
+        specifier: ^4.3.2
+        version: 4.3.7(@types/node@20.2.0)
 
 packages:
 
@@ -1172,6 +1195,13 @@ packages:
       estree-walker: 2.0.2
       picomatch: 2.3.1
     dev: true
+
+  /@sqlite.org/sqlite-wasm@3.41.2:
+    resolution: {integrity: sha512-elKOYvLMzDDvKH28TF++iGPfqmsBBZG8iSCNo8lBSboSLCe+PBn3zwPO5NJRg9vojjMXVoRiifmBZ0IBdVBKjg==}
+    hasBin: true
+    requiresBuild: true
+    dev: false
+    optional: true
 
   /@ts-morph/common@0.7.5:
     resolution: {integrity: sha512-nlFunSKAsFWI0Ol/uPxJcpVqXxTGNuaWXTmoQDhcnwj1UM4QmBSUVWzqoQ0OzUlqo4sV1gobfFBkMHuZVemMAQ==}
