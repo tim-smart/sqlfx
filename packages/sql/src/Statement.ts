@@ -269,7 +269,7 @@ export interface Compiler {
  * @since 1.0.0
  */
 export const makeCompiler: <C extends Custom<any, any, any> = any>(
-  parameterPlaceholder: (index: number) => string,
+  parameterPlaceholder: (index: number, value: Primitive) => string,
   onIdentifier: (value: string) => string,
   onRecordUpdate: (
     placeholders: string,
