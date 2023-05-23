@@ -1,5 +1,5 @@
-# @sqlfx/mysql
+# @sqlfx/mssql
 
-A MySQL client for Effect-TS.
+A SQL Server client for Effect-TS.
 
 See https://tim-smart.github.io/sqlfx/ for more information.

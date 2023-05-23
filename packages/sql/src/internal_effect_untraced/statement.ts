@@ -17,6 +17,7 @@ import type {
   Literal,
   Parameter,
   Primitive,
+  PrimitiveKind,
   RecordInsertHelper,
   RecordUpdateHelper,
   Segment,
@@ -35,6 +36,15 @@ export function isFragment(u: unknown): u is Fragment {
 }
 
 /** @internal */
+export function isCustom<A extends Custom<any, any, any, any>>(
+  kind: A["kind"],
+) {
+  return (u: unknown): u is A => {
+    return u instanceof CustomImpl && u.kind === kind
+  }
+}
+
+/** @internal */
 export class StatementPrimitive<A> implements Statement<A> {
   get [FragmentId]() {
     return identity
@@ -43,7 +53,7 @@ export class StatementPrimitive<A> implements Statement<A> {
   constructor(
     readonly i0: ReadonlyArray<Segment>,
     readonly i1: Connection.Acquirer,
-  ) { }
+  ) {}
 
   get segments(): ReadonlyArray<Segment> {
     return this.i0
@@ -118,7 +128,7 @@ class StatementTraced<A> implements Statement<A> {
     readonly i0: StatementPrimitive<A> | StatementTraced<A>,
     readonly i1: StatementPrimitive<A>,
     readonly trace: Debug.Trace,
-  ) { }
+  ) {}
 
   get segments(): ReadonlyArray<Segment> {
     return this.i1.segments
@@ -163,7 +173,7 @@ class FragmentImpl implements Fragment {
   get [FragmentId]() {
     return identity
   }
-  constructor(readonly segments: ReadonlyArray<Segment>) { }
+  constructor(readonly segments: ReadonlyArray<Segment>) {}
 }
 
 class LiteralImpl implements Literal {
@@ -171,27 +181,30 @@ class LiteralImpl implements Literal {
   constructor(
     readonly value: string,
     readonly params?: ReadonlyArray<Primitive>,
-  ) { }
+  ) {}
 }
 
 class IdentifierImpl implements Identifier {
   readonly _tag = "Identifier"
-  constructor(readonly value: string) { }
+  constructor(readonly value: string) {}
 }
 
 class ParameterImpl implements Parameter {
   readonly _tag = "Parameter"
-  constructor(readonly value: Primitive) { }
+  constructor(readonly value: Primitive) {}
 }
 
 class ArrayHelperImpl implements ArrayHelper {
   readonly _tag = "ArrayHelper"
-  constructor(readonly value: Array<Primitive>) { }
+  constructor(readonly value: Array<Primitive>) {}
 }
 
 class RecordInsertHelperImpl implements RecordInsertHelper {
   readonly _tag = "RecordInsertHelper"
-  constructor(readonly value: ReadonlyArray<Record<string, Primitive>>) { }
+  constructor(
+    readonly value: ReadonlyArray<Record<string, Primitive>>,
+    readonly options?: RecordInsertHelper.Options,
+  ) {}
 }
 
 class RecordUpdateHelperImpl implements RecordUpdateHelper {
@@ -199,19 +212,24 @@ class RecordUpdateHelperImpl implements RecordUpdateHelper {
   constructor(
     readonly value: ReadonlyArray<Record<string, Primitive>>,
     readonly alias: string,
-  ) { }
+  ) {}
 }
 
-class CustomImpl<T extends string, A, B> implements Custom<T, A, B> {
+class CustomImpl<T extends string, A, B, C> implements Custom<T, A, B, C> {
   readonly _tag = "Custom"
-  constructor(readonly kind: T, readonly i0: A, readonly i1: B) { }
+  constructor(
+    readonly kind: T,
+    readonly i0: A,
+    readonly i1: B,
+    readonly i2: C,
+  ) {}
 }
 
 /** @internal */
 export const custom =
-  <C extends Custom<any, any, any>>(kind: C["kind"]) =>
-    (i0: C["i0"], i1: C["i1"]): Fragment =>
-      new FragmentImpl([new CustomImpl(kind, i0, i1)])
+  <C extends Custom<any, any, any, any>>(kind: C["kind"]) =>
+  (i0: C["i0"], i1: C["i1"], i2: C["i2"]): Fragment =>
+    new FragmentImpl([new CustomImpl(kind, i0, i1, i2)])
 
 const isHelper = (u: unknown): u is Helper =>
   u instanceof ArrayHelperImpl ||
@@ -249,7 +267,7 @@ export const make = (acquirer: Connection.Acquirer): Constructor =>
               return new RecordUpdateHelperImpl(strings, args[0])
             }
 
-            return new RecordInsertHelperImpl(strings)
+            return new RecordInsertHelperImpl(strings, args[0])
           }
           return new ArrayHelperImpl(strings)
         } else if (typeof strings === "string") {
@@ -258,7 +276,7 @@ export const make = (acquirer: Connection.Acquirer): Constructor =>
           if (typeof args[0] === "string") {
             return new RecordUpdateHelperImpl([strings as any], args[0])
           }
-          return new RecordInsertHelperImpl([strings as any])
+          return new RecordInsertHelperImpl([strings as any], args[0])
         }
 
         throw "absurd"
@@ -325,7 +343,7 @@ function convertLiteralOrFragment(clause: string | Fragment): Array<Segment> {
 export function join(literal: string, addParens = true, fallback = "") {
   const literalSegment = new LiteralImpl(literal)
 
-  return function(clauses: ReadonlyArray<string | Fragment>): Fragment {
+  return function (clauses: ReadonlyArray<string | Fragment>): Fragment {
     if (clauses.length === 0) {
       return unsafeFragment(fallback)
     } else if (clauses.length === 1) {
@@ -370,24 +388,24 @@ export const csv: {
     | [values: ReadonlyArray<string | Fragment>]
     | [prefix: string, values: ReadonlyArray<string | Fragment>]
 ) => {
-    if (args[args.length - 1].length === 0) {
-      return unsafeFragment("")
-    }
-
-    if (args.length === 1) {
-      return csvRaw(args[0])
-    }
-
-    return new FragmentImpl([
-      new LiteralImpl(`${args[0]} `),
-      ...csvRaw(args[1]).segments,
-    ])
+  if (args[args.length - 1].length === 0) {
+    return unsafeFragment("")
   }
+
+  if (args.length === 1) {
+    return csvRaw(args[0])
+  }
+
+  return new FragmentImpl([
+    new LiteralImpl(`${args[0]} `),
+    ...csvRaw(args[1]).segments,
+  ])
+}
 
 /** @internal */
 class CompilerImpl implements Compiler {
   constructor(
-    readonly parameterPlaceholder: (index: number, value: Primitive) => string,
+    readonly parameterPlaceholder: (index: number) => string,
     readonly onIdentifier: (value: string) => string,
     readonly onRecordUpdate: (
       placeholders: string,
@@ -399,7 +417,13 @@ class CompilerImpl implements Compiler {
       type: Custom<string, unknown, unknown>,
       placeholder: () => string,
     ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
-  ) { }
+    readonly onInsert?: (
+      columns: ReadonlyArray<string>,
+      placeholders: string,
+      values: ReadonlyArray<ReadonlyArray<Primitive>>,
+      options?: RecordInsertHelper.Options,
+    ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
+  ) {}
 
   compile(
     statement: Fragment,
@@ -414,7 +438,7 @@ class CompilerImpl implements Compiler {
     let sql = ""
     const binds: Array<Primitive> = []
     let placeholderCount = 0
-    const placeholder = (value: Primitive) => this.parameterPlaceholder(++placeholderCount, value)
+    const placeholder = () => this.parameterPlaceholder(++placeholderCount)
 
     for (let i = 0; i < len; i++) {
       const segment = segments[i]
@@ -434,13 +458,13 @@ class CompilerImpl implements Compiler {
         }
 
         case "Parameter": {
-          sql += placeholder(segment.value)
+          sql += placeholder()
           binds.push(segment.value)
           break
         }
 
         case "ArrayHelper": {
-          sql += `(${generatePlaceholder(placeholder, segment.value)()})`
+          sql += `(${generatePlaceholder(placeholder, segment.value.length)()})`
           binds.push.apply(binds, segment.value as any)
           break
         }
@@ -448,17 +472,31 @@ class CompilerImpl implements Compiler {
         case "RecordInsertHelper": {
           const keys = Object.keys(segment.value[0])
 
-          sql += `${generateColumns(
-            keys,
-            this.onIdentifier,
-          )} VALUES ${placeholders(
-            generatePlaceholder(placeholder, keys),
-            segment.value.length,
-          )}`
+          if (this.onInsert) {
+            const [s, b] = this.onInsert(
+              keys.map(this.onIdentifier),
+              placeholders(
+                generatePlaceholder(placeholder, keys.length),
+                segment.value.length,
+              ),
+              segment.value.map(record => keys.map(key => record[key])),
+              segment.options,
+            )
+            sql += s
+            binds.push.apply(binds, b as any)
+          } else {
+            sql += `${generateColumns(
+              keys,
+              this.onIdentifier,
+            )} VALUES ${placeholders(
+              generatePlaceholder(placeholder, keys.length),
+              segment.value.length,
+            )}`
 
-          for (let i = 0, len = segment.value.length; i < len; i++) {
-            for (let j = 0, len = keys.length; j < len; j++) {
-              binds.push(segment.value[i]?.[keys[j]] ?? null)
+            for (let i = 0, len = segment.value.length; i < len; i++) {
+              for (let j = 0, len = keys.length; j < len; j++) {
+                binds.push(segment.value[i]?.[keys[j]] ?? null)
+              }
             }
           }
           break
@@ -468,7 +506,7 @@ class CompilerImpl implements Compiler {
           const keys = Object.keys(segment.value[0])
           const [s, b] = this.onRecordUpdate(
             placeholders(
-              generatePlaceholder(placeholder, keys),
+              generatePlaceholder(placeholder, keys.length),
               segment.value.length,
             ),
             segment.alias,
@@ -481,7 +519,7 @@ class CompilerImpl implements Compiler {
         }
 
         case "Custom": {
-          const [s, b] = this.onCustom(segment, () => placeholder(""))
+          const [s, b] = this.onCustom(segment, placeholder)
           sql += s
           binds.push.apply(binds, b as any)
           break
@@ -494,8 +532,8 @@ class CompilerImpl implements Compiler {
 }
 
 /** @internal */
-export const makeCompiler = <C extends Custom<any, any, any> = any>(
-  parameterPlaceholder: (index: number, value: Primitive) => string,
+export const makeCompiler = <C extends Custom<any, any, any, any> = any>(
+  parameterPlaceholder: (index: number) => string,
   onIdentifier: (value: string) => string,
   onRecordUpdate: (
     placeholders: string,
@@ -507,12 +545,19 @@ export const makeCompiler = <C extends Custom<any, any, any> = any>(
     type: C,
     placeholder: () => string,
   ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
+  onInsert?: (
+    columns: ReadonlyArray<string>,
+    placeholders: string,
+    values: ReadonlyArray<ReadonlyArray<Primitive>>,
+    options?: RecordInsertHelper.Options,
+  ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
 ): Compiler =>
   new CompilerImpl(
     parameterPlaceholder,
     onIdentifier,
     onRecordUpdate,
     onCustom as any,
+    onInsert,
   )
 
 const placeholders = (evaluate: () => string, count: number): string => {
@@ -528,18 +573,17 @@ const placeholders = (evaluate: () => string, count: number): string => {
   return result
 }
 
-const generatePlaceholder = (evaluate: (value: Primitive) => string, values: ReadonlyArray<Primitive>) => {
-  const len = values.length
+const generatePlaceholder = (evaluate: () => string, len: number) => {
   if (len === 0) {
     return () => ""
   } else if (len === 1) {
-    return () => evaluate(values[0])
+    return evaluate
   }
 
   return () => {
-    let result = evaluate(values[0])
+    let result = evaluate()
     for (let i = 1; i < len; i++) {
-      result += `,${evaluate(values[i])}`
+      result += `,${evaluate()}`
     }
 
     return result
@@ -567,4 +611,32 @@ export const defaultEscape = (c: string) => {
   const double = c + c
   const dot = c + "." + c
   return (str: string) => c + str.replace(re, double).replace(/\./g, dot) + c
+}
+
+/** @internal */
+export const primitiveKind = (value: Primitive): PrimitiveKind => {
+  switch (typeof value) {
+    case "string":
+      return "string"
+    case "number":
+      return "number"
+    case "boolean":
+      return "boolean"
+    case "bigint":
+      return "bigint"
+    case "undefined":
+      return "null"
+  }
+
+  if (value === null) {
+    return "null"
+  } else if (value instanceof Date) {
+    return "Date"
+  } else if (value instanceof Uint8Array) {
+    return "Uint8Array"
+  } else if (value instanceof Int8Array) {
+    return "Int8Array"
+  }
+
+  return "string"
 }

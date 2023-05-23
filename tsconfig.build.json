@@ -3,6 +3,7 @@
   "references": [
     { "path": "packages/sql/tsconfig.build.json" },
     { "path": "packages/pg/tsconfig.build.json" },
+    { "path": "packages/mssql/tsconfig.build.json" },
     { "path": "packages/mysql/tsconfig.build.json" },
     { "path": "packages/sqlite/tsconfig.build.json" }
   ]

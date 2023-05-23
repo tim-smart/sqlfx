@@ -1,27 +1,34 @@
 import { describe, it, expect } from "vitest"
 import * as Effect from "@effect/io/Effect"
-import * as _ from "../src"
+import * as _ from "@sqlfx/mssql"
+import * as Statement from "@sqlfx/sql/Statement"
 
 const sql = Effect.runSync(Effect.scoped(_.make({})))
 const compiler = _.makeCompiler()
 
-describe("tedious", () => {
+describe("mssql", () => {
   it("insert helper", () => {
     const [query, params] = compiler.compile(
-      sql`INSERT INTO people ${sql({ name: "Tim", age: 10 })}`,
+      sql`INSERT INTO ${sql("people")} ${sql(
+        { name: "Tim", age: 10 },
+        { additionalOutput: ["id"] },
+      )}`,
     )
-    expect(query).toEqual(`INSERT INTO people (name,age) VALUES (@name,@age)`)
+    expect(query).toEqual(
+      `INSERT INTO [people] ([name],[age]) OUTPUT INSERTED.[id],INSERTED.[name],INSERTED.[age] VALUES (@a,@b)`,
+    )
     expect(params).toEqual(["Tim", 10])
   })
 
   it("update helper", () => {
     const [query, params] = compiler.compile(
-      sql`UPDATE people SET name = @name FROM ${sql(
+      sql`UPDATE people SET name = data.name FROM ${sql(
         [{ name: "Tim" }, { name: "John" }],
-        "data")}`,
+        "data",
+      )}`,
     )
     expect(query).toEqual(
-      `UPDATE people SET name = @name FROM (values (@name),(@name)) AS data(name)`,
+      `UPDATE people SET name = data.name FROM (values (@a),(@b)) AS data([name])`,
     )
     expect(params).toEqual(["Tim", "John"])
   })
@@ -30,21 +37,34 @@ describe("tedious", () => {
     const [query, params] = compiler.compile(
       sql`SELECT * FROM ${sql("people")} WHERE id IN ${sql([1, 2, "string"])}`,
     )
-    expect(query).toEqual(`SELECT * FROM "people" WHERE id IN ($1,$2,$3)`)
+    expect(query).toEqual(`SELECT * FROM [people] WHERE id IN (@a,@b,@c)`)
     expect(params).toEqual([1, 2, "string"])
   })
 
-  // it("json", () => {
-  //   const [query, params] = compiler.compile(sql`SELECT ${sql.json({ a: 1 })}`)
-  //   expect(query).toEqual(`SELECT $1`)
-  //   expect((params[0] as any).type).toEqual(3802)
-  // })
-  //
-  // it("array", () => {
-  //   const [query, params] = compiler.compile(
-  //     sql`SELECT ${sql.array([1, 2, 3])}`,
-  //   )
-  //   expect(query).toEqual(`SELECT ARRAY [$1,$2,$3]`)
-  //   expect(params).toEqual([1, 2, 3])
-  // })
+  it("param types", () => {
+    const [query, params] = compiler.compile(
+      sql`SELECT * FROM ${sql("people")} WHERE id = ${sql.param(
+        _.TYPES.BigInt,
+        1,
+      )}`,
+    )
+    expect(query).toEqual(`SELECT * FROM [people] WHERE id = @a`)
+    expect(Statement.isCustom("MssqlParam")(params[0])).toEqual(true)
+    const param = params[0] as unknown as Statement.Custom<
+      "MsSqlParam",
+      any,
+      any,
+      any
+    >
+    expect(param.i0).toEqual(_.TYPES.BigInt)
+    expect(param.i1).toEqual(1)
+    expect(param.i2).toEqual({})
+  })
+
+  it("escape [", () => {
+    const [query] = compiler.compile(
+      sql`SELECT * FROM ${sql("peo[]ple.te[st]ing")}`,
+    )
+    expect(query).toEqual(`SELECT * FROM [peo[]]ple].[te[st]]ing]`)
+  })
 })

@@ -46,6 +46,11 @@
       "@sqlfx/pg/*": ["./packages/pg/src/*"],
       "@sqlfx/pg": ["./packages/pg/src/index.js"],
 
+      "@sqlfx/mssql/test/*": ["./packages/mssql/test/*"],
+      "@sqlfx/mssql/examples/*": ["./packages/mssql/examples/*"],
+      "@sqlfx/mssql/*": ["./packages/mssql/src/*"],
+      "@sqlfx/mssql": ["./packages/mssql/src/index.js"],
+
       "@sqlfx/mysql/test/*": ["./packages/mysql/test/*"],
       "@sqlfx/mysql/examples/*": ["./packages/mysql/examples/*"],
       "@sqlfx/mysql/*": ["./packages/mysql/src/*"],

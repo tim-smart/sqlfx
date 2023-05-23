@@ -1,6 +1,6 @@
 {
-  "name": "@sqlfx/tedious",
-  "version": "0.2.4",
+  "name": "@sqlfx/mssql",
+  "version": "0.0.0",
   "description": "",
   "publishConfig": {
     "access": "public",

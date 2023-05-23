@@ -5,20 +5,24 @@ import { Tag } from "@effect/data/Context"
 import * as Debug from "@effect/data/Debug"
 import type { Duration } from "@effect/data/Duration"
 import { minutes } from "@effect/data/Duration"
-import { pipe } from "@effect/data/Function"
+import { identity } from "@effect/data/Function"
 import * as Config from "@effect/io/Config"
 import * as ConfigSecret from "@effect/io/Config/Secret"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Pool from "@effect/io/Pool"
 import type { Scope } from "@effect/io/Scope"
+import type { Parameter } from "@sqlfx/mssql/Parameter"
+import type { Procedure, ProcedureWithValues } from "@sqlfx/mssql/Procedure"
 import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
-import type { Custom, Primitive as _Primitive } from "@sqlfx/sql/Statement"
+import type { Primitive as _Primitive } from "@sqlfx/sql/Statement"
 import * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
 import * as Tedious from "tedious"
+
+const TYPES = Tedious.TYPES
 
 export {
   /**
@@ -27,31 +31,51 @@ export {
    * @since 1.0.0
    */
   transform,
+  /**
+   * Parameter types
+   *
+   * @since 1.0.0
+   */
+  TYPES,
 }
 
 /**
  * @category model
  * @since 1.0.0
  */
-export interface TediousClient extends Client.Client {
-  readonly config: TediusClientConfig
+export interface MssqlClient extends Client.Client {
+  readonly config: MssqlClientConfig
+
+  readonly param: (
+    type: Tedious.TediousType,
+    value: Statement.Primitive,
+    options?: Tedious.ParameterOptions,
+  ) => Statement.Fragment
+
+  readonly call: <
+    I extends Record<string, Parameter<any>>,
+    O extends Record<string, Parameter<any>>,
+  >(
+    procedure: ProcedureWithValues<I, O>,
+  ) => Effect.Effect<never, SqlError, Procedure.ParametersRecord<O>>
 }
 
 /**
  * @category tag
  * @since 1.0.0
  */
-export const tag = Tag<TediousClient>()
+export const tag = Tag<MssqlClient>()
 
 /**
  * @category constructor
  * @since 1.0.0
  */
-export interface TediusClientConfig {
-
+export interface MssqlClientConfig {
   readonly domain?: string
   readonly server?: string
+  readonly trustServer?: boolean
   readonly port?: number
+  readonly authType?: string
   readonly database?: string
   readonly username?: string
   readonly password?: ConfigSecret.ConfigSecret
@@ -61,103 +85,185 @@ export interface TediusClientConfig {
   readonly maxConnections?: number
   readonly connectionTTL?: Duration
 
+  readonly parameterTypes?: Record<Statement.PrimitiveKind, Tedious.TediousType>
+
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
 }
 
-const escape = Statement.defaultEscape('')
+interface MssqlConnection extends Connection {
+  readonly call: (
+    procedure: ProcedureWithValues<any, any>,
+  ) => Effect.Effect<never, SqlError, any>
+}
 
 /**
  * @category constructor
  * @since 1.0.0
  */
 export const make = (
-  options: TediusClientConfig,
-): Effect.Effect<Scope, never, TediousClient> =>
-  Effect.gen(function*(_) {
+  options: MssqlClientConfig,
+): Effect.Effect<Scope, never, MssqlClient> =>
+  Effect.gen(function* (_) {
+    const parameterTypes = options.parameterTypes ?? defaultParameterTypes
     const compiler = makeCompiler(options.transformQueryNames)
 
     const transformRows = Client.defaultRowTransform(
       options.transformResultNames!,
     )
 
-    const makeConnection = pipe(
-      Effect.acquireRelease(
-        Effect.tap(Effect.sync(() =>
-          new Tedious.Connection({
-            options: {
-              port: options.port,
-              database: options.database,
-              connectTimeout: options.connectTimeout?.millis
-            },
-            server: options.server,
-            domain: options.domain,
-            authentication: {
-              options: {
-                userName: options.username,
-                password: options.password
-                  ? ConfigSecret.value(options.password)
-                  : undefined,
-              }
-            },
-          }),
-        ), _ => Effect.sync(() => _.connect())),
-        _ =>
-          Effect.async<never, never, void>(resume => {
-            _.on("end", () => resume(Effect.unit()))
-            _.close()
+    const makeConnection = Effect.gen(function* (_) {
+      const conn = new Tedious.Connection({
+        options: {
+          port: options.port,
+          database: options.database,
+          trustServerCertificate: options.trustServer ?? true,
+          connectTimeout: options.connectTimeout?.millis,
+          rowCollectionOnRequestCompletion: true,
+          useColumnNames: false,
+        },
+        server: options.server,
+        domain: options.domain,
+        authentication: {
+          type: options.authType ?? "default",
+          options: {
+            userName: options.username,
+            password: options.password
+              ? ConfigSecret.value(options.password)
+              : undefined,
           },
-          ),
-      ),
-      Effect.map((conn): Connection => {
-        const run = (
-          sql: string,
-          _values?: ReadonlyArray<any>,
-          transform = true,
-          rowsAsArray = false,
-        ) =>
-          Effect.async<never, SqlError, any>(resume => {
-            const req = new Tedious.Request(sql, (error, _rowCount, result) => {
-              if (error) {
-                resume(
-                  Debug.untraced(() => Effect.fail(SqlError(error.message, error))
-                  )
-                )
-              } else if (transform &&
-                !rowsAsArray &&
-                options.transformResultNames) {
-                resume(
-                  Debug.untraced(() => Effect.succeed(transformRows(result)))
-                )
-              } else {
-                resume(Debug.untraced(() => Effect.succeed(result)))
+        },
+      })
+
+      yield* _(
+        Effect.addFinalizer(() =>
+          Effect.async<never, never, void>(resume => {
+            conn.once("end", () => resume(Effect.unit()))
+            conn.close()
+          }),
+        ),
+      )
+
+      yield* _(
+        Effect.async<never, SqlError, void>(resume => {
+          conn.connect(err => {
+            if (err) {
+              resume(
+                Debug.untraced(() => Effect.fail(SqlError(err.message, err))),
+              )
+            } else {
+              resume(Debug.untraced(() => Effect.unit()))
+            }
+          })
+        }),
+      )
+
+      const run = (
+        sql: string,
+        values?: ReadonlyArray<any>,
+        transform = true,
+        rowsAsArray = false,
+      ) =>
+        Effect.async<never, SqlError, any>(resume => {
+          const req = new Tedious.Request(sql, (error, _rowCount, result) => {
+            if (error) {
+              resume(
+                Debug.untraced(() =>
+                  Effect.fail(SqlError(error.message, error)),
+                ),
+              )
+              return
+            }
+
+            if (rowsAsArray) {
+              result = result.map(row => row.map((_: any) => _.value))
+            } else {
+              result = rowsToObjects(result)
+
+              if (transform && options.transformResultNames) {
+                result = transformRows(result) as any
               }
-            })
-            conn.execSql(req)
+            }
+
+            resume(Debug.untraced(() => Effect.succeed(result)))
           })
 
-        return {
-          execute(statement) {
-            const [sql, params] = compiler.compile(statement)
-            return run(sql, params)
-          },
-          executeWithoutTransform(statement) {
-            const [sql, params] = compiler.compile(statement)
-            return run(sql, params, false)
-          },
-          executeValues(statement) {
-            const [sql, params] = compiler.compile(statement)
-            return run(sql, params, true, true)
-          },
-          executeRaw(sql, params) {
-            return run(sql, params)
-          },
-          compile(statement) {
-            return Effect.sync(() => compiler.compile(statement))
-          },
-        }
-      }),
-    )
+          if (values) {
+            for (let i = 0, len = values.length; i < len; i++) {
+              const value = values[i]
+              const name = numberToAlpha(i)
+
+              if (isMssqlParam(value)) {
+                req.addParameter(name, value.i0, value.i1, value.i2)
+              } else {
+                const kind = Statement.primitiveKind(value)
+                const type = parameterTypes[kind]
+                req.addParameter(name, type, value)
+              }
+            }
+          }
+
+          conn.execSql(req)
+        })
+
+      const runProcedure = (procedure: ProcedureWithValues<any, any>) =>
+        Effect.async<never, SqlError, any>(resume => {
+          const result: Record<string, any> = {}
+
+          const req = new Tedious.Request(procedure.name, error => {
+            if (error) {
+              resume(
+                Debug.untraced(() =>
+                  Effect.fail(SqlError(error.message, error)),
+                ),
+              )
+            } else {
+              resume(Debug.untraced(() => Effect.succeed(result)))
+            }
+          })
+
+          for (const name in procedure.params) {
+            const param = procedure.params[name]
+            const value = procedure.values[name]
+            req.addParameter(name, param.type, value, param.options)
+          }
+
+          for (const name in procedure.outputParams) {
+            const param = procedure.outputParams[name]
+            req.addOutputParameter(name, param.type, undefined, param.options)
+          }
+
+          req.on("returnValue", (name, value) => {
+            result[name] = value
+          })
+
+          conn.callProcedure(req)
+        })
+
+      return identity<MssqlConnection>({
+        execute(statement) {
+          const [sql, params] = compiler.compile(statement)
+          return run(sql, params)
+        },
+        executeWithoutTransform(statement) {
+          const [sql, params] = compiler.compile(statement)
+          return run(sql, params, false)
+        },
+        executeValues(statement) {
+          const [sql, params] = compiler.compile(statement)
+          return run(sql, params, true, true)
+        },
+        executeRaw(sql, params) {
+          return run(sql, params)
+        },
+        call(procedure) {
+          return runProcedure(procedure)
+        },
+        compile(statement) {
+          return Effect.sync(() => compiler.compile(statement))
+        },
+      })
+    })
 
     const pool = yield* _(
       Pool.makeWithTTL(
@@ -170,6 +276,19 @@ export const make = (
 
     return Object.assign(Client.make(pool.get(), pool.get()), {
       config: options,
+
+      param: (
+        type: Tedious.TediousType,
+        value: Statement.Primitive,
+        options: Tedious.ParameterOptions = {},
+      ) => mssqlParam(type, value, options),
+
+      call: <
+        I extends Record<string, Parameter<any>>,
+        O extends Record<string, Parameter<any>>,
+      >(
+        procedure: ProcedureWithValues<I, O>,
+      ) => Effect.scoped(Effect.flatMap(pool.get(), _ => _.call(procedure))),
     })
   })
 
@@ -177,19 +296,16 @@ export const make = (
  * @category constructor
  * @since 1.0.0
  */
-export const makeLayer = (config: Config.Config.Wrap<TediusClientConfig>) =>
+export const makeLayer = (config: Config.Config.Wrap<MssqlClientConfig>) =>
   Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
-// UPDATE e
-// SET hire_date = t.hire_date
-// FROM dbo.employee e
-// JOIN (
-//     VALUES
-//         ('PMA42628M', '1979-03-15'),
-//         ('PSA89086M', '1988-12-22')
-// ) t (emp_id, hire_date) ON t.emp_id = e.emp_id
+
+/**
+ * @category constructor
+ * @since 1.0.0
+ */
 export const makeCompiler = (transform?: (_: string) => string) => {
-  return Statement.makeCompiler<TediousCustom>(
-    (_,v) => `@${v}`,
+  return Statement.makeCompiler<MssqlCustom>(
+    _ => `@${numberToAlpha(_ - 1)}`,
     transform ? _ => escape(transform(_)) : escape,
     (placeholders, valueAlias, valueColumns, values) => [
       `(values ${placeholders}) AS ${valueAlias}${valueColumns}`,
@@ -197,207 +313,82 @@ export const makeCompiler = (transform?: (_: string) => string) => {
     ],
     (type, placeholder) => {
       switch (type.kind) {
-        case "TediusType": {
-          return [placeholder(), [type.i0 as any, type.i1] as any]
+        case "MssqlParam": {
+          return [placeholder(), [type] as any]
         }
       }
     },
+    (columns, placeholders, values, opts) => [
+      `(${columns.join(",")}) OUTPUT ${
+        opts?.additionalOutput
+          ? opts.additionalOutput.map(_ => `INSERTED.${escape(_)}`).join(",") +
+            ","
+          : ""
+      }${columns.map(_ => `INSERTED.${_}`).join(",")} VALUES ${placeholders}`,
+      values.flat(),
+    ],
   )
+}
+
+/**
+ * @since 1.0.0
+ */
+export const defaultParameterTypes: Record<
+  Statement.PrimitiveKind,
+  Tedious.TediousType
+> = {
+  string: TYPES.VarChar,
+  number: TYPES.Int,
+  bigint: TYPES.BigInt,
+  boolean: TYPES.Bit,
+  Date: TYPES.DateTime,
+  Uint8Array: TYPES.VarBinary,
+  Int8Array: TYPES.VarBinary,
+  null: TYPES.Null,
+}
+
+// compiler helpers
+
+const escape = (str: string) =>
+  "[" + str.replace(/\]/g, "]]").replace(/\./g, "].[") + "]"
+
+const charCodeA = "a".charCodeAt(0)
+function numberToAlpha(n: number) {
+  let s = ""
+  while (n >= 0) {
+    s = String.fromCharCode((n % 26) + charCodeA) + s
+    n = Math.floor(n / 26) - 1
+  }
+  return s
+}
+
+function rowsToObjects(rows: ReadonlyArray<any>) {
+  const newRows = new Array(rows.length)
+
+  for (let i = 0, len = rows.length; i < len; i++) {
+    const row = rows[i]
+    const newRow: any = {}
+    for (let j = 0, columnLen = row.length; j < columnLen; j++) {
+      const column = row[j]
+      newRow[column.metadata.colName] = column.value
+    }
+    newRows[i] = newRow
+  }
+
+  return newRows
 }
 
 // custom types
 
-type TediousCustom =
-  | TediousType
-// | TediousBigInt
-// | TediousBinary
-// | TediousBit
-// | TediousChar
-// | TediousDate
-// | TediousDateTime2
-// | TediousDateTime
-// | TediousDateTimeOffset
-// | TediousDecimal
-// | TediousFloat
-// | TediousImage
-// | TediousInt
-// | TediousMoney
-// | TediousNChar
-// | TediousNText
-// | TediousNVarChar
-// | TediousNull
-// | TediousNumeric
-// | TediousReal
-// | TediousSmallDateTime
-// | TediousSmallInt
-// | TediousSmallMoney
-// | TediousTVP
-// | TediousText
-// | TediousTime
-// | TediousTinyInt
-// | TediousUDT
-// | TediousUniqueIdentifier
-// | TediousVarBinary
-// | TediousVarChar
-// | TediousXml
+type MssqlCustom = MssqlParam
 
+interface MssqlParam
+  extends Statement.Custom<
+    "MssqlParam",
+    Tedious.TediousType,
+    Statement.Primitive,
+    Tedious.ParameterOptions
+  > {}
 
-/** @internal */
-interface TediousType extends Custom<"TediusType", Tedious.TediousType, unknown> { }
-/** @internal */
-const TediousType = Statement.custom<TediousType>("TediusType")
-
-/** @internal */
-interface TediousTime extends Custom<"TediusTime", unknown> { }
-/** @internal */
-const TediousTime = Statement.custom<TediousTime>("TediusTime")
-
-/** @internal */
-interface TediousDate extends Custom<"TediusDate", unknown> { }
-/** @internal */
-const TediousDate = Statement.custom<TediousDate>("TediusDate")
-
-/** @internal */
-interface TediousBigInt extends Custom<"TediusBigInt", BigInt> { }
-/** @internal */
-const TediousBigInt = Statement.custom<TediousBigInt>("TediusBigInt")
-
-/** @internal */
-interface TediousBinary extends Custom<"TediusBinary", boolean> { }
-/** @internal */
-const TediousBinary = Statement.custom<TediousBinary>("TediusBinary")
-
-/** @internal */
-interface TediousBit extends Custom<"TediusBit", 0 | 1> { }
-/** @internal */
-const TediousBit = Statement.custom<TediousBit>("TediusBit")
-
-/** @internal */
-interface TediousChar extends Custom<"TediusChar", string> { }
-/** @internal */
-const TediousChar = Statement.custom<TediousChar>("TediusChar")
-
-/** @internal */
-interface TediousDateTime2 extends Custom<"TediusDateTime2", Date> { }
-/** @internal */
-const TediousDateTime2 = Statement.custom<TediousDateTime2>("TediusDateTime2")
-
-/** @internal */
-interface TediousDateTime extends Custom<"TediusDateTime", Date> { }
-/** @internal */
-const TediousDateTime = Statement.custom<TediousDateTime>("TediusDateTime")
-
-/** @internal */
-interface TediousDateTimeOffset extends Custom<"TediusDateTimeOffset", string> { }
-/** @internal */
-const TediousDateTimeOffset = Statement.custom<TediousDateTimeOffset>("TediusDateTimeOffset")
-
-/** @internal */
-interface TediousFloat extends Custom<"TediusFloat", number> { }
-/** @internal */
-const TediousFloat = Statement.custom<TediousFloat>("TediusFloat")
-
-/** @internal */
-interface TediousDecimal extends Custom<"TediusDecimal", number> { }
-/** @internal */
-const TediousDecimal = Statement.custom<TediousDecimal>("TediusDecimal")
-
-/** @internal */
-interface TediousImage extends Custom<"TediusImage", number> { }
-/** @internal */
-const TediousImage = Statement.custom<TediousImage>("TediusImage")
-
-/** @internal */
-interface TediousInt extends Custom<"TediusInt", number> { }
-/** @internal */
-const TediousInt = Statement.custom<TediousInt>("TediusInt")
-
-/** @internal */
-interface TediousMoney extends Custom<"TediusMoney", number> { }
-/** @internal */
-const TediousMoney = Statement.custom<TediousMoney>("TediusMoney")
-
-/** @internal */
-interface TediousNChar extends Custom<"TediusNChar", number> { }
-/** @internal */
-const TediousNChar = Statement.custom<TediousNChar>("TediusNChar")
-
-/** @internal */
-interface TediousNText extends Custom<"TediusNText", number> { }
-/** @internal */
-const TediousNText = Statement.custom<TediousNText>("TediusNText")
-
-/** @internal */
-interface TediousNVarChar extends Custom<"TediusNVarChar", number> { }
-/** @internal */
-const TediousNVarChar = Statement.custom<TediousNVarChar>("TediusNVarChar")
-
-/** @internal */
-interface TediousNull extends Custom<"TediusNull", number> { }
-/** @internal */
-const TediousNull = Statement.custom<TediousNull>("TediusNull")
-
-/** @internal */
-interface TediousNumeric extends Custom<"TediusNumeric", number> { }
-/** @internal */
-const TediousNumeric = Statement.custom<TediousNumeric>("TediusNumeric")
-
-/** @internal */
-interface TediousReal extends Custom<"TediusReal", number> { }
-/** @internal */
-const TediousReal = Statement.custom<TediousReal>("TediusReal")
-
-/** @internal */
-interface TediousSmallDateTime extends Custom<"TediusSmallDateTime", number> { }
-/** @internal */
-const TediousSmallDateTime = Statement.custom<TediousSmallDateTime>("TediusSmallDateTime")
-
-/** @internal */
-interface TediousSmallInt extends Custom<"TediusSmallInt", number> { }
-/** @internal */
-const TediousSmallInt = Statement.custom<TediousSmallInt>("TediusSmallInt")
-
-/** @internal */
-interface TediousSmallMoney extends Custom<"TediusSmallMoney", number> { }
-/** @internal */
-const TediousSmallMoney = Statement.custom<TediousSmallMoney>("TediusSmallMoney")
-
-/** @internal */
-interface TediousTVP extends Custom<"TediusTVP", number> { }
-/** @internal */
-const TediousTVP = Statement.custom<TediousTVP>("TediusTVP")
-
-/** @internal */
-interface TediousText extends Custom<"TediusText", number> { }
-/** @internal */
-const TediousText = Statement.custom<TediousText>("TediusText")
-
-/** @internal */
-interface TediousTinyInt extends Custom<"TediusTinyInt", number> { }
-/** @internal */
-const TediousTinyInt = Statement.custom<TediousTinyInt>("TediusTinyInt")
-
-/** @internal */
-interface TediousUDT extends Custom<"TediusUDT", number> { }
-/** @internal */
-const TediousUDT = Statement.custom<TediousUDT>("TediusUDT")
-
-/** @internal */
-interface TediousUniqueIdentifier extends Custom<"TediusUniqueIdentifier", number> { }
-/** @internal */
-const TediousUniqueIdentifier = Statement.custom<TediousUniqueIdentifier>("TediusUniqueIdentifier")
-
-/** @internal */
-interface TediousVarBinary extends Custom<"TediusVarBinary", number> { }
-/** @internal */
-const TediousVarBinary = Statement.custom<TediousVarBinary>("TediusVarBinary")
-
-/** @internal */
-interface TediousVarChar extends Custom<"TediusVarChar", number> { }
-/** @internal */
-const TediousVarChar = Statement.custom<TediousVarChar>("TediusVarChar")
-
-/** @internal */
-interface TediousXml extends Custom<"TediusXml", number> { }
-/** @internal */
-const TediousXml = Statement.custom<TediousXml>("TediusXml")
+const mssqlParam = Statement.custom<MssqlParam>("MssqlParam")
+const isMssqlParam = Statement.isCustom<MssqlParam>("MssqlParam")
