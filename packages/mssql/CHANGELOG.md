@@ -1,5 +1,11 @@
 # @sqlfx/mssql
 
+## 0.1.1
+
+### Patch Changes
+
+- [#48](https://github.com/tim-smart/sqlfx/pull/48) [`a2b1e73`](https://github.com/tim-smart/sqlfx/commit/a2b1e7381c7337266922b87ee2ead8b5c0a02f79) Thanks [@tim-smart](https://github.com/tim-smart)! - support rows in procedures
+
 ## 0.1.0
 
 ### Minor Changes
