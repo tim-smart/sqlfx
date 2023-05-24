@@ -2,5 +2,5 @@
 title: "@sqlfx/mysql"
 has_children: true
 permalink: /docs/mysql
-nav_order: 2
+nav_order: 3
 ---

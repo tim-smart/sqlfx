@@ -24,6 +24,7 @@ Added in v1.0.0
   - [unsafe](#unsafe)
   - [unsafeFragment](#unsafefragment)
 - [guard](#guard)
+  - [isCustom](#iscustom)
   - [isFragment](#isfragment)
 - [model](#model)
   - [Argument (type alias)](#argument-type-alias)
@@ -37,6 +38,7 @@ Added in v1.0.0
   - [Literal (interface)](#literal-interface)
   - [Parameter (interface)](#parameter-interface)
   - [Primitive (type alias)](#primitive-type-alias)
+  - [PrimitiveKind (type alias)](#primitivekind-type-alias)
   - [RecordInsertHelper (interface)](#recordinserthelper-interface)
   - [RecordUpdateHelper (interface)](#recordupdatehelper-interface)
   - [Segment (type alias)](#segment-type-alias)
@@ -46,6 +48,7 @@ Added in v1.0.0
   - [FragmentId (type alias)](#fragmentid-type-alias)
 - [utils](#utils)
   - [defaultEscape](#defaultescape)
+  - [primitiveKind](#primitivekind)
 
 ---
 
@@ -56,7 +59,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeCompiler: <C extends Custom<any, any, any> = any>(
+export declare const makeCompiler: <C extends Custom<any, any, any, any> = any>(
   parameterPlaceholder: (index: number) => string,
   onIdentifier: (value: string) => string,
   onRecordUpdate: (
@@ -65,7 +68,15 @@ export declare const makeCompiler: <C extends Custom<any, any, any> = any>(
     columns: string,
     values: ReadonlyArray<ReadonlyArray<Primitive>>
   ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
-  onCustom: (type: C, placeholder: () => string) => readonly [sql: string, params: ReadonlyArray<Primitive>]
+  onCustom: (type: C, placeholder: () => string) => readonly [sql: string, params: ReadonlyArray<Primitive>],
+  onInsert?:
+    | ((
+        columns: ReadonlyArray<string>,
+        placeholders: string,
+        values: ReadonlyArray<ReadonlyArray<Primitive>>,
+        options?: RecordInsertHelper.Options | undefined
+      ) => readonly [sql: string, binds: ReadonlyArray<Primitive>])
+    | undefined
 ) => Compiler
 ```
 
@@ -101,9 +112,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const custom: <C extends Custom<any, any, any>>(
+export declare const custom: <C extends Custom<any, any, any, any>>(
   kind: C['kind']
-) => (i0: C['i0'], i1: C['i1']) => Fragment
+) => (i0: C['i0'], i1: C['i1'], i2: C['i2']) => Fragment
 ```
 
 Added in v1.0.0
@@ -166,6 +177,16 @@ Added in v1.0.0
 
 # guard
 
+## isCustom
+
+**Signature**
+
+```ts
+export declare const isCustom: <A extends Custom<any, any, any, any>>(kind: A['kind']) => (u: unknown) => u is A
+```
+
+Added in v1.0.0
+
 ## isFragment
 
 **Signature**
@@ -225,8 +246,10 @@ export interface Constructor {
 
   (value: ReadonlyArray<Primitive | Record<string, Primitive>>): ArrayHelper
   (value: ReadonlyArray<Record<string, Primitive>>): RecordInsertHelper
+  (value: ReadonlyArray<Record<string, Primitive>>, options: RecordInsertHelper.Options): RecordInsertHelper
   (value: ReadonlyArray<Record<string, Primitive>>, alias: string): RecordUpdateHelper
   (value: Record<string, Primitive>): RecordInsertHelper
+  (value: Record<string, Primitive>, optiosn: RecordInsertHelper.Options): RecordInsertHelper
   (value: Record<string, Primitive>, alias: string): RecordUpdateHelper
 }
 ```
@@ -238,11 +261,12 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Custom<T extends string = string, A = void, B = void> {
+export interface Custom<T extends string = string, A = void, B = void, C = void> {
   readonly _tag: 'Custom'
   readonly kind: T
   readonly i0: A
   readonly i1: B
+  readonly i2: C
 }
 ```
 
@@ -321,6 +345,16 @@ export type Primitive = string | number | bigint | boolean | Date | null | Int8A
 
 Added in v1.0.0
 
+## PrimitiveKind (type alias)
+
+**Signature**
+
+```ts
+export type PrimitiveKind = 'string' | 'number' | 'bigint' | 'boolean' | 'Date' | 'null' | 'Int8Array' | 'Uint8Array'
+```
+
+Added in v1.0.0
+
 ## RecordInsertHelper (interface)
 
 **Signature**
@@ -329,6 +363,7 @@ Added in v1.0.0
 export interface RecordInsertHelper {
   readonly _tag: 'RecordInsertHelper'
   readonly value: ReadonlyArray<Record<string, Primitive>>
+  readonly options?: RecordInsertHelper.Options
 }
 ```
 
@@ -402,6 +437,16 @@ Added in v1.0.0
 
 ```ts
 export declare const defaultEscape: (c: string) => (str: string) => string
+```
+
+Added in v1.0.0
+
+## primitiveKind
+
+**Signature**
+
+```ts
+export declare const primitiveKind: (value: Primitive) => PrimitiveKind
 ```
 
 Added in v1.0.0

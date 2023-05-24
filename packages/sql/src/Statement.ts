@@ -54,6 +54,14 @@ export interface Statement<A>
 export const isFragment: (u: unknown) => u is Fragment = internal.isFragment
 
 /**
+ * @category guard
+ * @since 1.0.0
+ */
+export const isCustom: <A extends Custom<any, any, any, any>>(
+  kind: A["kind"],
+) => (u: unknown) => u is A = internal.isCustom
+
+/**
  * @category model
  * @since 1.0.0
  */
@@ -110,6 +118,19 @@ export interface ArrayHelper {
 export interface RecordInsertHelper {
   readonly _tag: "RecordInsertHelper"
   readonly value: ReadonlyArray<Record<string, Primitive>>
+  readonly options?: RecordInsertHelper.Options
+}
+
+/**
+ * @since 1.0.0
+ */
+export namespace RecordInsertHelper {
+  /**
+   * @since 1.0.0
+   */
+  export interface Options {
+    readonly additionalOutput?: ReadonlyArray<string>
+  }
 }
 
 /**
@@ -126,20 +147,26 @@ export interface RecordUpdateHelper {
  * @category model
  * @since 1.0.0
  */
-export interface Custom<T extends string = string, A = void, B = void> {
+export interface Custom<
+  T extends string = string,
+  A = void,
+  B = void,
+  C = void,
+> {
   readonly _tag: "Custom"
   readonly kind: T
   readonly i0: A
   readonly i1: B
+  readonly i2: C
 }
 
 /**
  * @category constructor
  * @since 1.0.0
  */
-export const custom: <C extends Custom<any, any, any>>(
+export const custom: <C extends Custom<any, any, any, any>>(
   kind: C["kind"],
-) => (i0: C["i0"], i1: C["i1"]) => Fragment = internal.custom
+) => (i0: C["i0"], i1: C["i1"], i2: C["i2"]) => Fragment = internal.custom
 
 /**
  * @category model
@@ -154,6 +181,20 @@ export type Primitive =
   | null
   | Int8Array
   | Uint8Array
+
+/**
+ * @category model
+ * @since 1.0.0
+ */
+export type PrimitiveKind =
+  | "string"
+  | "number"
+  | "bigint"
+  | "boolean"
+  | "Date"
+  | "null"
+  | "Int8Array"
+  | "Uint8Array"
 
 /**
  * @category model
@@ -188,9 +229,17 @@ export interface Constructor {
   (value: ReadonlyArray<Record<string, Primitive>>): RecordInsertHelper
   (
     value: ReadonlyArray<Record<string, Primitive>>,
+    options: RecordInsertHelper.Options,
+  ): RecordInsertHelper
+  (
+    value: ReadonlyArray<Record<string, Primitive>>,
     alias: string,
   ): RecordUpdateHelper
   (value: Record<string, Primitive>): RecordInsertHelper
+  (
+    value: Record<string, Primitive>,
+    optiosn: RecordInsertHelper.Options,
+  ): RecordInsertHelper
   (value: Record<string, Primitive>, alias: string): RecordUpdateHelper
 }
 
@@ -268,7 +317,7 @@ export interface Compiler {
  * @category compiler
  * @since 1.0.0
  */
-export const makeCompiler: <C extends Custom<any, any, any> = any>(
+export const makeCompiler: <C extends Custom<any, any, any, any> = any>(
   parameterPlaceholder: (index: number) => string,
   onIdentifier: (value: string) => string,
   onRecordUpdate: (
@@ -281,6 +330,12 @@ export const makeCompiler: <C extends Custom<any, any, any> = any>(
     type: C,
     placeholder: () => string,
   ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
+  onInsert?: (
+    columns: ReadonlyArray<string>,
+    placeholders: string,
+    values: ReadonlyArray<ReadonlyArray<Primitive>>,
+    options?: RecordInsertHelper.Options,
+  ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
 ) => Compiler = internal.makeCompiler
 
 /**
@@ -288,3 +343,9 @@ export const makeCompiler: <C extends Custom<any, any, any> = any>(
  */
 export const defaultEscape: (c: string) => (str: string) => string =
   internal.defaultEscape
+
+/**
+ * @since 1.0.0
+ */
+export const primitiveKind: (value: Primitive) => PrimitiveKind =
+  internal.primitiveKind
