@@ -14,11 +14,10 @@ const SqlLive = Sql.makeLayer({
   transformResultNames: Config.succeed(Sql.transform.toCamel),
 })
 
-const testProcedure = pipe(
-  Proc.make("test_proc"),
+const peopleProcedure = pipe(
+  Proc.make("people_proc"),
   Proc.param<string>()("name", Sql.TYPES.VarChar),
-  Proc.param<number>()("age", Sql.TYPES.Int),
-  Proc.outputParam<string>()("output", Sql.TYPES.VarChar),
+  Proc.withRows<{ readonly id: number; readonly name: string }>(),
   Proc.compile,
 )
 
@@ -33,6 +32,17 @@ const program = Effect.gen(function* (_) {
           name VARCHAR(255) NOT NULL,
           created_at DATETIME NOT NULL
         )
+    `,
+  )
+
+  yield* _(
+    sql`
+      CREATE OR ALTER PROC people_proc
+        @name VARCHAR(255)
+      AS
+      BEGIN
+        SELECT * FROM people WHERE name = @name
+      END
     `,
   )
 
@@ -53,7 +63,7 @@ const program = Effect.gen(function* (_) {
   console.log(
     yield* _(sql`SELECT TOP 3 * FROM ${sql("people")}`.withoutTransform),
   )
-  console.log(yield* _(sql.call(testProcedure({ name: "Tim", age: 10 }))))
+  console.log(yield* _(sql.call(peopleProcedure({ name: "Tim" }))))
 
   console.log(
     yield* _(sql`
