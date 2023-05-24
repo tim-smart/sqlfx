@@ -16,9 +16,9 @@ const SqlLive = Sql.makeLayer({
 
 const testProcedure = pipe(
   Proc.make("test_proc"),
-  Proc.addParam<string>()("name", Sql.TYPES.VarChar),
-  Proc.addParam<number>()("age", Sql.TYPES.Int),
-  Proc.addOutputParam<string>()("output", Sql.TYPES.VarChar),
+  Proc.param<string>()("name", Sql.TYPES.VarChar),
+  Proc.param<number>()("age", Sql.TYPES.Int),
+  Proc.outputParam<string>()("output", Sql.TYPES.VarChar),
   Proc.compile,
 )
 

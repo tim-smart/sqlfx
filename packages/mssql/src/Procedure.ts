@@ -76,7 +76,7 @@ export const make = (name: string): Procedure<{}, {}> => ({
  * @category combinator
  * @since 1.0.0
  */
-export const addParam =
+export const param =
   <A>() =>
   <N extends string, T extends Tedious.TediousType>(
     name: N,
@@ -100,7 +100,7 @@ export const addParam =
  * @category combinator
  * @since 1.0.0
  */
-export const addOutputParam =
+export const outputParam =
   <A>() =>
   <N extends string, T extends Tedious.TediousType>(
     name: N,

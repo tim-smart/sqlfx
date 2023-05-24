@@ -13,9 +13,9 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [combinator](#combinator)
-  - [addOutputParam](#addoutputparam)
-  - [addParam](#addparam)
   - [compile](#compile)
+  - [outputParam](#outputparam)
+  - [param](#param)
 - [constructor](#constructor)
   - [make](#make)
 - [model](#model)
@@ -29,12 +29,24 @@ Added in v1.0.0
 
 # combinator
 
-## addOutputParam
+## compile
 
 **Signature**
 
 ```ts
-export declare const addOutputParam: <A>() => <N extends string, T extends Tedious.TediousType>(
+export declare const compile: <I extends Record<string, any>, O extends Record<string, any>>(
+  self: Procedure<I, O>
+) => (input: { readonly [K in keyof I]: I[K] extends any ? T : never }) => ProcedureWithValues<I, O>
+```
+
+Added in v1.0.0
+
+## outputParam
+
+**Signature**
+
+```ts
+export declare const outputParam: <A>() => <N extends string, T extends Tedious.TediousType>(
   name: N,
   type: T,
   options?: Tedious.ParameterOptions | undefined
@@ -45,30 +57,18 @@ export declare const addOutputParam: <A>() => <N extends string, T extends Tedio
 
 Added in v1.0.0
 
-## addParam
+## param
 
 **Signature**
 
 ```ts
-export declare const addParam: <A>() => <N extends string, T extends Tedious.TediousType>(
+export declare const param: <A>() => <N extends string, T extends Tedious.TediousType>(
   name: N,
   type: T,
   options?: Tedious.ParameterOptions | undefined
 ) => <I extends Record<string, any>, O extends Record<string, any>>(
   self: Procedure<I, O>
 ) => Procedure<{ [K in keyof (I & { [K in N]: any })]: (I & { [K in N]: any })[K] }, O>
-```
-
-Added in v1.0.0
-
-## compile
-
-**Signature**
-
-```ts
-export declare const compile: <I extends Record<string, any>, O extends Record<string, any>>(
-  self: Procedure<I, O>
-) => (input: { readonly [K in keyof I]: I[K] extends any ? T : never }) => ProcedureWithValues<I, O>
 ```
 
 Added in v1.0.0
