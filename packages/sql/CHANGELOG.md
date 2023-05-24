@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.4.4
+
+### Patch Changes
+
+- [`4ca11ec`](https://github.com/tim-smart/sqlfx/commit/4ca11ece546f1d8302831b28eb69f8418936b114) Thanks [@tim-smart](https://github.com/tim-smart)! - drop Row constraint for resolvers
+
 ## 0.4.3
 
 ### Patch Changes
