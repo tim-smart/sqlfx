@@ -24,23 +24,46 @@ const testProcedure = pipe(
 
 const program = Effect.gen(function* (_) {
   const sql = yield* _(Sql.tag)
-  console.log(
-    yield* _(
-      sql`INSERT INTO ${sql("people")} ${sql(
-        {
-          name: "Tim",
-          createdAt: new Date(),
-        },
-        { additionalOutput: ["id"] },
-      )}`,
-    ),
+
+  yield* _(
+    sql`
+      IF OBJECT_ID(N'people', N'U') IS NULL
+        CREATE TABLE people (
+          id INT IDENTITY(1,1) PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          created_at DATETIME NOT NULL
+        )
+    `,
   )
+
+  // Insert
+  const [inserted] = yield* _(
+    sql`INSERT INTO ${sql("people")} ${sql(
+      {
+        name: "Tim",
+        createdAt: new Date(),
+      },
+      { additionalOutput: ["id"] },
+    )}`,
+  )
+  console.log(inserted)
+
   console.log(yield* _(sql`SELECT TOP 3 * FROM ${sql("people")}`))
   console.log(yield* _(sql`SELECT TOP 3 * FROM ${sql("people")}`.values))
   console.log(
     yield* _(sql`SELECT TOP 3 * FROM ${sql("people")}`.withoutTransform),
   )
   console.log(yield* _(sql.call(testProcedure({ name: "Tim", age: 10 }))))
+
+  console.log(
+    yield* _(sql`
+      UPDATE people
+      SET name = data.name
+      OUTPUT inserted.*
+      FROM ${sql([{ ...inserted, name: "New name" }], "data")}
+      WHERE people.id = data.id
+    `),
+  )
 })
 
 pipe(
