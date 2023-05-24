@@ -1,7 +1,9 @@
 /**
  * @since 1.0.0
  */
+import { identity } from "@effect/data/Function"
 import * as Parameter from "@sqlfx/mssql/Parameter"
+import type { Row } from "@sqlfx/sql/Connection"
 import type * as Tedious from "tedious"
 
 /**
@@ -23,8 +25,9 @@ export type ProcedureId = typeof ProcedureId
 export interface Procedure<
   I extends Record<string, Parameter.Parameter<any>>,
   O extends Record<string, Parameter.Parameter<any>>,
+  A = never,
 > {
-  readonly [ProcedureId]: ProcedureId
+  readonly [ProcedureId]: (_: never) => A
   readonly _tag: "Procedure"
   readonly name: string
   readonly params: I
@@ -38,7 +41,8 @@ export interface Procedure<
 export interface ProcedureWithValues<
   I extends Record<string, Parameter.Parameter<any>>,
   O extends Record<string, Parameter.Parameter<any>>,
-> extends Procedure<I, O> {
+  A,
+> extends Procedure<I, O, A> {
   readonly values: Procedure.ParametersRecord<I>
 }
 
@@ -56,6 +60,18 @@ export namespace Procedure {
       ? T
       : never
   } & {}
+
+  /**
+   * @category model
+   * @since 1.0.0
+   */
+  export interface Result<
+    O extends Record<string, Parameter.Parameter<any>>,
+    A,
+  > {
+    readonly output: ParametersRecord<O>
+    readonly rows: ReadonlyArray<A>
+  }
 }
 
 type Simplify<A> = { [K in keyof A]: A[K] } & {}
@@ -65,7 +81,7 @@ type Simplify<A> = { [K in keyof A]: A[K] } & {}
  * @since 1.0.0
  */
 export const make = (name: string): Procedure<{}, {}> => ({
-  [ProcedureId]: ProcedureId,
+  [ProcedureId]: identity,
   _tag: "Procedure",
   name,
   params: {},
@@ -124,14 +140,29 @@ export const outputParam =
  * @category combinator
  * @since 1.0.0
  */
-export const compile =
+export const withRows =
+  <A extends object = Row>() =>
   <
     I extends Record<string, Parameter.Parameter<any>>,
     O extends Record<string, Parameter.Parameter<any>>,
   >(
     self: Procedure<I, O>,
+  ): Procedure<I, O, A> =>
+    self as any
+
+/**
+ * @category combinator
+ * @since 1.0.0
+ */
+export const compile =
+  <
+    I extends Record<string, Parameter.Parameter<any>>,
+    O extends Record<string, Parameter.Parameter<any>>,
+    A,
+  >(
+    self: Procedure<I, O, A>,
   ) =>
-  (input: Procedure.ParametersRecord<I>): ProcedureWithValues<I, O> => ({
+  (input: Procedure.ParametersRecord<I>): ProcedureWithValues<I, O, A> => ({
     ...self,
     values: input,
   })

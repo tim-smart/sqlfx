@@ -21,6 +21,7 @@ import type { Primitive as _Primitive } from "@sqlfx/sql/Statement"
 import * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
 import * as Tedious from "tedious"
+import type { ConfigError } from "@effect/io/Config/Error"
 
 const TYPES = Tedious.TYPES
 
@@ -31,6 +32,7 @@ export {
    * @since 1.0.0
    */
   transform,
+
   /**
    * Parameter types
    *
@@ -55,9 +57,10 @@ export interface MssqlClient extends Client.Client {
   readonly call: <
     I extends Record<string, Parameter<any>>,
     O extends Record<string, Parameter<any>>,
+    A extends object,
   >(
-    procedure: ProcedureWithValues<I, O>,
-  ) => Effect.Effect<never, SqlError, Procedure.ParametersRecord<O>>
+    procedure: ProcedureWithValues<I, O, A>,
+  ) => Effect.Effect<never, SqlError, Procedure.Result<O, A>>
 }
 
 /**
@@ -93,7 +96,7 @@ export interface MssqlClientConfig {
 
 interface MssqlConnection extends Connection {
   readonly call: (
-    procedure: ProcedureWithValues<any, any>,
+    procedure: ProcedureWithValues<any, any, any>,
   ) => Effect.Effect<never, SqlError, any>
 }
 
@@ -206,21 +209,35 @@ export const make = (
           conn.execSql(req)
         })
 
-      const runProcedure = (procedure: ProcedureWithValues<any, any>) =>
+      const runProcedure = (procedure: ProcedureWithValues<any, any, any>) =>
         Effect.async<never, SqlError, any>(resume => {
           const result: Record<string, any> = {}
 
-          const req = new Tedious.Request(escape(procedure.name), error => {
-            if (error) {
-              resume(
-                Debug.untraced(() =>
-                  Effect.fail(SqlError(error.message, error)),
-                ),
-              )
-            } else {
-              resume(Debug.untraced(() => Effect.succeed(result)))
-            }
-          })
+          const req = new Tedious.Request(
+            escape(procedure.name),
+            (error, _, rows) => {
+              if (error) {
+                resume(
+                  Debug.untraced(() =>
+                    Effect.fail(SqlError(error.message, error)),
+                  ),
+                )
+              } else {
+                rows = rowsToObjects(rows)
+                if (transform && options.transformResultNames) {
+                  rows = transformRows(rows) as any
+                }
+                resume(
+                  Debug.untraced(() =>
+                    Effect.succeed({
+                      params: result,
+                      rows,
+                    }),
+                  ),
+                )
+              }
+            },
+          )
 
           for (const name in procedure.params) {
             const param = procedure.params[name]
@@ -256,7 +273,7 @@ export const make = (
         executeRaw(sql, params) {
           return run(sql, params)
         },
-        call(procedure) {
+        call: procedure => {
           return runProcedure(procedure)
         },
         compile(statement) {
@@ -286,8 +303,9 @@ export const make = (
       call: <
         I extends Record<string, Parameter<any>>,
         O extends Record<string, Parameter<any>>,
+        A,
       >(
-        procedure: ProcedureWithValues<I, O>,
+        procedure: ProcedureWithValues<I, O, A>,
       ) => Effect.scoped(Effect.flatMap(pool.get(), _ => _.call(procedure))),
     })
   })
@@ -296,7 +314,11 @@ export const make = (
  * @category constructor
  * @since 1.0.0
  */
-export const makeLayer = (config: Config.Config.Wrap<MssqlClientConfig>) =>
+export const makeLayer: (
+  config: Config.Config.Wrap<MssqlClientConfig>,
+) => Layer.Layer<never, ConfigError, MssqlClient> = (
+  config: Config.Config.Wrap<MssqlClientConfig>,
+) =>
   Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
 
 /**
