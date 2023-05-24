@@ -73,7 +73,7 @@ export function make(
 
   const schema = Debug.methodWithTrace(
     parentTrace =>
-      function schema<II, IA, AI extends Row, A, R, E>(
+      function schema<II, IA, AI, A, R, E>(
         requestSchema: Schema.Schema<II, IA>,
         resultSchema: Schema.Schema<AI, A>,
         run: (_: II) => Effect.Effect<R, E, ReadonlyArray<Row>>,
@@ -100,7 +100,7 @@ export function make(
 
   const singleSchema = Debug.methodWithTrace(
     parentTrace =>
-      function makeSingleSchema<II, IA, AI extends Row, A, R, E>(
+      function makeSingleSchema<II, IA, AI, A, R, E>(
         requestSchema: Schema.Schema<II, IA>,
         resultSchema: Schema.Schema<AI, A>,
         run: (_: II) => Effect.Effect<R, E, ReadonlyArray<Row>>,
@@ -125,7 +125,7 @@ export function make(
 
   const singleSchemaOption = Debug.methodWithTrace(
     parentTrace =>
-      function makeSingleSchemaOption<II, IA, AI extends Row, A, R, E>(
+      function makeSingleSchemaOption<II, IA, AI, A, R, E>(
         requestSchema: Schema.Schema<II, IA>,
         resultSchema: Schema.Schema<AI, A>,
         run: (_: II) => Effect.Effect<R, E, ReadonlyArray<Row>>,
@@ -212,7 +212,7 @@ export function make(
 
   const resolver = Debug.methodWithTrace(
     parentTrace =>
-      function makeResolver<T extends string, II, IA, AI extends Row, A, E>(
+      function makeResolver<T extends string, II, IA, AI, A, E>(
         tag: T,
         requestSchema: Schema.Schema<II, IA>,
         resultSchema: Schema.Schema<AI, A>,
@@ -277,14 +277,7 @@ export function make(
 
   const singleResolverOption = Debug.methodWithTrace(
     parentTrace =>
-      function makeSingleResolver<
-        T extends string,
-        II,
-        IA,
-        AI extends Row,
-        A,
-        E,
-      >(
+      function makeSingleResolver<T extends string, II, IA, AI, A, E>(
         tag: T,
         requestSchema: Schema.Schema<II, IA>,
         resultSchema: Schema.Schema<AI, A>,
@@ -326,14 +319,7 @@ export function make(
 
   const singleResolver = Debug.methodWithTrace(
     parentTrace =>
-      function makeSingleResolver<
-        T extends string,
-        II,
-        IA,
-        AI extends Row,
-        A,
-        E,
-      >(
+      function makeSingleResolver<T extends string, II, IA, AI, A, E>(
         tag: T,
         requestSchema: Schema.Schema<II, IA>,
         resultSchema: Schema.Schema<AI, A>,
@@ -418,7 +404,7 @@ export function make(
 
   const idResolver = Debug.methodWithTrace(
     parentTrace =>
-      function makeIdResolver<T extends string, II, IA, AI extends Row, A, E>(
+      function makeIdResolver<T extends string, II, IA, AI, A, E>(
         tag: T,
         requestSchema: Schema.Schema<II, IA>,
         resultSchema: Schema.Schema<AI, A>,
