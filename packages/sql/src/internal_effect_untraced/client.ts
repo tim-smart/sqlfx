@@ -13,7 +13,7 @@ import * as request from "@effect/io/Request"
 import * as RequestResolver from "@effect/io/RequestResolver"
 import * as Schema from "@effect/schema/Schema"
 import type { Client, Request, Resolver } from "@sqlfx/sql/Client"
-import type { Connection, Row } from "@sqlfx/sql/Connection"
+import type { Connection } from "@sqlfx/sql/Connection"
 import type { SchemaError, SqlError } from "@sqlfx/sql/Error"
 import { ResultLengthMismatch } from "@sqlfx/sql/Error"
 import * as SqlSchema from "@sqlfx/sql/Schema"
@@ -76,7 +76,7 @@ export function make(
       function schema<II, IA, AI, A, R, E>(
         requestSchema: Schema.Schema<II, IA>,
         resultSchema: Schema.Schema<AI, A>,
-        run: (_: II) => Effect.Effect<R, E, ReadonlyArray<Row>>,
+        run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
       ) {
         const decodeResult = SqlSchema.parse(
           Schema.array(resultSchema),
@@ -103,7 +103,7 @@ export function make(
       function makeSingleSchema<II, IA, AI, A, R, E>(
         requestSchema: Schema.Schema<II, IA>,
         resultSchema: Schema.Schema<AI, A>,
-        run: (_: II) => Effect.Effect<R, E, ReadonlyArray<Row>>,
+        run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
       ) {
         const decodeResult = SqlSchema.parse(resultSchema, "result")
         const encodeRequest = SqlSchema.encode(requestSchema, "request")
@@ -128,7 +128,7 @@ export function make(
       function makeSingleSchemaOption<II, IA, AI, A, R, E>(
         requestSchema: Schema.Schema<II, IA>,
         resultSchema: Schema.Schema<AI, A>,
-        run: (_: II) => Effect.Effect<R, E, ReadonlyArray<Row>>,
+        run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
       ) {
         const decodeResult = SqlSchema.parse(resultSchema, "result")
         const encodeRequest = SqlSchema.encode(requestSchema, "request")
@@ -218,7 +218,7 @@ export function make(
         resultSchema: Schema.Schema<AI, A>,
         run: (
           requests: ReadonlyArray<II>,
-        ) => Effect.Effect<never, E, ReadonlyArray<Row>>,
+        ) => Effect.Effect<never, E, ReadonlyArray<AI>>,
       ): Resolver<T, IA, A, E | ResultLengthMismatch> {
         const Request =
           request.tagged<Request<T, IA, E | ResultLengthMismatch, A>>(tag)
@@ -281,7 +281,7 @@ export function make(
         tag: T,
         requestSchema: Schema.Schema<II, IA>,
         resultSchema: Schema.Schema<AI, A>,
-        run: (request: II) => Effect.Effect<never, E, ReadonlyArray<Row>>,
+        run: (request: II) => Effect.Effect<never, E, ReadonlyArray<AI>>,
       ): Resolver<T, IA, Option.Option<A>, E> {
         const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
         const encodeRequest = SqlSchema.encode(requestSchema, "request")
@@ -323,7 +323,7 @@ export function make(
         tag: T,
         requestSchema: Schema.Schema<II, IA>,
         resultSchema: Schema.Schema<AI, A>,
-        run: (request: II) => Effect.Effect<never, E, ReadonlyArray<Row>>,
+        run: (request: II) => Effect.Effect<never, E, ReadonlyArray<AI>>,
       ): Resolver<T, IA, A, E> {
         const Request = request.tagged<Request<T, IA, E, A>>(tag)
         const encodeRequest = SqlSchema.encode(requestSchema, "request")
@@ -361,7 +361,7 @@ export function make(
         requestSchema: Schema.Schema<II, IA>,
         run: (
           requests: ReadonlyArray<II>,
-        ) => Effect.Effect<never, E, ReadonlyArray<Row>>,
+        ) => Effect.Effect<never, E, ReadonlyArray<unknown>>,
       ): Resolver<T, IA, void, E> {
         const Request = request.tagged<Request<T, IA, E, void>>(tag)
         const encodeRequests = SqlSchema.encode(

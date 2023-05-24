@@ -7,7 +7,7 @@ import type * as Effect from "@effect/io/Effect"
 import type * as request from "@effect/io/Request"
 import type * as RequestResolver from "@effect/io/RequestResolver"
 import type * as Schema from "@effect/schema/Schema"
-import type { Connection, Row } from "@sqlfx/sql/Connection"
+import type { Connection } from "@sqlfx/sql/Connection"
 import type {
   ResultLengthMismatch,
   SchemaError,
@@ -34,7 +34,7 @@ export interface Client extends Constructor {
   /**
    * Create unsafe SQL query
    */
-  readonly unsafe: <A>(
+  readonly unsafe: <A extends object>(
     sql: string,
     params?: ReadonlyArray<Primitive> | undefined,
   ) => Statement<A>
@@ -97,7 +97,7 @@ export interface Client extends Constructor {
   singleSchema<II, IA, AI, A, R, E>(
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<Row>>,
+    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
   ): (_: IA) => Effect.Effect<R, E | SchemaError, A>
 
   /**
@@ -111,7 +111,7 @@ export interface Client extends Constructor {
   singleSchemaOption<II, IA, AI, A, R, E>(
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<Row>>,
+    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
   ): (_: IA) => Effect.Effect<R, E | SchemaError, Option<A>>
 
   /**
@@ -130,7 +130,7 @@ export interface Client extends Constructor {
     resultSchema: Schema.Schema<AI, A>,
     run: (
       requests: ReadonlyArray<II>,
-    ) => Effect.Effect<never, E, ReadonlyArray<Row>>,
+    ) => Effect.Effect<never, E, ReadonlyArray<AI>>,
   ): Resolver<T, IA, A, E | ResultLengthMismatch>
 
   /**
@@ -148,7 +148,7 @@ export interface Client extends Constructor {
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (request: II) => Effect.Effect<never, E, ReadonlyArray<Row>>,
+    run: (request: II) => Effect.Effect<never, E, ReadonlyArray<AI>>,
   ): Resolver<T, IA, Option<A>, E>
 
   /**
@@ -166,7 +166,7 @@ export interface Client extends Constructor {
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (request: II) => Effect.Effect<never, E, ReadonlyArray<Row>>,
+    run: (request: II) => Effect.Effect<never, E, ReadonlyArray<AI>>,
   ): Resolver<T, IA, A, E>
 
   /**
@@ -184,7 +184,7 @@ export interface Client extends Constructor {
     requestSchema: Schema.Schema<II, IA>,
     run: (
       requests: ReadonlyArray<II>,
-    ) => Effect.Effect<never, E, ReadonlyArray<Row>>,
+    ) => Effect.Effect<never, E, ReadonlyArray<unknown>>,
   ): Resolver<T, IA, void, E>
 
   /**
