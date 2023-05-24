@@ -210,7 +210,7 @@ export const make = (
         Effect.async<never, SqlError, any>(resume => {
           const result: Record<string, any> = {}
 
-          const req = new Tedious.Request(procedure.name, error => {
+          const req = new Tedious.Request(escape(procedure.name), error => {
             if (error) {
               resume(
                 Debug.untraced(() =>
