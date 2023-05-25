@@ -16,6 +16,7 @@ Added in v1.0.0
   - [compile](#compile)
   - [outputParam](#outputparam)
   - [param](#param)
+  - [withRows](#withrows)
 - [constructor](#constructor)
   - [make](#make)
 - [model](#model)
@@ -34,9 +35,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const compile: <I extends Record<string, any>, O extends Record<string, any>>(
-  self: Procedure<I, O>
-) => (input: { readonly [K in keyof I]: I[K] extends any ? T : never }) => ProcedureWithValues<I, O>
+export declare const compile: <I extends Record<string, any>, O extends Record<string, any>, A>(
+  self: Procedure<I, O, A>
+) => (input: { readonly [K in keyof I]: I[K] extends any ? T : never }) => ProcedureWithValues<I, O, A>
 ```
 
 Added in v1.0.0
@@ -51,8 +52,8 @@ export declare const outputParam: <A>() => <N extends string, T extends Tedious.
   type: T,
   options?: Tedious.ParameterOptions | undefined
 ) => <I extends Record<string, any>, O extends Record<string, any>>(
-  self: Procedure<I, O>
-) => Procedure<I, { [K in keyof (O & { [K in N]: any })]: (O & { [K in N]: any })[K] }>
+  self: Procedure<I, O, never>
+) => Procedure<I, { [K in keyof (O & { [K in N]: any })]: (O & { [K in N]: any })[K] }, never>
 ```
 
 Added in v1.0.0
@@ -67,8 +68,23 @@ export declare const param: <A>() => <N extends string, T extends Tedious.Tediou
   type: T,
   options?: Tedious.ParameterOptions | undefined
 ) => <I extends Record<string, any>, O extends Record<string, any>>(
-  self: Procedure<I, O>
-) => Procedure<{ [K in keyof (I & { [K in N]: any })]: (I & { [K in N]: any })[K] }, O>
+  self: Procedure<I, O, never>
+) => Procedure<{ [K in keyof (I & { [K in N]: any })]: (I & { [K in N]: any })[K] }, O, never>
+```
+
+Added in v1.0.0
+
+## withRows
+
+**Signature**
+
+```ts
+export declare const withRows: <A extends object = Row>() => <
+  I extends Record<string, any>,
+  O extends Record<string, any>
+>(
+  self: Procedure<I, O, never>
+) => Procedure<I, O, A>
 ```
 
 Added in v1.0.0
@@ -94,9 +110,10 @@ Added in v1.0.0
 ```ts
 export interface Procedure<
   I extends Record<string, Parameter.Parameter<any>>,
-  O extends Record<string, Parameter.Parameter<any>>
+  O extends Record<string, Parameter.Parameter<any>>,
+  A = never
 > {
-  readonly [ProcedureId]: ProcedureId
+  readonly [ProcedureId]: (_: never) => A
   readonly _tag: 'Procedure'
   readonly name: string
   readonly params: I
@@ -113,8 +130,9 @@ Added in v1.0.0
 ```ts
 export interface ProcedureWithValues<
   I extends Record<string, Parameter.Parameter<any>>,
-  O extends Record<string, Parameter.Parameter<any>>
-> extends Procedure<I, O> {
+  O extends Record<string, Parameter.Parameter<any>>,
+  A
+> extends Procedure<I, O, A> {
   readonly values: Procedure.ParametersRecord<I>
 }
 ```

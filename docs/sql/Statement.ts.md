@@ -73,8 +73,7 @@ export declare const makeCompiler: <C extends Custom<any, any, any, any> = any>(
     | ((
         columns: ReadonlyArray<string>,
         placeholders: string,
-        values: ReadonlyArray<ReadonlyArray<Primitive>>,
-        options?: RecordInsertHelper.Options | undefined
+        values: ReadonlyArray<ReadonlyArray<Primitive>>
       ) => readonly [sql: string, binds: ReadonlyArray<Primitive>])
     | undefined
 ) => Compiler
@@ -245,11 +244,11 @@ export interface Constructor {
   (value: string): Identifier
 
   (value: ReadonlyArray<Primitive | Record<string, Primitive>>): ArrayHelper
+
   (value: ReadonlyArray<Record<string, Primitive>>): RecordInsertHelper
-  (value: ReadonlyArray<Record<string, Primitive>>, options: RecordInsertHelper.Options): RecordInsertHelper
   (value: ReadonlyArray<Record<string, Primitive>>, alias: string): RecordUpdateHelper
+
   (value: Record<string, Primitive>): RecordInsertHelper
-  (value: Record<string, Primitive>, optiosn: RecordInsertHelper.Options): RecordInsertHelper
   (value: Record<string, Primitive>, alias: string): RecordUpdateHelper
 }
 ```
@@ -363,7 +362,6 @@ Added in v1.0.0
 export interface RecordInsertHelper {
   readonly _tag: 'RecordInsertHelper'
   readonly value: ReadonlyArray<Record<string, Primitive>>
-  readonly options?: RecordInsertHelper.Options
 }
 ```
 

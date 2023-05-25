@@ -201,10 +201,7 @@ class ArrayHelperImpl implements ArrayHelper {
 
 class RecordInsertHelperImpl implements RecordInsertHelper {
   readonly _tag = "RecordInsertHelper"
-  constructor(
-    readonly value: ReadonlyArray<Record<string, Primitive>>,
-    readonly options?: RecordInsertHelper.Options,
-  ) {}
+  constructor(readonly value: ReadonlyArray<Record<string, Primitive>>) {}
 }
 
 class RecordUpdateHelperImpl implements RecordUpdateHelper {
@@ -267,7 +264,7 @@ export const make = (acquirer: Connection.Acquirer): Constructor =>
               return new RecordUpdateHelperImpl(strings, args[0])
             }
 
-            return new RecordInsertHelperImpl(strings, args[0])
+            return new RecordInsertHelperImpl(strings)
           }
           return new ArrayHelperImpl(strings)
         } else if (typeof strings === "string") {
@@ -276,7 +273,7 @@ export const make = (acquirer: Connection.Acquirer): Constructor =>
           if (typeof args[0] === "string") {
             return new RecordUpdateHelperImpl([strings as any], args[0])
           }
-          return new RecordInsertHelperImpl([strings as any], args[0])
+          return new RecordInsertHelperImpl([strings as any])
         }
 
         throw "absurd"
@@ -421,7 +418,6 @@ class CompilerImpl implements Compiler {
       columns: ReadonlyArray<string>,
       placeholders: string,
       values: ReadonlyArray<ReadonlyArray<Primitive>>,
-      options?: RecordInsertHelper.Options,
     ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
   ) {}
 
@@ -480,7 +476,6 @@ class CompilerImpl implements Compiler {
                 segment.value.length,
               ),
               segment.value.map(record => keys.map(key => record[key])),
-              segment.options,
             )
             sql += s
             binds.push.apply(binds, b as any)
@@ -549,7 +544,6 @@ export const makeCompiler = <C extends Custom<any, any, any, any> = any>(
     columns: ReadonlyArray<string>,
     placeholders: string,
     values: ReadonlyArray<ReadonlyArray<Primitive>>,
-    options?: RecordInsertHelper.Options,
   ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
 ): Compiler =>
   new CompilerImpl(

@@ -118,19 +118,6 @@ export interface ArrayHelper {
 export interface RecordInsertHelper {
   readonly _tag: "RecordInsertHelper"
   readonly value: ReadonlyArray<Record<string, Primitive>>
-  readonly options?: RecordInsertHelper.Options
-}
-
-/**
- * @since 1.0.0
- */
-export namespace RecordInsertHelper {
-  /**
-   * @since 1.0.0
-   */
-  export interface Options {
-    readonly additionalOutput?: ReadonlyArray<string>
-  }
 }
 
 /**
@@ -226,20 +213,14 @@ export interface Constructor {
   (value: string): Identifier
 
   (value: ReadonlyArray<Primitive | Record<string, Primitive>>): ArrayHelper
+
   (value: ReadonlyArray<Record<string, Primitive>>): RecordInsertHelper
-  (
-    value: ReadonlyArray<Record<string, Primitive>>,
-    options: RecordInsertHelper.Options,
-  ): RecordInsertHelper
   (
     value: ReadonlyArray<Record<string, Primitive>>,
     alias: string,
   ): RecordUpdateHelper
+
   (value: Record<string, Primitive>): RecordInsertHelper
-  (
-    value: Record<string, Primitive>,
-    optiosn: RecordInsertHelper.Options,
-  ): RecordInsertHelper
   (value: Record<string, Primitive>, alias: string): RecordUpdateHelper
 }
 
@@ -334,7 +315,6 @@ export const makeCompiler: <C extends Custom<any, any, any, any> = any>(
     columns: ReadonlyArray<string>,
     placeholders: string,
     values: ReadonlyArray<ReadonlyArray<Primitive>>,
-    options?: RecordInsertHelper.Options,
   ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
 ) => Compiler = internal.makeCompiler
 

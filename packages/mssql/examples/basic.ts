@@ -48,13 +48,10 @@ const program = Effect.gen(function* (_) {
 
   // Insert
   const [inserted] = yield* _(
-    sql`INSERT INTO ${sql("people")} ${sql(
-      {
-        name: "Tim",
-        createdAt: new Date(),
-      },
-      { additionalOutput: ["id"] },
-    )}`,
+    sql`INSERT INTO ${sql("people")} ${sql({
+      name: "Tim",
+      createdAt: new Date(),
+    })}`,
   )
   console.log(inserted)
 

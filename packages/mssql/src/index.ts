@@ -340,13 +340,8 @@ export const makeCompiler = (transform?: (_: string) => string) => {
         }
       }
     },
-    (columns, placeholders, values, opts) => [
-      `(${columns.join(",")}) OUTPUT ${
-        opts?.additionalOutput
-          ? opts.additionalOutput.map(_ => `INSERTED.${escape(_)}`).join(",") +
-            ","
-          : ""
-      }${columns.map(_ => `INSERTED.${_}`).join(",")} VALUES ${placeholders}`,
+    (columns, placeholders, values) => [
+      `(${columns.join(",")}) OUTPUT INSERTED.* VALUES ${placeholders}`,
       values.flat(),
     ],
   )

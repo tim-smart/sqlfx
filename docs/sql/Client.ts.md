@@ -52,7 +52,7 @@ export interface Client extends Constructor {
   /**
    * Create unsafe SQL query
    */
-  readonly unsafe: <A extends Row>(sql: string, params?: ReadonlyArray<Primitive> | undefined) => Statement<A>
+  readonly unsafe: <A extends object>(sql: string, params?: ReadonlyArray<Primitive> | undefined) => Statement<A>
 
   /**
    * Create an `AND` chain for a where clause
@@ -93,7 +93,7 @@ export interface Client extends Constructor {
    * The request schema is used to validate the input of the query.
    * The result schema is used to validate the output of the query.
    */
-  schema<II, IA, AI extends Row, A, R, E>(
+  schema<II, IA, AI, A, R, E>(
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
     run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>
@@ -107,10 +107,10 @@ export interface Client extends Constructor {
    *
    * Takes the first result of the query.
    */
-  singleSchema<II, IA, AI extends Row, A, R, E>(
+  singleSchema<II, IA, AI, A, R, E>(
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<Row>>
+    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>
   ): (_: IA) => Effect.Effect<R, E | SchemaError, A>
 
   /**
@@ -121,10 +121,10 @@ export interface Client extends Constructor {
    *
    * Returns an Option of the first result of the query.
    */
-  singleSchemaOption<II, IA, AI extends Row, A, R, E>(
+  singleSchemaOption<II, IA, AI, A, R, E>(
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<Row>>
+    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>
   ): (_: IA) => Effect.Effect<R, E | SchemaError, Option<A>>
 
   /**
@@ -137,11 +137,11 @@ export interface Client extends Constructor {
    *
    * Returns a resolver, request and a execute function.
    */
-  resolver<T extends string, II, IA, AI extends Row, A, E>(
+  resolver<T extends string, II, IA, AI, A, E>(
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (requests: ReadonlyArray<II>) => Effect.Effect<never, E, ReadonlyArray<Row>>
+    run: (requests: ReadonlyArray<II>) => Effect.Effect<never, E, ReadonlyArray<AI>>
   ): Resolver<T, IA, A, E | ResultLengthMismatch>
 
   /**
@@ -155,11 +155,11 @@ export interface Client extends Constructor {
    *
    * Returns a resolver, request and a execute function.
    */
-  singleResolverOption<T extends string, II, IA, AI extends Row, A, E>(
+  singleResolverOption<T extends string, II, IA, AI, A, E>(
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (request: II) => Effect.Effect<never, E, ReadonlyArray<Row>>
+    run: (request: II) => Effect.Effect<never, E, ReadonlyArray<AI>>
   ): Resolver<T, IA, Option<A>, E>
 
   /**
@@ -173,11 +173,11 @@ export interface Client extends Constructor {
    *
    * Returns a resolver, request and a execute function.
    */
-  singleResolver<T extends string, II, IA, AI extends Row, A, E>(
+  singleResolver<T extends string, II, IA, AI, A, E>(
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (request: II) => Effect.Effect<never, E, ReadonlyArray<Row>>
+    run: (request: II) => Effect.Effect<never, E, ReadonlyArray<AI>>
   ): Resolver<T, IA, A, E>
 
   /**
@@ -193,7 +193,7 @@ export interface Client extends Constructor {
   voidResolver<T extends string, II, IA, E>(
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
-    run: (requests: ReadonlyArray<II>) => Effect.Effect<never, E, ReadonlyArray<Row>>
+    run: (requests: ReadonlyArray<II>) => Effect.Effect<never, E, ReadonlyArray<unknown>>
   ): Resolver<T, IA, void, E>
 
   /**
@@ -205,7 +205,7 @@ export interface Client extends Constructor {
    *
    * Returns a resolver, request and an execute function.
    */
-  idResolver<T extends string, II, IA, AI extends Row, A, E>(
+  idResolver<T extends string, II, IA, AI, A, E>(
     tag: T,
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
