@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.5.0
+
+### Minor Changes
+
+- [#50](https://github.com/tim-smart/sqlfx/pull/50) [`ec99a52`](https://github.com/tim-smart/sqlfx/commit/ec99a5295f0af4890291e6e4c8a0d753c2671db2) Thanks [@tim-smart](https://github.com/tim-smart)! - drop insert helper options
+
 ## 0.4.4
 
 ### Patch Changes
