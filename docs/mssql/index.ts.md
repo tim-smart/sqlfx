@@ -107,9 +107,9 @@ export interface MssqlClient extends Client.Client {
     options?: Tedious.ParameterOptions
   ) => Statement.Fragment
 
-  readonly call: <I extends Record<string, Parameter<any>>, O extends Record<string, Parameter<any>>>(
-    procedure: ProcedureWithValues<I, O>
-  ) => Effect.Effect<never, SqlError, Procedure.ParametersRecord<O>>
+  readonly call: <I extends Record<string, Parameter<any>>, O extends Record<string, Parameter<any>>, A extends object>(
+    procedure: ProcedureWithValues<I, O, A>
+  ) => Effect.Effect<never, SqlError, Procedure.Result<O, A>>
 }
 ```
 

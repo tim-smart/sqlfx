@@ -9,13 +9,10 @@ const compiler = _.makeCompiler()
 describe("mssql", () => {
   it("insert helper", () => {
     const [query, params] = compiler.compile(
-      sql`INSERT INTO ${sql("people")} ${sql(
-        { name: "Tim", age: 10 },
-        { additionalOutput: ["id"] },
-      )}`,
+      sql`INSERT INTO ${sql("people")} ${sql({ name: "Tim", age: 10 })}`,
     )
     expect(query).toEqual(
-      `INSERT INTO [people] ([name],[age]) OUTPUT INSERTED.[id],INSERTED.[name],INSERTED.[age] VALUES (@a,@b)`,
+      `INSERT INTO [people] ([name],[age]) OUTPUT INSERTED.* VALUES (@a,@b)`,
     )
     expect(params).toEqual(["Tim", 10])
   })
