@@ -22,10 +22,15 @@ import * as Statement from "@sqlfx/sql/Statement"
 const TransactionConn = Tag<readonly [conn: Connection, counter: number]>()
 
 /** @internal */
-export function make(
-  acquirer: Connection.Acquirer,
-  transactionAcquirer: Connection.Acquirer,
-): Client {
+export function make({
+  acquirer,
+  beginTransaction = "BEGIN",
+  commit = "COMMIT",
+  rollback = "ROLLBACK",
+  rollbackSavepoint = _ => `ROLLBACK TO SAVEPOINT ${_}`,
+  savepoint = _ => `SAVEPOINT ${_}`,
+  transactionAcquirer,
+}: Client.MakeOptions): Client {
   const getConnection = Effect.flatMap(
     Effect.serviceOption(TransactionConn),
     Option.match(
@@ -51,8 +56,8 @@ export function make(
               ),
               Effect.tap(([conn, id]) =>
                 id > 0
-                  ? conn.executeRaw(`SAVEPOINT sqlfx${id}`)
-                  : conn.executeRaw("BEGIN"),
+                  ? conn.executeRaw(savepoint(`sqlfx${id}`))
+                  : conn.executeRaw(beginTransaction),
               ),
             ),
             ([conn, id]) =>
@@ -61,12 +66,10 @@ export function make(
               Exit.isSuccess(exit)
                 ? id > 0
                   ? Effect.unit()
-                  : Effect.orDie(conn.executeRaw("COMMIT"))
+                  : Effect.orDie(conn.executeRaw(commit))
                 : id > 0
-                ? Effect.orDie(
-                    conn.executeRaw(`ROLLBACK TO SAVEPOINT sqlfx${id}`),
-                  )
-                : Effect.orDie(conn.executeRaw("ROLLBACK")),
+                ? Effect.orDie(conn.executeRaw(rollbackSavepoint(`sqlfx${id}`)))
+                : Effect.orDie(conn.executeRaw(rollback)),
           ),
         ).traced(trace),
   )

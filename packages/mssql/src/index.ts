@@ -291,23 +291,32 @@ export const make = (
       ),
     )
 
-    return Object.assign(Client.make(pool.get(), pool.get()), {
-      config: options,
+    return Object.assign(
+      Client.make({
+        acquirer: pool.get(),
+        transactionAcquirer: pool.get(),
+        beginTransaction: "BEGIN TRANSACTION",
+        savepoint: name => `SAVE TRANSACTION ${name}`,
+        rollbackSavepoint: name => `ROLLBACK TRANSACTION ${name}`,
+      }),
+      {
+        config: options,
 
-      param: (
-        type: Tedious.TediousType,
-        value: Statement.Primitive,
-        options: Tedious.ParameterOptions = {},
-      ) => mssqlParam(type, value, options),
+        param: (
+          type: Tedious.TediousType,
+          value: Statement.Primitive,
+          options: Tedious.ParameterOptions = {},
+        ) => mssqlParam(type, value, options),
 
-      call: <
-        I extends Record<string, Parameter<any>>,
-        O extends Record<string, Parameter<any>>,
-        A,
-      >(
-        procedure: ProcedureWithValues<I, O, A>,
-      ) => Effect.scoped(Effect.flatMap(pool.get(), _ => _.call(procedure))),
-    })
+        call: <
+          I extends Record<string, Parameter<any>>,
+          O extends Record<string, Parameter<any>>,
+          A,
+        >(
+          procedure: ProcedureWithValues<I, O, A>,
+        ) => Effect.scoped(Effect.flatMap(pool.get(), _ => _.call(procedure))),
+      },
+    )
   })
 
 /**

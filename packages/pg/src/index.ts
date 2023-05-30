@@ -172,11 +172,17 @@ export const make = (
       ),
     )
 
-    return Object.assign(Client.make(Effect.scoped(pool.get()), pool.get()), {
-      config: options,
-      json: (_: unknown) => PgJson(_),
-      array: (_: ReadonlyArray<Primitive>) => PgArray(_),
-    })
+    return Object.assign(
+      Client.make({
+        acquirer: Effect.scoped(pool.get()),
+        transactionAcquirer: pool.get(),
+      }),
+      {
+        config: options,
+        json: (_: unknown) => PgJson(_),
+        array: (_: ReadonlyArray<Primitive>) => PgArray(_),
+      },
+    )
   })
 
 /**

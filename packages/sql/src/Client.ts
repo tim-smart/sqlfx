@@ -208,13 +208,37 @@ export interface Client extends Constructor {
 }
 
 /**
+ * @since 1.0.0
+ */
+export namespace Client {
+  /**
+   * @category models
+   * @since 1.0.0
+   */
+  export interface MakeOptions {
+    acquirer: Connection.Acquirer
+    transactionAcquirer: Connection.Acquirer
+    beginTransaction?: string
+    rollback?: string
+    commit?: string
+    savepoint?: (name: string) => string
+    rollbackSavepoint?: (name: string) => string
+  }
+}
+
+/**
  * @category constructor
  * @since 1.0.0
  */
-export const make: (
-  acquirer: Connection.Acquirer,
-  transactionAcquirer: Connection.Acquirer,
-) => Client = internal.make
+export const make: ({
+  acquirer,
+  beginTransaction,
+  commit,
+  rollback,
+  rollbackSavepoint,
+  savepoint,
+  transactionAcquirer,
+}: Client.MakeOptions) => Client = internal.make
 
 /**
  * @category models

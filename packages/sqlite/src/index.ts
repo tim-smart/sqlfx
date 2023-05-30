@@ -152,10 +152,16 @@ export const make = (
 
     const pool = yield* _(Pool.make(makeConnection, 1))
 
-    return Object.assign(Client.make(Effect.scoped(pool.get()), pool.get()), {
-      config: options,
-      export: Effect.scoped(Effect.flatMap(pool.get(), _ => _.export)),
-    })
+    return Object.assign(
+      Client.make({
+        acquirer: Effect.scoped(pool.get()),
+        transactionAcquirer: pool.get(),
+      }),
+      {
+        config: options,
+        export: Effect.scoped(Effect.flatMap(pool.get(), _ => _.export)),
+      },
+    )
   })
 
 /**

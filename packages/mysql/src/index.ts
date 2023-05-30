@@ -166,9 +166,10 @@ export const make = (
       ),
     )
 
-    return Object.assign(Client.make(pool.get(), pool.get()), {
-      config: options,
-    })
+    return Object.assign(
+      Client.make({ acquirer: pool.get(), transactionAcquirer: pool.get() }),
+      { config: options },
+    )
   })
 
 /**
