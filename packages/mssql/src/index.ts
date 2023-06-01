@@ -115,6 +115,8 @@ export const make = (
       options.transformResultNames!,
     )
 
+    let pool: Pool.Pool<SqlError, MssqlConnection>
+
     const makeConnection = Effect.gen(function* (_) {
       const conn = new Tedious.Connection({
         options: {
@@ -257,7 +259,7 @@ export const make = (
           conn.callProcedure(req)
         })
 
-      return identity<MssqlConnection>({
+      const connection = identity<MssqlConnection>({
         execute(statement) {
           const [sql, params] = compiler.compile(statement)
           return run(sql, params)
@@ -280,9 +282,19 @@ export const make = (
           return Effect.sync(() => compiler.compile(statement))
         },
       })
+
+      yield* _(
+        Effect.async<never, unknown, never>(resume => {
+          conn.on("error", _ => resume(Effect.fail(_)))
+        }),
+        Effect.catchAll(() => Pool.invalidate(pool, connection)),
+        Effect.forkScoped,
+      )
+
+      return connection
     })
 
-    const pool = yield* _(
+    pool = yield* _(
       Pool.makeWithTTL(
         makeConnection,
         options.minConnections ?? 1,
