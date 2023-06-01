@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.5.2
+
+### Patch Changes
+
+- [`5bd5995`](https://github.com/tim-smart/sqlfx/commit/5bd599539019e6262fdf59e102e29889906dbf4a) Thanks [@tim-smart](https://github.com/tim-smart)! - update deps
+
 ## 0.5.1
 
 ### Patch Changes

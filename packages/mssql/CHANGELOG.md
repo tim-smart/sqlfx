@@ -1,5 +1,16 @@
 # @sqlfx/mssql
 
+## 0.2.2
+
+### Patch Changes
+
+- [#53](https://github.com/tim-smart/sqlfx/pull/53) [`be8be9f`](https://github.com/tim-smart/sqlfx/commit/be8be9f28c8552e58e1f82a6bf7b40276ef3c072) Thanks [@tim-smart](https://github.com/tim-smart)! - handle mssql connection errors
+
+- [`5bd5995`](https://github.com/tim-smart/sqlfx/commit/5bd599539019e6262fdf59e102e29889906dbf4a) Thanks [@tim-smart](https://github.com/tim-smart)! - update deps
+
+- Updated dependencies [[`5bd5995`](https://github.com/tim-smart/sqlfx/commit/5bd599539019e6262fdf59e102e29889906dbf4a)]:
+  - @sqlfx/sql@0.5.2
+
 ## 0.2.1
 
 ### Patch Changes
