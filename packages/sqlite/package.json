@@ -1,6 +1,6 @@
 {
   "name": "@sqlfx/sqlite",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "",
   "publishConfig": {
     "access": "public",

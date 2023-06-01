@@ -1,6 +1,6 @@
 {
   "name": "@sqlfx/pg",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "description": "",
   "publishConfig": {
     "access": "public",
