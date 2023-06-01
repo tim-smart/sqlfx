@@ -1,5 +1,14 @@
 # @sqlfx/sqlite
 
+## 0.4.6
+
+### Patch Changes
+
+- [`b141624`](https://github.com/tim-smart/sqlfx/commit/b141624b2c67d69e525a5d0194b29ee1c7d401f6) Thanks [@tim-smart](https://github.com/tim-smart)! - fix mssql transactions
+
+- Updated dependencies [[`b141624`](https://github.com/tim-smart/sqlfx/commit/b141624b2c67d69e525a5d0194b29ee1c7d401f6)]:
+  - @sqlfx/sql@0.5.1
+
 ## 0.4.5
 
 ### Patch Changes
