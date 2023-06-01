@@ -115,6 +115,7 @@ export const make = (
       options.transformResultNames!,
     )
 
+    // eslint-disable-next-line prefer-const
     let pool: Pool.Pool<SqlError, MssqlConnection>
 
     const makeConnection = Effect.gen(function* (_) {
