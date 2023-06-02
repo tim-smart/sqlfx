@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.6.0
+
+### Minor Changes
+
+- [#55](https://github.com/tim-smart/sqlfx/pull/55) [`5ab8391`](https://github.com/tim-smart/sqlfx/commit/5ab8391b1b7ab15f899a116640b553f4d90028f0) Thanks [@tim-smart](https://github.com/tim-smart)! - update dependencies
+
 ## 0.5.2
 
 ### Patch Changes
