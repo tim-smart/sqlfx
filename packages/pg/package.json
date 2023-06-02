@@ -53,12 +53,12 @@
   },
   "dependencies": {
     "@effect/data": "^0.12.4",
-    "@effect/io": "^0.25.13",
+    "@effect/io": "^0.26.0",
     "@sqlfx/sql": "workspace:*",
     "postgres": "^3.3.5"
   },
   "devDependencies": {
-    "@effect/schema": "^0.19.3",
+    "@effect/schema": "^0.20.0",
     "effect-schema-class": "^0.3.0"
   }
 }
