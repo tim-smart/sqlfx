@@ -59,6 +59,6 @@
   },
   "devDependencies": {
     "@effect/schema": "^0.20.0",
-    "effect-schema-class": "^0.3.0"
+    "effect-schema-class": "^0.4.0"
   }
 }

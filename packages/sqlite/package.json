@@ -60,7 +60,7 @@
   "devDependencies": {
     "@effect/schema": "^0.20.0",
     "@types/better-sqlite3": "^7.6.4",
-    "effect-schema-class": "^0.3.0"
+    "effect-schema-class": "^0.4.0"
   },
   "optionalDependencies": {
     "@sqlite.org/sqlite-wasm": "3.42.0-build1"

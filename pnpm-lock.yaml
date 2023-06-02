@@ -133,8 +133,8 @@ importers:
         specifier: ^4.0.9
         version: 4.0.9
       effect-schema-class:
-        specifier: ^0.3.0
-        version: 0.3.0
+        specifier: ^0.4.0
+        version: 0.4.0
     publishDirectory: dist
 
   packages/mysql:
@@ -156,8 +156,8 @@ importers:
         specifier: ^0.20.0
         version: 0.20.0
       effect-schema-class:
-        specifier: ^0.3.0
-        version: 0.3.0
+        specifier: ^0.4.0
+        version: 0.4.0
     publishDirectory: dist
 
   packages/pg:
@@ -179,8 +179,8 @@ importers:
         specifier: ^0.20.0
         version: 0.20.0
       effect-schema-class:
-        specifier: ^0.3.0
-        version: 0.3.0
+        specifier: ^0.4.0
+        version: 0.4.0
     publishDirectory: dist
 
   packages/sql:
@@ -222,8 +222,8 @@ importers:
         specifier: ^7.6.4
         version: 7.6.4
       effect-schema-class:
-        specifier: ^0.3.0
-        version: 0.3.0
+        specifier: ^0.4.0
+        version: 0.4.0
     publishDirectory: dist
 
   packages/sqlite-wasm-example:
@@ -1026,12 +1026,6 @@ packages:
   /@effect/data@0.12.4:
     resolution: {integrity: sha512-QawuBkTEib4JetN6dmCURbjW9OK1dHdRLekNfuiPZefQdxQnnoFFTKBxPK5z60xmTjY4ZNawfKvcSpsuEzKiiQ==}
 
-  /@effect/io@0.25.13:
-    resolution: {integrity: sha512-NdZFSaNbG6AN8bzSAPdmi95AXgHWr4dH58R8viqbFBb0zmfQ/PQq+5XEsC++qy/qpT/ZLzpvJJWhW9jf1atq2g==}
-    dependencies:
-      '@effect/data': 0.12.4
-    dev: true
-
   /@effect/io@0.26.0:
     resolution: {integrity: sha512-umwZ/sRoV7zb/8WwoiK7xWoypqvY6C1EXWEGORpViAFUTx3/bXc9i7JtdttTWVokXb3qogrxGX2SHopB20I4vQ==}
     dependencies:
@@ -1042,14 +1036,6 @@ packages:
     dependencies:
       '@fp-ts/core': 0.0.11
       '@fp-ts/data': 0.0.41
-    dev: true
-
-  /@effect/schema@0.19.3:
-    resolution: {integrity: sha512-jR7o19HBX7PBYRLV1G6ZlM90giRe+lZkA6BqVNamkhNfVsHU4MnGr2lqM2H4fy4MgR744GGXuxCDjVdydkMvAw==}
-    dependencies:
-      '@effect/data': 0.12.4
-      '@effect/io': 0.25.13
-      fast-check: 3.10.0
     dev: true
 
   /@effect/schema@0.20.0:
@@ -3239,12 +3225,12 @@ packages:
       safe-buffer: 5.2.1
     dev: false
 
-  /effect-schema-class@0.3.0:
-    resolution: {integrity: sha512-mLNplxClBU70mdHCjRmII+8ujKaX/kB8Wi+SIBYqQ96Xo7I218JTfbRa8cpqy8ODoipNlNUoJzGyUI90CmoQxA==}
+  /effect-schema-class@0.4.0:
+    resolution: {integrity: sha512-LYO1AFK3+mXIrOi6iwHtjErKNj9LvM8Jcwj7fRs5nNEozbOgIWFbcy6voE95AznR4OVa8lUsnIHRUiOp0KHR4A==}
     dependencies:
       '@effect/data': 0.12.4
-      '@effect/io': 0.25.13
-      '@effect/schema': 0.19.3
+      '@effect/io': 0.26.0
+      '@effect/schema': 0.20.0
     dev: true
 
   /electron-to-chromium@1.4.416:
