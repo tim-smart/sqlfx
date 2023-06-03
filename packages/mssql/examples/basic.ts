@@ -71,6 +71,24 @@ const program = Effect.gen(function* (_) {
       WHERE people.id = data.id
     `),
   )
+
+  console.log(
+    yield* _(
+      sql.withTransaction(
+        pipe(
+          sql`SELECT TOP 3 * FROM ${sql("people")}`,
+          Effect.zipRight(
+            Effect.catchAllCause(sql.withTransaction(Effect.die("fail")), _ =>
+              Effect.unit(),
+            ),
+          ),
+          Effect.zipRight(
+            sql.withTransaction(sql`SELECT TOP 3 * FROM ${sql("people")}`),
+          ),
+        ),
+      ),
+    ),
+  )
 })
 
 pipe(

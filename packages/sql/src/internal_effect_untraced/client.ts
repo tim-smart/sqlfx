@@ -19,7 +19,9 @@ import { ResultLengthMismatch } from "@sqlfx/sql/Error"
 import * as SqlSchema from "@sqlfx/sql/Schema"
 import * as Statement from "@sqlfx/sql/Statement"
 
-const TransactionConn = Tag<readonly [conn: Connection, counter: number]>()
+/** @internal */
+export const TransactionConn =
+  Tag<readonly [conn: Connection, counter: number]>()
 
 /** @internal */
 export function make({
