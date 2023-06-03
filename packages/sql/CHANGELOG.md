@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.6.1
+
+### Patch Changes
+
+- [`491265e`](https://github.com/tim-smart/sqlfx/commit/491265e04306589ee14e91c01d99afae7607482c) Thanks [@tim-smart](https://github.com/tim-smart)! - fix mssql transactions
+
 ## 0.6.0
 
 ### Minor Changes

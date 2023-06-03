@@ -1,5 +1,14 @@
 # @sqlfx/mssql
 
+## 0.3.1
+
+### Patch Changes
+
+- [`491265e`](https://github.com/tim-smart/sqlfx/commit/491265e04306589ee14e91c01d99afae7607482c) Thanks [@tim-smart](https://github.com/tim-smart)! - fix mssql transactions
+
+- Updated dependencies [[`491265e`](https://github.com/tim-smart/sqlfx/commit/491265e04306589ee14e91c01d99afae7607482c)]:
+  - @sqlfx/sql@0.6.1
+
 ## 0.3.0
 
 ### Minor Changes
