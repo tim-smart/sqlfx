@@ -513,16 +513,37 @@ export function make({
 
 /** @internal */
 export function defaultRowTransform(transformer: (str: string) => string) {
-  return <A extends object>(rows: ReadonlyArray<A>): ReadonlyArray<A> => {
+  function transformValue(value: any) {
+    if (Array.isArray(value)) {
+      return transformArray(value)
+    } else if (value?.constructor === Object) {
+      return transformObject(value)
+    }
+    return value
+  }
+
+  function transformObject(obj: Record<string, any>): any {
+    const newObj: Record<string, any> = {}
+    for (const key in obj) {
+      newObj[transformer(key)] = transformValue(obj[key])
+    }
+    return newObj
+  }
+
+  function transformArray<A extends object>(
+    rows: ReadonlyArray<A>,
+  ): ReadonlyArray<A> {
     const newRows: Array<A> = []
     for (let i = 0, len = rows.length; i < len; i++) {
       const row = rows[i]
       const obj: any = {}
       for (const key in row) {
-        obj[transformer(key)] = row[key]
+        obj[transformer(key)] = transformValue(row[key])
       }
       newRows.push(obj)
     }
     return newRows
   }
+
+  return transformArray
 }
