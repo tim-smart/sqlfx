@@ -1,5 +1,14 @@
 # @sqlfx/pg
 
+## 0.4.2
+
+### Patch Changes
+
+- [#58](https://github.com/tim-smart/sqlfx/pull/58) [`3b368c5`](https://github.com/tim-smart/sqlfx/commit/3b368c58b4b0df87deeba4e0b99a90951fdeeb9f) Thanks [@tim-smart](https://github.com/tim-smart)! - support nested column transforms
+
+- Updated dependencies [[`3b368c5`](https://github.com/tim-smart/sqlfx/commit/3b368c58b4b0df87deeba4e0b99a90951fdeeb9f)]:
+  - @sqlfx/sql@0.6.2
+
 ## 0.4.1
 
 ### Patch Changes
