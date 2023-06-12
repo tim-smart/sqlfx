@@ -19,7 +19,17 @@ const program = Effect.gen(function* (_) {
   )
   console.log(jsonQuery)
 
-  const result = yield* _(sql`SELECT * FROM ${sql("people")} LIMIT 1`)
+  const result = yield* _(
+    sql`
+      SELECT
+        people.*,
+        JSON_AGG(users)->0 AS user
+      FROM people
+      JOIN users ON people.user_id = users.id
+      GROUP BY people.id
+      LIMIT 1
+    `,
+  )
   console.log(result)
 })
 

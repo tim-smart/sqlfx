@@ -52,13 +52,13 @@
     "global": []
   },
   "dependencies": {
-    "@effect/data": "^0.12.4",
+    "@effect/data": "^0.12.6",
     "@effect/io": "^0.26.0",
     "@sqlfx/sql": "workspace:*",
-    "mysql2": "^3.3.3"
+    "mysql2": "^3.3.4"
   },
   "devDependencies": {
-    "@effect/schema": "^0.20.0",
+    "@effect/schema": "^0.20.1",
     "effect-schema-class": "^0.4.0"
   }
 }
