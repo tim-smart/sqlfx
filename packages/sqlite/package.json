@@ -52,13 +52,13 @@
     "global": []
   },
   "dependencies": {
-    "@effect/data": "^0.12.4",
+    "@effect/data": "^0.12.6",
     "@effect/io": "^0.26.0",
     "@sqlfx/sql": "workspace:*",
     "better-sqlite3": "^8.4.0"
   },
   "devDependencies": {
-    "@effect/schema": "^0.20.0",
+    "@effect/schema": "^0.20.1",
     "@types/better-sqlite3": "^7.6.4",
     "effect-schema-class": "^0.4.0"
   },
