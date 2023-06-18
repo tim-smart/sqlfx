@@ -1,5 +1,14 @@
 # @sqlfx/mssql
 
+## 0.3.4
+
+### Patch Changes
+
+- [`8007245`](https://github.com/tim-smart/sqlfx/commit/80072453cb67908df3f378399a86886fef58d13a) Thanks [@tim-smart](https://github.com/tim-smart)! - logDebug in Migrator
+
+- Updated dependencies [[`8007245`](https://github.com/tim-smart/sqlfx/commit/80072453cb67908df3f378399a86886fef58d13a)]:
+  - @sqlfx/sql@0.6.3
+
 ## 0.3.3
 
 ### Patch Changes
