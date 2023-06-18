@@ -1,5 +1,11 @@
 # @sqlfx/mssql
 
+## 0.3.3
+
+### Patch Changes
+
+- [#60](https://github.com/tim-smart/sqlfx/pull/60) [`e2e1d44`](https://github.com/tim-smart/sqlfx/commit/e2e1d44665d4daf556b61a094a84cdabee33488a) Thanks [@tim-smart](https://github.com/tim-smart)! - re-export Error module
+
 ## 0.3.2
 
 ### Patch Changes
