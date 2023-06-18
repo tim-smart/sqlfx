@@ -7,6 +7,7 @@ import type { Duration } from "@effect/data/Duration"
 import { minutes } from "@effect/data/Duration"
 import { pipe } from "@effect/data/Function"
 import * as Config from "@effect/io/Config"
+import type { ConfigError } from "@effect/io/Config/Error"
 import * as ConfigSecret from "@effect/io/Config/Secret"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
@@ -176,7 +177,11 @@ export const make = (
  * @category constructor
  * @since 1.0.0
  */
-export const makeLayer = (config: Config.Config.Wrap<MysqlClientConfig>) =>
+export const makeLayer: (
+  config: Config.Config.Wrap<MysqlClientConfig>,
+) => Layer.Layer<never, ConfigError, MysqlClient> = (
+  config: Config.Config.Wrap<MysqlClientConfig>,
+) =>
   Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
 
 /**

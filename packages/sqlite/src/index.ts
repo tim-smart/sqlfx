@@ -6,6 +6,7 @@ import * as Duration from "@effect/data/Duration"
 import { identity } from "@effect/data/Function"
 import * as Cache from "@effect/io/Cache"
 import * as Config from "@effect/io/Config"
+import type { ConfigError } from "@effect/io/Config/Error"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Pool from "@effect/io/Pool"
@@ -168,7 +169,11 @@ export const make = (
  * @category constructor
  * @since 1.0.0
  */
-export const makeLayer = (config: Config.Config.Wrap<SqliteClientConfig>) =>
+export const makeLayer: (
+  config: Config.Config.Wrap<SqliteClientConfig>,
+) => Layer.Layer<never, ConfigError, SqliteClient> = (
+  config: Config.Config.Wrap<SqliteClientConfig>,
+) =>
   Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
 
 /**
