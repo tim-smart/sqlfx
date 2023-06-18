@@ -1,10 +1,10 @@
 ---
-title: sqlite-wasm.d.ts
-nav_order: 4
+title: Error.ts
+nav_order: 1
 parent: "@sqlfx/sqlite"
 ---
 
-## sqlite-wasm.d overview
+## Error overview
 
 Added in v1.0.0
 

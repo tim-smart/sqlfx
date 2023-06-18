@@ -31,7 +31,15 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: (acquirer: Connection.Acquirer, transactionAcquirer: Connection.Acquirer) => Client
+export declare const make: ({
+  acquirer,
+  beginTransaction,
+  commit,
+  rollback,
+  rollbackSavepoint,
+  savepoint,
+  transactionAcquirer,
+}: Client.MakeOptions) => Client
 ```
 
 Added in v1.0.0
