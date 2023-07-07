@@ -79,11 +79,15 @@ export const make = (
       db.pragma("journal_mode = WAL")
 
       const prepareCache = yield* _(
-        Cache.make(
-          options.prepareCacheSize ?? 200,
-          Duration.minutes(45),
-          (sql: string) => Effect.tryCatch(() => db.prepare(sql), handleError),
-        ),
+        Cache.make({
+          capacity: options.prepareCacheSize ?? 200,
+          timeToLive: Duration.minutes(45),
+          lookup: (sql: string) =>
+            Effect.try({
+              try: () => db.prepare(sql),
+              catch: handleError,
+            }),
+        }),
       )
 
       const run = (
@@ -91,13 +95,16 @@ export const make = (
         params: ReadonlyArray<Statement.Primitive> = [],
       ) =>
         Effect.flatMap(prepareCache.get(sql), _ =>
-          Effect.tryCatch(() => {
-            if (_.reader) {
-              return _.all(...params) as ReadonlyArray<any>
-            }
-            _.run(...params)
-            return []
-          }, handleError),
+          Effect.try({
+            try: () => {
+              if (_.reader) {
+                return _.all(...params) as ReadonlyArray<any>
+              }
+              _.run(...params)
+              return []
+            },
+            catch: handleError,
+          }),
         )
 
       const runTransform = options.transformResultNames
@@ -109,20 +116,23 @@ export const make = (
         sql: string,
         params: ReadonlyArray<Statement.Primitive>,
       ) =>
-        Effect.acquireUseRelease(
-          Effect.map(prepareCache.get(sql), _ => _.raw(true)),
-          statement =>
-            Effect.tryCatch(() => {
-              if (statement.reader) {
-                return statement.all(...params) as ReadonlyArray<
-                  ReadonlyArray<Statement.Primitive>
-                >
-              }
-              statement.run(...params)
-              return []
-            }, handleError),
-          statement => Effect.sync(() => statement.raw(false)),
-        )
+        Effect.acquireUseRelease({
+          acquire: prepareCache.get(sql).pipe(Effect.map(_ => _.raw(true))),
+          use: statement =>
+            Effect.try({
+              try: () => {
+                if (statement.reader) {
+                  return statement.all(...params) as ReadonlyArray<
+                    ReadonlyArray<Statement.Primitive>
+                  >
+                }
+                statement.run(...params)
+                return []
+              },
+              catch: handleError,
+            }),
+          release: statement => Effect.sync(() => statement.raw(false)),
+        })
 
       return identity<
         Connection & {
@@ -147,11 +157,14 @@ export const make = (
         compile(statement) {
           return Effect.sync(() => compiler.compile(statement))
         },
-        export: Effect.tryCatch(() => db.serialize(), handleError),
+        export: Effect.try({
+          try: () => db.serialize(),
+          catch: handleError,
+        }),
       })
     })
 
-    const pool = yield* _(Pool.make(makeConnection, 1))
+    const pool = yield* _(Pool.make({ acquire: makeConnection, size: 1 }))
 
     return Object.assign(
       Client.make({

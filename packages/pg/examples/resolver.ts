@@ -19,33 +19,34 @@ const InsertPersonSchema = pipe(
 const program = Effect.gen(function* (_) {
   const sql = yield* _(Pg.tag)
 
-  const Insert = sql.resolver(
-    "InsertPerson",
-    InsertPersonSchema,
-    Person.schema(),
-    requests => sql`INSERT INTO people ${sql(requests)} RETURNING people.*`,
-  )
+  const Insert = sql.resolver("InsertPerson", {
+    request: InsertPersonSchema,
+    result: Person.schema(),
+    run: requests =>
+      sql`INSERT INTO people ${sql(requests)} RETURNING people.*`,
+  })
 
-  const GetById = sql.idResolver(
-    "GetPersonById",
-    Schema.number,
-    Person.schema(),
-    _ => _.id,
-    ids => sql`SELECT * FROM people WHERE id IN ${sql(ids)}`,
-  )
+  const GetById = sql.idResolver("GetPersonById", {
+    id: Schema.number,
+    result: Person.schema(),
+    resultId: _ => _.id,
+    run: ids => sql`SELECT * FROM people WHERE id IN ${sql(ids)}`,
+  })
 
   const inserted = yield* _(
-    Effect.allPar(
+    Effect.all(
       Insert.execute({ name: "John Doe" }),
       Insert.execute({ name: "Joe Bloggs" }),
+      { batched: true },
     ),
   )
 
   console.log(
     yield* _(
-      Effect.allPar(
+      Effect.all(
         GetById.execute(inserted[0].id),
         GetById.execute(inserted[1].id),
+        { batched: true },
       ),
     ),
   )
@@ -60,6 +61,6 @@ const PgLive = Pg.makeLayer({
 pipe(
   program,
   Effect.provideLayer(PgLive),
-  Effect.tapErrorCause(Effect.logErrorCause),
+  Effect.tapErrorCause(Effect.logCause({ level: "Error" })),
   Effect.runFork,
 )

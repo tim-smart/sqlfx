@@ -91,16 +91,19 @@ export const make = (
         params: ReadonlyArray<Statement.Primitive> = [],
         rowMode: RowMode = "object",
       ) =>
-        Effect.tryCatch(() => {
-          const results: Array<any> = []
-          db.exec({
-            sql,
-            bind: params.length ? params : undefined,
-            rowMode,
-            resultRows: results,
-          })
-          return results
-        }, handleError)
+        Effect.try({
+          try: () => {
+            const results: Array<any> = []
+            db.exec({
+              sql,
+              bind: params.length ? params : undefined,
+              rowMode,
+              resultRows: results,
+            })
+            return results
+          },
+          catch: handleError,
+        })
 
       const runTransform = options.transformResultNames
         ? (sql: string, params?: ReadonlyArray<Statement.Primitive>) =>
@@ -130,14 +133,14 @@ export const make = (
         compile(statement) {
           return Effect.sync(() => compiler.compile(statement))
         },
-        export: Effect.tryCatch(
-          () => sqlite3.capi.sqlite3_js_db_export(db.pointer),
-          handleError,
-        ),
+        export: Effect.try({
+          try: () => sqlite3.capi.sqlite3_js_db_export(db.pointer),
+          catch: handleError,
+        }),
       })
     })
 
-    const pool = yield* _(Pool.make(makeConnection, 1))
+    const pool = yield* _(Pool.make({ acquire: makeConnection, size: 1 }))
 
     return Object.assign(
       Client.make({

@@ -2,7 +2,7 @@
  * @since 1.0.0
  */
 import type { Tag } from "@effect/data/Context"
-import type { Duration } from "@effect/data/Duration"
+import type { DurationInput } from "@effect/data/Duration"
 import type * as Config from "@effect/io/Config"
 import type { ConfigError } from "@effect/io/Config/Error"
 import type * as ConfigSecret from "@effect/io/Config/Secret"
@@ -16,7 +16,7 @@ import type { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
 import * as Tedious from "tedious"
-import * as internal from "@sqlfx/mssql/internal_effect_untraced/client"
+import * as internal from "@sqlfx/mssql/internal/client"
 
 const TYPES = Tedious.TYPES
 
@@ -77,11 +77,11 @@ export interface MssqlClientConfig {
   readonly database?: string
   readonly username?: string
   readonly password?: ConfigSecret.ConfigSecret
-  readonly connectTimeout?: Duration
+  readonly connectTimeout?: DurationInput
 
   readonly minConnections?: number
   readonly maxConnections?: number
-  readonly connectionTTL?: Duration
+  readonly connectionTTL?: DurationInput
 
   readonly parameterTypes?: Record<Statement.PrimitiveKind, Tedious.TediousType>
 

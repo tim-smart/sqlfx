@@ -1,7 +1,7 @@
-import * as Debug from "@effect/data/Debug"
 import * as Equal from "@effect/data/Equal"
 import { identity } from "@effect/data/Function"
 import * as Hash from "@effect/data/Hash"
+import { pipeArguments } from "@effect/data/Pipeable"
 import * as Effect from "@effect/io/Effect"
 import type { Connection, Row } from "@sqlfx/sql/Connection"
 import type { SqlError } from "@sqlfx/sql/Error"
@@ -60,10 +60,8 @@ export class StatementPrimitive<A> implements Statement<A> {
   }
 
   get withoutTransform(): Effect.Effect<never, SqlError, ReadonlyArray<A>> {
-    return Debug.untraced(() =>
-      Effect.scoped(
-        Effect.flatMap(this.i1, _ => _.executeWithoutTransform<any>(this)),
-      ),
+    return Effect.scoped(
+      Effect.flatMap(this.i1, _ => _.executeWithoutTransform<any>(this)),
     )
   }
 
@@ -72,8 +70,8 @@ export class StatementPrimitive<A> implements Statement<A> {
     SqlError,
     ReadonlyArray<ReadonlyArray<Primitive>>
   > {
-    return Debug.untraced(() =>
-      Effect.scoped(Effect.flatMap(this.i1, _ => _.executeValues<any>(this))),
+    return Effect.scoped(
+      Effect.flatMap(this.i1, _ => _.executeValues<any>(this)),
     )
   }
 
@@ -82,22 +80,17 @@ export class StatementPrimitive<A> implements Statement<A> {
     SqlError,
     readonly [sql: string, params: ReadonlyArray<Primitive>]
   > {
-    return Debug.untraced(() =>
-      Effect.scoped(Effect.flatMap(this.i1, _ => _.compile(this as any))),
-    )
+    return Effect.scoped(Effect.flatMap(this.i1, _ => _.compile(this as any)))
   }
 
   // Make it a valid effect
   public _tag = "Commit" // OP_COMMIT
-  public i2: any = undefined
-  public trace: Debug.Trace = undefined;
+  public i2: any = undefined;
   [Effect.EffectTypeId] = undefined as any
 
   commit(): Effect.Effect<never, SqlError, ReadonlyArray<A>> {
-    return Debug.untraced(() =>
-      Effect.scoped(
-        Effect.flatMap(this.i1, _ => _.execute(this as any) as any),
-      ),
+    return Effect.scoped(
+      Effect.flatMap(this.i1, _ => _.execute(this as any) as any),
     )
   }
 
@@ -111,61 +104,8 @@ export class StatementPrimitive<A> implements Statement<A> {
     return Hash.random(this)
   }
 
-  traced(trace: Debug.Trace): Statement<A> {
-    if (trace) {
-      return new StatementTraced(this, this, trace)
-    }
-    return this
-  }
-}
-
-class StatementTraced<A> implements Statement<A> {
-  get [FragmentId]() {
-    return identity
-  }
-
-  constructor(
-    readonly i0: StatementPrimitive<A> | StatementTraced<A>,
-    readonly i1: StatementPrimitive<A>,
-    readonly trace: Debug.Trace,
-  ) {}
-
-  get segments(): ReadonlyArray<Segment> {
-    return this.i1.segments
-  }
-
-  get withoutTransform() {
-    return this.i1.withoutTransform
-  }
-
-  get values() {
-    return this.i1.values
-  }
-
-  get compile() {
-    return this.i1.compile
-  }
-
-  // Make it a valid effect
-  public _tag = "Traced" // OP_TRACED
-  public i2: any = undefined;
-  [Effect.EffectTypeId] = undefined as any;
-
-  [Equal.symbol](
-    this: StatementPrimitive<Row>,
-    that: StatementPrimitive<Row>,
-  ): boolean {
-    return this === that
-  }
-  [Hash.symbol](this: StatementPrimitive<Row>): number {
-    return Hash.random(this)
-  }
-
-  traced(trace: Debug.Trace): Statement<A> {
-    if (trace) {
-      return new StatementTraced(this, this.i1, trace)
-    }
-    return this
+  pipe() {
+    return pipeArguments(this, arguments)
   }
 }
 
@@ -244,46 +184,37 @@ const isPrimitive = (u: unknown): u is Primitive =>
 
 /** @internal */
 export const make = (acquirer: Connection.Acquirer): Constructor =>
-  Debug.methodWithTrace(
-    trace =>
-      function sql(strings: unknown, ...args: Array<any>): any {
-        if (Array.isArray(strings) && "raw" in strings) {
-          return statement(
-            acquirer,
-            trace,
-            strings as TemplateStringsArray,
-            ...args,
-          )
-        } else if (Array.isArray(strings)) {
-          if (
-            strings.length > 0 &&
-            !isPrimitive(strings[0]) &&
-            typeof strings[0] === "object"
-          ) {
-            if (typeof args[0] === "string") {
-              return new RecordUpdateHelperImpl(strings, args[0])
-            }
-
-            return new RecordInsertHelperImpl(strings)
-          }
-          return new ArrayHelperImpl(strings)
-        } else if (typeof strings === "string") {
-          return new IdentifierImpl(strings)
-        } else if (typeof strings === "object") {
-          if (typeof args[0] === "string") {
-            return new RecordUpdateHelperImpl([strings as any], args[0])
-          }
-          return new RecordInsertHelperImpl([strings as any])
+  function sql(strings: unknown, ...args: Array<any>): any {
+    if (Array.isArray(strings) && "raw" in strings) {
+      return statement(acquirer, strings as TemplateStringsArray, ...args)
+    } else if (Array.isArray(strings)) {
+      if (
+        strings.length > 0 &&
+        !isPrimitive(strings[0]) &&
+        typeof strings[0] === "object"
+      ) {
+        if (typeof args[0] === "string") {
+          return new RecordUpdateHelperImpl(strings, args[0])
         }
 
-        throw "absurd"
-      },
-  )
+        return new RecordInsertHelperImpl(strings)
+      }
+      return new ArrayHelperImpl(strings)
+    } else if (typeof strings === "string") {
+      return new IdentifierImpl(strings)
+    } else if (typeof strings === "object") {
+      if (typeof args[0] === "string") {
+        return new RecordUpdateHelperImpl([strings as any], args[0])
+      }
+      return new RecordInsertHelperImpl([strings as any])
+    }
+
+    throw "absurd"
+  }
 
 /** @internal */
 export function statement(
   acquirer: Connection.Acquirer,
-  trace: Debug.Trace,
   strings: TemplateStringsArray,
   ...args: Array<Argument>
 ): Statement<Row> {
@@ -306,22 +237,17 @@ export function statement(
     }
   }
 
-  return new StatementPrimitive<Row>(segments, acquirer).traced(trace)
+  return new StatementPrimitive<Row>(segments, acquirer)
 }
 
 /** @internal */
-export const unsafe = (acquirer: Connection.Acquirer) =>
-  Debug.methodWithTrace(
-    trace =>
-      <A extends object = Row>(
-        sql: string,
-        params?: ReadonlyArray<Primitive>,
-      ): Statement<A> =>
-        new StatementPrimitive<A>(
-          [new LiteralImpl(sql, params)],
-          acquirer,
-        ).traced(trace),
-  )
+export const unsafe =
+  (acquirer: Connection.Acquirer) =>
+  <A extends object = Row>(
+    sql: string,
+    params?: ReadonlyArray<Primitive>,
+  ): Statement<A> =>
+    new StatementPrimitive<A>([new LiteralImpl(sql, params)], acquirer)
 
 /** @internal */
 export const unsafeFragment = (

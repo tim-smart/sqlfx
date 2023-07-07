@@ -2,7 +2,9 @@
  * @since 1.0.0
  */
 import type { Effect } from "@effect/io/Effect"
-import * as internal from "@sqlfx/sql/internal_effect_untraced/statement"
+import * as internal from "@sqlfx/sql/internal/statement"
+import type { Equal } from "@effect/data/Equal"
+import type { Pipeable } from "@effect/data/Pipeable"
 import type { Connection, Row } from "./Connection"
 import type { SqlError } from "./Error"
 
@@ -33,7 +35,9 @@ export interface Fragment {
  */
 export interface Statement<A>
   extends Fragment,
-    Effect<never, SqlError, ReadonlyArray<A>> {
+    Equal,
+    Pipeable<Statement<A>>,
+    Effect.Variance<never, SqlError, ReadonlyArray<A>> {
   readonly withoutTransform: Effect<never, SqlError, ReadonlyArray<A>>
   readonly values: Effect<
     never,

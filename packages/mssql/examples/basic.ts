@@ -78,8 +78,9 @@ const program = Effect.gen(function* (_) {
         pipe(
           sql`SELECT TOP 3 * FROM ${sql("people")}`,
           Effect.zipRight(
-            Effect.catchAllCause(sql.withTransaction(Effect.die("fail")), _ =>
-              Effect.unit(),
+            Effect.catchAllCause(
+              sql.withTransaction(Effect.die("fail")),
+              _ => Effect.unit,
             ),
           ),
           Effect.zipRight(
@@ -94,6 +95,6 @@ const program = Effect.gen(function* (_) {
 pipe(
   program,
   Effect.provideLayer(SqlLive),
-  Effect.tapErrorCause(Effect.logErrorCause),
+  Effect.tapErrorCause(Effect.logCause({ level: "Error" })),
   Effect.runFork,
 )

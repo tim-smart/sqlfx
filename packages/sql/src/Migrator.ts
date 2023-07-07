@@ -78,7 +78,7 @@ export const make =
     dumpSchema,
     ensureTable,
     getClient,
-    lockTable = () => Effect.unit(),
+    lockTable = () => Effect.unit,
   }: {
     getClient: Effect.Effect<R, SqlError, R>
     dumpSchema: (
@@ -146,15 +146,15 @@ export const make =
                   }),
                 ),
           ),
-          Effect.filterOrFail(
-            (_): _ is Effect.Effect<never, never, unknown> =>
+          Effect.filterOrFail({
+            filter: (_): _ is Effect.Effect<never, never, unknown> =>
               Effect.isEffect(_),
-            () =>
+            orFailWith: () =>
               MigrationError({
                 reason: "import-error",
                 message: `Default export was not an Effect for migration "${id}_${name}"`,
               }),
-          ),
+          }),
         )
 
       const runMigration = (
@@ -178,10 +178,10 @@ export const make =
           Effect.all(
             Effect.map(
               latestMigration,
-              Option.match(
-                () => 0,
-                _ => _.id,
-              ),
+              Option.match({
+                onNone: () => 0,
+                onSome: _ => _.id,
+              }),
             ),
             loader,
           ),
@@ -226,28 +226,32 @@ export const make =
         }
 
         yield* _(
-          Effect.forEachDiscard(required, ([id, name, effect]) =>
-            pipe(
-              Effect.logDebug(`Running migration`),
-              Effect.zipRight(runMigration(id, name, effect)),
-              Effect.logAnnotate("migration_id", String(id)),
-              Effect.logAnnotate("migration_name", name),
-            ),
+          Effect.forEach(
+            required,
+            ([id, name, effect]) =>
+              pipe(
+                Effect.log(`Running migration`, { level: "Debug" }),
+                Effect.zipRight(runMigration(id, name, effect)),
+                Effect.annotateLogs("migration_id", String(id)),
+                Effect.annotateLogs("migration_name", name),
+              ),
+            { discard: true },
           ),
         )
 
         yield* _(
           latestMigration,
           Effect.flatMap(
-            Option.match(
-              () => Effect.logDebug(`Migrations complete`),
-              _ =>
+            Option.match({
+              onNone: () =>
+                Effect.log(`Migrations complete`, { level: "Debug" }),
+              onSome: _ =>
                 pipe(
-                  Effect.logDebug(`Migrations complete`),
-                  Effect.logAnnotate("latest_migration_id", _.id.toString()),
-                  Effect.logAnnotate("latest_migration_name", _.name),
+                  Effect.log(`Migrations complete`, { level: "Debug" }),
+                  Effect.annotateLogs("latest_migration_id", _.id.toString()),
+                  Effect.annotateLogs("latest_migration_name", _.name),
                 ),
-            ),
+            }),
           ),
         )
 
@@ -260,7 +264,7 @@ export const make =
         sql.withTransaction(run),
         Effect.catchTag("MigrationError", _ =>
           _.reason === "locked"
-            ? Effect.as(Effect.logDebug(_.message), [])
+            ? Effect.as(Effect.log(_.message, { level: "Debug" }), [])
             : Effect.fail(_),
         ),
       )
@@ -287,9 +291,9 @@ export const fromDisk = (directory: string): Loader =>
           Option.fromNullable(_.match(/^(?:.*\/)?(\d+)_([^.]+)\.(js|ts)$/)),
         )
         .flatMap(
-          Option.match(
-            () => [],
-            ([basename, id, name]): ReadonlyArray<ResolvedMigration> =>
+          Option.match({
+            onNone: () => [],
+            onSome: ([basename, id, name]): ReadonlyArray<ResolvedMigration> =>
               [
                 [
                   Number(id),
@@ -303,13 +307,15 @@ export const fromDisk = (directory: string): Loader =>
                   ),
                 ],
               ] as const,
-          ),
+          }),
         )
         .sort(([a], [b]) => a - b),
     ),
     Effect.catchAllDefect(_ =>
       Effect.as(
-        Effect.logDebug(`Could not load migrations from disk: ${_}`),
+        Effect.log(`Could not load migrations from disk: ${_}`, {
+          level: "Debug",
+        }),
         [],
       ),
     ),
@@ -327,13 +333,13 @@ export const fromGlob = (
         Option.fromNullable(_.match(/^(?:.*\/)?(\d+)_([^.]+)\.(js|ts)$/)),
       )
       .flatMap(
-        Option.match(
-          () => [],
-          ([key, id, name]) =>
+        Option.match({
+          onNone: () => [],
+          onSome: ([key, id, name]) =>
             [
               [Number(id), name, Effect.promise(() => migrations[key]())],
             ] as const,
-        ),
+        }),
       )
       .sort(([a], [b]) => a - b),
   )

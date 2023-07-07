@@ -2,9 +2,7 @@
  * @since 1.0.0
  */
 import { Tag } from "@effect/data/Context"
-import * as Debug from "@effect/data/Debug"
-import type { Duration } from "@effect/data/Duration"
-import { minutes } from "@effect/data/Duration"
+import * as Duration from "@effect/data/Duration"
 import { pipe } from "@effect/data/Function"
 import * as Config from "@effect/io/Config"
 import type { ConfigError } from "@effect/io/Config/Error"
@@ -63,12 +61,12 @@ export interface PgClientConfig {
   readonly username?: string
   readonly password?: ConfigSecret.ConfigSecret
 
-  readonly idleTimeout?: Duration
-  readonly connectTimeout?: Duration
+  readonly idleTimeout?: Duration.DurationInput
+  readonly connectTimeout?: Duration.DurationInput
 
   readonly minConnections?: number
   readonly maxConnections?: number
-  readonly connectionTTL?: Duration
+  readonly connectionTTL?: Duration.DurationInput
 
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
@@ -94,10 +92,14 @@ export const make = (
       max: 1,
       max_lifetime: 0,
       idle_timeout: options.idleTimeout
-        ? Math.round(options.idleTimeout.millis / 1000)
+        ? Math.round(
+            Duration.toMillis(Duration.decode(options.idleTimeout)) / 1000,
+          )
         : undefined,
       connect_timeout: options.connectTimeout
-        ? Math.round(options.connectTimeout.millis / 1000)
+        ? Math.round(
+            Duration.toMillis(Duration.decode(options.connectTimeout)) / 1000,
+          )
         : undefined,
 
       host: options.host,
@@ -112,26 +114,22 @@ export const make = (
     }
 
     const makeConnection = pipe(
-      Effect.acquireRelease(
-        Effect.sync(() =>
+      Effect.acquireRelease({
+        acquire: Effect.sync(() =>
           options.url
             ? postgres(ConfigSecret.value(options.url), opts)
             : postgres(opts),
         ),
-        pg => Effect.promise(() => pg.end()),
-      ),
+        release: pg => Effect.promise(() => pg.end()),
+      }),
       Effect.map((pg): Connection => {
         const run = (query: PendingQuery<any> | PendingValuesQuery<any>) =>
           Effect.asyncInterrupt<never, SqlError, ReadonlyArray<any>>(resume => {
             query
-              .then(_ => resume(Debug.untraced(() => Effect.succeed(_))))
+              .then(_ => resume(Effect.succeed(_)))
               .catch(error =>
                 resume(
-                  Debug.untraced(() =>
-                    Effect.fail(
-                      SqlError(error.message, { ...error.__proto__ }),
-                    ),
-                  ),
+                  Effect.fail(SqlError(error.message, { ...error.__proto__ })),
                 ),
               )
             return Effect.sync(() => query.cancel())
@@ -165,12 +163,12 @@ export const make = (
     )
 
     const pool = yield* _(
-      Pool.makeWithTTL(
-        makeConnection,
-        options.minConnections ?? 1,
-        options.maxConnections ?? 10,
-        options.connectionTTL ?? minutes(45),
-      ),
+      Pool.makeWithTTL({
+        acquire: makeConnection,
+        min: options.minConnections ?? 1,
+        max: options.maxConnections ?? 10,
+        timeToLive: options.connectionTTL ?? Duration.minutes(45),
+      }),
     )
 
     return Object.assign(

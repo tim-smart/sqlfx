@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-extra-semi */
 import { Tag } from "@effect/data/Context"
-import * as Debug from "@effect/data/Debug"
-import { minutes } from "@effect/data/Duration"
+import * as Duration from "@effect/data/Duration"
 import { identity, pipe } from "@effect/data/Function"
+import * as Option from "@effect/data/Option"
 import * as Config from "@effect/io/Config"
 import type { ConfigError } from "@effect/io/Config/Error"
 import * as ConfigSecret from "@effect/io/Config/Secret"
@@ -62,7 +63,9 @@ export const make = (
           port: options.port,
           database: options.database,
           trustServerCertificate: options.trustServer ?? true,
-          connectTimeout: options.connectTimeout?.millis,
+          connectTimeout: options.connectTimeout
+            ? Duration.toMillis(Duration.decode(options.connectTimeout))
+            : undefined,
           rowCollectionOnRequestCompletion: true,
           useColumnNames: false,
         },
@@ -82,7 +85,7 @@ export const make = (
       yield* _(
         Effect.addFinalizer(() =>
           Effect.async<never, never, void>(resume => {
-            conn.once("end", () => resume(Effect.unit()))
+            conn.once("end", () => resume(Effect.unit))
             conn.close()
           }),
         ),
@@ -92,11 +95,9 @@ export const make = (
         Effect.async<never, SqlError, void>(resume => {
           conn.connect(err => {
             if (err) {
-              resume(
-                Debug.untraced(() => Effect.fail(SqlError(err.message, err))),
-              )
+              resume(Effect.fail(SqlError(err.message, err)))
             } else {
-              resume(Debug.untraced(() => Effect.unit()))
+              resume(Effect.unit)
             }
           })
         }),
@@ -111,11 +112,7 @@ export const make = (
         Effect.async<never, SqlError, any>(resume => {
           const req = new Tedious.Request(sql, (error, _rowCount, result) => {
             if (error) {
-              resume(
-                Debug.untraced(() =>
-                  Effect.fail(SqlError(error.message, error)),
-                ),
-              )
+              resume(Effect.fail(SqlError(error.message, error)))
               return
             }
 
@@ -129,7 +126,7 @@ export const make = (
               }
             }
 
-            resume(Debug.untraced(() => Effect.succeed(result)))
+            resume(Effect.succeed(result))
           })
 
           if (values) {
@@ -158,23 +155,17 @@ export const make = (
             escape(procedure.name),
             (error, _, rows) => {
               if (error) {
-                resume(
-                  Debug.untraced(() =>
-                    Effect.fail(SqlError(error.message, error)),
-                  ),
-                )
+                resume(Effect.fail(SqlError(error.message, error)))
               } else {
                 rows = rowsToObjects(rows)
                 if (transform && options.transformResultNames) {
                   rows = transformRows(rows) as any
                 }
                 resume(
-                  Debug.untraced(() =>
-                    Effect.succeed({
-                      params: result,
-                      rows,
-                    }),
-                  ),
+                  Effect.succeed({
+                    params: result,
+                    rows,
+                  }),
                 )
               }
             },
@@ -225,7 +216,7 @@ export const make = (
             if (err) {
               resume(Effect.fail(SqlError(err.message, err)))
             } else {
-              resume(Effect.unit())
+              resume(Effect.unit)
             }
           })
         }),
@@ -234,27 +225,27 @@ export const make = (
             if (err) {
               resume(Effect.fail(SqlError(err.message, err)))
             } else {
-              resume(Effect.unit())
+              resume(Effect.unit)
             }
           })
         }),
         savepoint: (name: string) =>
           Effect.async<never, SqlError, void>(resume => {
-            (conn.saveTransaction as any)((err: Error) => {
+            ;(conn.saveTransaction as any)((err: Error) => {
               if (err) {
                 resume(Effect.fail(SqlError(err.message, err)))
               } else {
-                resume(Effect.unit())
+                resume(Effect.unit)
               }
             }, name)
           }),
         rollback: (name?: string) =>
           Effect.async<never, SqlError, void>(resume => {
-            (conn.rollbackTransaction as any)((err: Error) => {
+            ;(conn.rollbackTransaction as any)((err: Error) => {
               if (err) {
                 resume(Effect.fail(SqlError(err.message, err)))
               } else {
-                resume(Effect.unit())
+                resume(Effect.unit)
               }
             }, name)
           }),
@@ -272,43 +263,42 @@ export const make = (
     })
 
     pool = yield* _(
-      Pool.makeWithTTL(
-        makeConnection,
-        options.minConnections ?? 1,
-        options.maxConnections ?? 10,
-        options.connectionTTL ?? minutes(45),
-      ),
+      Pool.makeWithTTL({
+        acquire: makeConnection,
+        min: options.minConnections ?? 1,
+        max: options.maxConnections ?? 10,
+        timeToLive: options.connectionTTL ?? Duration.minutes(45),
+      }),
     )
 
-    const withTransaction = Debug.methodWithTrace(
-      trace =>
-        <R, E, A>(
-          effect: Effect.Effect<R, E, A>,
-        ): Effect.Effect<R, E | SqlError, A> =>
-          Effect.scoped(
-            Effect.acquireUseRelease(
-              pipe(
-                Effect.serviceOption(TransactionConn),
-                Effect.someOrElseEffect(() =>
+    const withTransaction = <R, E, A>(
+      effect: Effect.Effect<R, E, A>,
+    ): Effect.Effect<R, E | SqlError, A> =>
+      Effect.scoped(
+        Effect.acquireUseRelease({
+          acquire: pipe(
+            Effect.serviceOption(TransactionConn),
+            Effect.flatMap(
+              Option.match({
+                onNone: () =>
                   Effect.map(Pool.get(pool), conn => [conn, 0] as const),
-                ),
-                Effect.tap(([conn, id]) =>
-                  id > 0 ? conn.savepoint(`sqlfx${id}`) : conn.begin,
-                ),
-              ),
-              ([conn, id]) =>
-                Effect.provideService(effect, TransactionConn, [conn, id + 1]),
-              ([conn, id], exit) =>
-                Exit.isSuccess(exit)
-                  ? id > 0
-                    ? Effect.unit()
-                    : Effect.orDie(conn.commit)
-                  : Effect.orDie(
-                      conn.rollback(id > 0 ? `sqlfx${id}` : undefined),
-                    ),
+                onSome: Effect.succeed,
+              }),
             ),
-          ).traced(trace),
-    )
+            Effect.tap(([conn, id]) =>
+              id > 0 ? conn.savepoint(`sqlfx${id}`) : conn.begin,
+            ),
+          ),
+          use: ([conn, id]) =>
+            Effect.provideService(effect, TransactionConn, [conn, id + 1]),
+          release: ([conn, id], exit) =>
+            Exit.isSuccess(exit)
+              ? id > 0
+                ? Effect.unit
+                : Effect.orDie(conn.commit)
+              : Effect.orDie(conn.rollback(id > 0 ? `sqlfx${id}` : undefined)),
+        }),
+      )
 
     return Object.assign(
       Client.make({

@@ -2,9 +2,7 @@
  * @since 1.0.0
  */
 import { Tag } from "@effect/data/Context"
-import * as Debug from "@effect/data/Debug"
-import type { Duration } from "@effect/data/Duration"
-import { minutes } from "@effect/data/Duration"
+import * as Duration from "@effect/data/Duration"
 import { pipe } from "@effect/data/Function"
 import * as Config from "@effect/io/Config"
 import type { ConfigError } from "@effect/io/Config/Error"
@@ -59,11 +57,11 @@ export interface MysqlClientConfig {
   readonly username?: string
   readonly password?: ConfigSecret.ConfigSecret
 
-  readonly connectTimeout?: Duration
+  readonly connectTimeout?: Duration.DurationInput
 
   readonly minConnections?: number
   readonly maxConnections?: number
-  readonly connectionTTL?: Duration
+  readonly connectionTTL?: Duration.DurationInput
 
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
@@ -86,8 +84,8 @@ export const make = (
     )
 
     const makeConnection = pipe(
-      Effect.acquireRelease(
-        Effect.sync(() =>
+      Effect.acquireRelease({
+        acquire: Effect.sync(() =>
           options.url
             ? Mysql.createConnection(ConfigSecret.value(options.url))
             : Mysql.createConnection({
@@ -98,14 +96,16 @@ export const make = (
                 password: options.password
                   ? ConfigSecret.value(options.password)
                   : undefined,
-                connectTimeout: options.connectTimeout?.millis,
+                connectTimeout: options.connectTimeout
+                  ? Duration.toMillis(Duration.decode(options.connectTimeout))
+                  : undefined,
               }),
         ),
-        _ =>
+        release: _ =>
           Effect.async<never, never, void>(resume =>
-            _.end(() => resume(Effect.unit())),
+            _.end(() => resume(Effect.unit)),
           ),
-      ),
+      }),
       Effect.map((conn): Connection => {
         const run = (
           sql: string,
@@ -116,21 +116,15 @@ export const make = (
           Effect.async<never, SqlError, any>(resume =>
             conn.execute({ sql, values, rowsAsArray }, (error, result: any) => {
               if (error) {
-                resume(
-                  Debug.untraced(() =>
-                    Effect.fail(SqlError(error.message, error)),
-                  ),
-                )
+                resume(Effect.fail(SqlError(error.message, error)))
               } else if (
                 transform &&
                 !rowsAsArray &&
                 options.transformResultNames
               ) {
-                resume(
-                  Debug.untraced(() => Effect.succeed(transformRows(result))),
-                )
+                resume(Effect.succeed(transformRows(result)))
               } else {
-                resume(Debug.untraced(() => Effect.succeed(result)))
+                resume(Effect.succeed(result))
               }
             }),
           )
@@ -159,12 +153,12 @@ export const make = (
     )
 
     const pool = yield* _(
-      Pool.makeWithTTL(
-        makeConnection,
-        options.minConnections ?? 1,
-        options.maxConnections ?? 10,
-        options.connectionTTL ?? minutes(45),
-      ),
+      Pool.makeWithTTL({
+        acquire: makeConnection,
+        min: options.minConnections ?? 1,
+        max: options.maxConnections ?? 10,
+        timeToLive: options.connectionTTL ?? Duration.minutes(45),
+      }),
     )
 
     return Object.assign(

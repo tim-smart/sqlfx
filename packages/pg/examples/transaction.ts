@@ -21,6 +21,6 @@ const program = Effect.gen(function* (_) {
 pipe(
   program,
   Effect.provideLayer(PgLive),
-  Effect.tapErrorCause(Effect.logErrorCause),
+  Effect.tapErrorCause(Effect.logCause({ level: "Error" })),
   Effect.runFork,
 )

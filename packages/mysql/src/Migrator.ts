@@ -98,7 +98,7 @@ export const run: (
     const dumpMigrations = mysqlDump(["--no-create-info", "--tables", table])
 
     const dumpAll = Effect.map(
-      Effect.zipPar(dumpSchema, dumpMigrations),
+      Effect.all(dumpSchema, dumpMigrations, { concurrency: 2 }),
       ([schema, migrations]) => schema + "\n\n" + migrations,
     )
 
