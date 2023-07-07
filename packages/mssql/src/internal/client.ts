@@ -20,7 +20,7 @@ import { SqlError } from "@sqlfx/sql/Error"
 import type { Primitive as _Primitive } from "@sqlfx/sql/Statement"
 import * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
-import * as sqlClient from "@sqlfx/sql/internal_effect_untraced/client"
+import * as sqlClient from "@sqlfx/sql/internal/client"
 import * as Tedious from "tedious"
 
 /** @internal */
