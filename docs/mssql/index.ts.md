@@ -44,11 +44,11 @@ export interface MssqlClientConfig {
   readonly database?: string
   readonly username?: string
   readonly password?: ConfigSecret.ConfigSecret
-  readonly connectTimeout?: Duration
+  readonly connectTimeout?: DurationInput
 
   readonly minConnections?: number
   readonly maxConnections?: number
-  readonly connectionTTL?: Duration
+  readonly connectionTTL?: DurationInput
 
   readonly parameterTypes?: Record<Statement.PrimitiveKind, Tedious.TediousType>
 

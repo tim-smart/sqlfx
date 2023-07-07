@@ -35,9 +35,17 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const compile: <I extends Record<string, any>, O extends Record<string, any>, A>(
+export declare const compile: <
+  I extends Record<string, Parameter.Parameter<any>>,
+  O extends Record<string, Parameter.Parameter<any>>,
+  A
+>(
   self: Procedure<I, O, A>
-) => (input: { readonly [K in keyof I]: I[K] extends any ? T : never }) => ProcedureWithValues<I, O, A>
+) => (input: { readonly [K in keyof I]: I[K] extends Parameter.Parameter<infer T> ? T : never }) => ProcedureWithValues<
+  I,
+  O,
+  A
+>
 ```
 
 Added in v1.0.0
@@ -50,10 +58,14 @@ Added in v1.0.0
 export declare const outputParam: <A>() => <N extends string, T extends Tedious.TediousType>(
   name: N,
   type: T,
-  options?: Tedious.ParameterOptions | undefined
-) => <I extends Record<string, any>, O extends Record<string, any>>(
+  options?: Tedious.ParameterOptions
+) => <I extends Record<string, Parameter.Parameter<any>>, O extends Record<string, Parameter.Parameter<any>>>(
   self: Procedure<I, O, never>
-) => Procedure<I, { [K in keyof (O & { [K in N]: any })]: (O & { [K in N]: any })[K] }, never>
+) => Procedure<
+  I,
+  { [K in keyof (O & { [K in N]: Parameter.Parameter<A> })]: (O & { [K in N]: Parameter.Parameter<A> })[K] },
+  never
+>
 ```
 
 Added in v1.0.0
@@ -66,10 +78,14 @@ Added in v1.0.0
 export declare const param: <A>() => <N extends string, T extends Tedious.TediousType>(
   name: N,
   type: T,
-  options?: Tedious.ParameterOptions | undefined
-) => <I extends Record<string, any>, O extends Record<string, any>>(
+  options?: Tedious.ParameterOptions
+) => <I extends Record<string, Parameter.Parameter<any>>, O extends Record<string, Parameter.Parameter<any>>>(
   self: Procedure<I, O, never>
-) => Procedure<{ [K in keyof (I & { [K in N]: any })]: (I & { [K in N]: any })[K] }, O, never>
+) => Procedure<
+  { [K in keyof (I & { [K in N]: Parameter.Parameter<A> })]: (I & { [K in N]: Parameter.Parameter<A> })[K] },
+  O,
+  never
+>
 ```
 
 Added in v1.0.0
@@ -80,8 +96,8 @@ Added in v1.0.0
 
 ```ts
 export declare const withRows: <A extends object = Row>() => <
-  I extends Record<string, any>,
-  O extends Record<string, any>
+  I extends Record<string, Parameter.Parameter<any>>,
+  O extends Record<string, Parameter.Parameter<any>>
 >(
   self: Procedure<I, O, never>
 ) => Procedure<I, O, A>

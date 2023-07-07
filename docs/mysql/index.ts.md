@@ -45,11 +45,11 @@ export interface MysqlClientConfig {
   readonly username?: string
   readonly password?: ConfigSecret.ConfigSecret
 
-  readonly connectTimeout?: Duration
+  readonly connectTimeout?: Duration.DurationInput
 
   readonly minConnections?: number
   readonly maxConnections?: number
-  readonly connectionTTL?: Duration
+  readonly connectionTTL?: Duration.DurationInput
 
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string

@@ -125,8 +125,8 @@ Added in v1.0.0
 ```ts
 export declare const join: (
   literal: string,
-  addParens?: boolean | undefined,
-  fallback?: string | undefined
+  addParens?: boolean,
+  fallback?: string
 ) => (clauses: ReadonlyArray<string | Fragment>) => Fragment
 ```
 
@@ -396,7 +396,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Statement<A> extends Fragment, Effect<never, SqlError, ReadonlyArray<A>> {
+export interface Statement<A>
+  extends Fragment,
+    Equal,
+    Pipeable<Statement<A>>,
+    Effect.Variance<never, SqlError, ReadonlyArray<A>> {
   readonly withoutTransform: Effect<never, SqlError, ReadonlyArray<A>>
   readonly values: Effect<never, SqlError, ReadonlyArray<ReadonlyArray<Primitive>>>
   readonly compile: Effect<never, SqlError, readonly [sql: string, params: ReadonlyArray<Primitive>]>

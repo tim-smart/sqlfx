@@ -1,5 +1,5 @@
 {
-  "exclude": ["src/internal_effect_untraced/**/*.ts"],
+  "exclude": ["src/internal/**/*.ts"],
   "theme": "mikearnaldi/just-the-docs",
   "parseCompilerOptions": {
     "noEmit": true,

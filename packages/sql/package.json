@@ -30,7 +30,7 @@
     "build-all": "tsc -b tsconfig.json",
     "build-watch": "tsc -b tsconfig.json --watch",
     "circular": "madge --ts-config ./tsconfig.madge.json --circular --no-color --no-spinner --warning build/esm",
-    "docs": "docs-ts",
+    "docs": "docgen",
     "lint": "eslint --ext .ts,.tsx src/**/* test/**/*",
     "tc": "tsc --noEmit",
     "test": "vitest",

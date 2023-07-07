@@ -44,12 +44,12 @@ export interface PgClientConfig {
   readonly username?: string
   readonly password?: ConfigSecret.ConfigSecret
 
-  readonly idleTimeout?: Duration
-  readonly connectTimeout?: Duration
+  readonly idleTimeout?: Duration.DurationInput
+  readonly connectTimeout?: Duration.DurationInput
 
   readonly minConnections?: number
   readonly maxConnections?: number
-  readonly connectionTTL?: Duration
+  readonly connectionTTL?: Duration.DurationInput
 
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
