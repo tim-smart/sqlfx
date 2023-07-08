@@ -34,7 +34,7 @@ importers:
         version: 0.2.0(@babel/core@7.22.8)
       '@effect/docgen':
         specifier: ^0.1.2
-        version: 0.1.2(@types/node@20.4.0)(typescript@5.1.6)
+        version: 0.1.2(@types/node@20.4.1)(typescript@5.1.6)
       '@effect/language-service':
         specifier: 0.0.19
         version: 0.0.19
@@ -42,8 +42,8 @@ importers:
         specifier: ^5.0.2
         version: 5.0.2
       '@types/node':
-        specifier: ^20.4.0
-        version: 20.4.0
+        specifier: ^20.4.1
+        version: 20.4.1
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.61.0
         version: 5.61.0(@typescript-eslint/parser@5.61.0)(eslint@8.44.0)(typescript@5.1.6)
@@ -52,7 +52,7 @@ importers:
         version: 5.61.0(eslint@8.44.0)(typescript@5.1.6)
       '@vitejs/plugin-react':
         specifier: ^4.0.2
-        version: 4.0.2(vite@4.4.1)
+        version: 4.0.2(vite@4.4.2)
       '@vitest/coverage-c8':
         specifier: ^0.33.0
         version: 0.33.0(vitest@0.33.0)
@@ -90,14 +90,14 @@ importers:
         specifier: ^6.1.0
         version: 6.1.0(typescript@5.1.6)
       prettier:
-        specifier: ^2.8.8
-        version: 2.8.8
+        specifier: ^3.0.0
+        version: 3.0.0
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.4.0)(typescript@5.1.6)
+        version: 10.9.1(@types/node@20.4.1)(typescript@5.1.6)
       typescript:
         specifier: ^5.1.6
         version: 5.1.6
@@ -105,8 +105,8 @@ importers:
         specifier: ^3.10.5
         version: 3.10.5
       vite:
-        specifier: ^4.4.1
-        version: 4.4.1(@types/node@20.4.0)
+        specifier: ^4.4.2
+        version: 4.4.2(@types/node@20.4.1)
       vitest:
         specifier: 0.33.0
         version: 0.33.0
@@ -114,11 +114,11 @@ importers:
   packages/mssql:
     dependencies:
       '@effect/data':
-        specifier: ^0.13.3
-        version: 0.13.3
+        specifier: ^0.13.5
+        version: 0.13.5
       '@effect/io':
-        specifier: ^0.31.1
-        version: 0.31.1
+        specifier: ^0.31.3
+        version: 0.31.3
       '@sqlfx/sql':
         specifier: workspace:*
         version: link:../sql/dist
@@ -133,18 +133,18 @@ importers:
         specifier: ^4.0.9
         version: 4.0.9
       effect-schema-class:
-        specifier: ^0.4.0
-        version: 0.4.0
+        specifier: ^0.5.0
+        version: 0.5.0
     publishDirectory: dist
 
   packages/mysql:
     dependencies:
       '@effect/data':
-        specifier: ^0.13.3
-        version: 0.13.3
+        specifier: ^0.13.5
+        version: 0.13.5
       '@effect/io':
-        specifier: ^0.31.1
-        version: 0.31.1
+        specifier: ^0.31.3
+        version: 0.31.3
       '@sqlfx/sql':
         specifier: workspace:*
         version: link:../sql/dist
@@ -156,18 +156,18 @@ importers:
         specifier: ^0.25.0
         version: 0.25.0
       effect-schema-class:
-        specifier: ^0.4.0
-        version: 0.4.0
+        specifier: ^0.5.0
+        version: 0.5.0
     publishDirectory: dist
 
   packages/pg:
     dependencies:
       '@effect/data':
-        specifier: ^0.13.3
-        version: 0.13.3
+        specifier: ^0.13.5
+        version: 0.13.5
       '@effect/io':
-        specifier: ^0.31.1
-        version: 0.31.1
+        specifier: ^0.31.3
+        version: 0.31.3
       '@sqlfx/sql':
         specifier: workspace:*
         version: link:../sql/dist
@@ -179,18 +179,18 @@ importers:
         specifier: ^0.25.0
         version: 0.25.0
       effect-schema-class:
-        specifier: ^0.4.0
-        version: 0.4.0
+        specifier: ^0.5.0
+        version: 0.5.0
     publishDirectory: dist
 
   packages/sql:
     dependencies:
       '@effect/data':
-        specifier: ^0.13.3
-        version: 0.13.3
+        specifier: ^0.13.5
+        version: 0.13.5
       '@effect/io':
-        specifier: ^0.31.1
-        version: 0.31.1
+        specifier: ^0.31.3
+        version: 0.31.3
       '@effect/schema':
         specifier: ^0.25.0
         version: 0.25.0
@@ -199,11 +199,11 @@ importers:
   packages/sqlite:
     dependencies:
       '@effect/data':
-        specifier: ^0.13.3
-        version: 0.13.3
+        specifier: ^0.13.5
+        version: 0.13.5
       '@effect/io':
-        specifier: ^0.31.1
-        version: 0.31.1
+        specifier: ^0.31.3
+        version: 0.31.3
       '@sqlfx/sql':
         specifier: workspace:*
         version: link:../sql/dist
@@ -222,18 +222,18 @@ importers:
         specifier: ^7.6.4
         version: 7.6.4
       effect-schema-class:
-        specifier: ^0.4.0
-        version: 0.4.0
+        specifier: ^0.5.0
+        version: 0.5.0
     publishDirectory: dist
 
   packages/sqlite-wasm-example:
     dependencies:
       '@effect/data':
-        specifier: ^0.13.3
-        version: 0.13.3
+        specifier: ^0.13.5
+        version: 0.13.5
       '@effect/io':
-        specifier: ^0.31.1
-        version: 0.31.1
+        specifier: ^0.31.3
+        version: 0.31.3
       '@sqlfx/sqlite':
         specifier: workspace:*
         version: link:../sqlite/dist
@@ -242,8 +242,8 @@ importers:
         specifier: ^5.1.6
         version: 5.1.6
       vite:
-        specifier: ^4.4.1
-        version: 4.4.1(@types/node@20.4.0)
+        specifier: ^4.4.2
+        version: 4.4.2(@types/node@20.4.1)
 
 packages:
 
@@ -1001,14 +1001,10 @@ packages:
       '@babel/core': 7.22.8
     dev: true
 
-  /@effect/data@0.12.10:
-    resolution: {integrity: sha512-zIz/DgumH2LgGdr1Wc9ChET5JSG0k/G5kDc8rn4a6yIJ0v2d5rfnbRWIJO2fWmdFvc+128JyaBvYguIyz9JaAQ==}
-    dev: true
+  /@effect/data@0.13.5:
+    resolution: {integrity: sha512-s9HYZkRHkN3doqOy+ICSKMr33hTe+YSod34Twt9oDI2OWgxoynsVjQ1gpM/BDn92SHv3Rgz6KTmVBKqYaqh/mQ==}
 
-  /@effect/data@0.13.3:
-    resolution: {integrity: sha512-hKzt/vVl2yw0OHqLP6ufATDi061mh/RV4iSveTUXLiKmktzCjcC9zd57wqsNqS3JkeF20CQr55f5Se3cNPGYmw==}
-
-  /@effect/docgen@0.1.2(@types/node@20.4.0)(typescript@5.1.6):
+  /@effect/docgen@0.1.2(@types/node@20.4.1)(typescript@5.1.6):
     resolution: {integrity: sha512-qy1pA8SKsqla7/35Q2NuUeT/VwO/olg9hdmmY929wSrKhRVVPOmnF4cbCvFxbykikYek0/6/thupSUenYV0DvQ==}
     engines: {node: '>=16.17.1'}
     hasBin: true
@@ -1023,7 +1019,7 @@ packages:
       prettier: 2.8.8
       rimraf: 5.0.1
       ts-morph: 19.0.0
-      ts-node: 10.9.1(@types/node@20.4.0)(typescript@5.1.6)
+      ts-node: 10.9.1(@types/node@20.4.1)(typescript@5.1.6)
       typescript: 5.1.6
     transitivePeerDependencies:
       - '@swc/core'
@@ -1031,16 +1027,10 @@ packages:
       - '@types/node'
     dev: true
 
-  /@effect/io@0.26.2:
-    resolution: {integrity: sha512-PdqtgmfEw88kX1UKZZvK42dpMZPSCPmdWAAzN17yCzfEsA3HoPjjxo9jLyzfjtUcU+tWO0tF/GY7pcDVLcJZAg==}
+  /@effect/io@0.31.3:
+    resolution: {integrity: sha512-v8OltakxYj+TBUYk8ZnhrcebGd8xKavZZLjZm1p/uJqnqU8EgJq1aKCHaH7H5UdMsaZIunJG1W0NL2zDtdDYbw==}
     dependencies:
-      '@effect/data': 0.12.10
-    dev: true
-
-  /@effect/io@0.31.1:
-    resolution: {integrity: sha512-fTxrwa7zr9bdGpr1f57UtSFWw9xgjCGIiG5kNuG+PGInJwANXqkTBa9izdcr3OP7mq5IzOtvPIFPIDE8r/ew5w==}
-    dependencies:
-      '@effect/data': 0.13.3
+      '@effect/data': 0.13.5
 
   /@effect/language-service@0.0.19:
     resolution: {integrity: sha512-sKNVo031dkwLfe1jHZzdTiF1UXgLq1lAYd2JG7q416dlmMoxRcMXrZWyw6a/SxIDM0hyIJAEmrz5iUkQPcPdBQ==}
@@ -1049,19 +1039,11 @@ packages:
       '@fp-ts/data': 0.0.41
     dev: true
 
-  /@effect/schema@0.20.3:
-    resolution: {integrity: sha512-pjJW9QkHZd2/fq7Bhd6pAOidMJ0OUODOeUlesPDK0jpo62AaU9g+IGXt3v5NU8rXSX77igZgfK08XhmofwHn0A==}
-    dependencies:
-      '@effect/data': 0.12.10
-      '@effect/io': 0.26.2
-      fast-check: 3.10.0
-    dev: true
-
   /@effect/schema@0.25.0:
     resolution: {integrity: sha512-nJ674r65cqlv6+5jgjUT28oeNnfG/xkk/XduVb0ZF6Cd5rX7GqZp8cKObNwVLTNLJjMqS4N2rHhS8JtgLv88aw==}
     dependencies:
-      '@effect/data': 0.13.3
-      '@effect/io': 0.31.1
+      '@effect/data': 0.13.5
+      '@effect/io': 0.31.3
       fast-check: 3.11.0
 
   /@esbuild/android-arm64@0.18.11:
@@ -1359,7 +1341,7 @@ packages:
     dependencies:
       '@types/istanbul-lib-coverage': 2.0.4
       '@types/istanbul-reports': 3.0.1
-      '@types/node': 20.4.0
+      '@types/node': 20.4.1
       '@types/yargs': 15.0.15
       chalk: 4.1.2
     dev: true
@@ -1545,7 +1527,7 @@ packages:
   /@types/better-sqlite3@7.6.4:
     resolution: {integrity: sha512-dzrRZCYPXIXfSR1/surNbJ/grU3scTaygS0OMzjlGf71i9sc2fGyHPXXiXmEvNIoE0cGwsanEFMVJxPXmco9Eg==}
     dependencies:
-      '@types/node': 20.4.0
+      '@types/node': 20.4.1
     dev: true
 
   /@types/chai-subset@1.3.3:
@@ -1600,8 +1582,8 @@ packages:
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
     dev: true
 
-  /@types/node@20.4.0:
-    resolution: {integrity: sha512-jfT7iTf/4kOQ9S7CHV9BIyRaQqHu67mOjsIQBC3BKZvzvUB6zLxEwJ6sBE3ozcvP8kF6Uk5PXN0Q+c0dfhGX0g==}
+  /@types/node@20.4.1:
+    resolution: {integrity: sha512-JIzsAvJeA/5iY6Y/OxZbv1lUcc8dNSE77lb2gnBH+/PJ3lFR1Ccvgwl5JWnHAkNHcRsT0TbpVOsiMKZ1F/yyJg==}
     dev: true
 
   /@types/normalize-package-data@2.4.1:
@@ -1619,7 +1601,7 @@ packages:
   /@types/tedious@4.0.9:
     resolution: {integrity: sha512-ipwFvfy9b2m0gjHsIX0D6NAAwGCKokzf5zJqUZHUGt+7uWVlBIy6n2eyMgiKQ8ChLFVxic/zwQUhjLYNzbHDRA==}
     dependencies:
-      '@types/node': 20.4.0
+      '@types/node': 20.4.1
     dev: true
 
   /@types/yargs-parser@21.0.0:
@@ -1879,7 +1861,7 @@ packages:
       eslint-visitor-keys: 3.4.1
     dev: true
 
-  /@vitejs/plugin-react@4.0.2(vite@4.4.1):
+  /@vitejs/plugin-react@4.0.2(vite@4.4.2):
     resolution: {integrity: sha512-zbnVp3Esfg33zDaoLrjxG+p/dPiOtpvJA+1oOEQwSxMMTRL9zi1eghIcd2WtLjkcKnPsa3S15LzS/OzDn2BOCA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
@@ -1889,7 +1871,7 @@ packages:
       '@babel/plugin-transform-react-jsx-self': 7.22.5(@babel/core@7.22.8)
       '@babel/plugin-transform-react-jsx-source': 7.22.5(@babel/core@7.22.8)
       react-refresh: 0.14.0
-      vite: 4.4.1(@types/node@20.4.0)
+      vite: 4.4.2(@types/node@20.4.1)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -3193,12 +3175,12 @@ packages:
       safe-buffer: 5.2.1
     dev: false
 
-  /effect-schema-class@0.4.0:
-    resolution: {integrity: sha512-LYO1AFK3+mXIrOi6iwHtjErKNj9LvM8Jcwj7fRs5nNEozbOgIWFbcy6voE95AznR4OVa8lUsnIHRUiOp0KHR4A==}
+  /effect-schema-class@0.5.0:
+    resolution: {integrity: sha512-d+TlF8JJ3+H/mEFYoagkuHVa2W/xbqWi3qxKuxuc37ogBcMHb1I6oxJnQcL8ijvAgUNw9Mr15qyNeivhdALNsw==}
     dependencies:
-      '@effect/data': 0.12.10
-      '@effect/io': 0.26.2
-      '@effect/schema': 0.20.3
+      '@effect/data': 0.13.5
+      '@effect/io': 0.31.3
+      '@effect/schema': 0.25.0
     dev: true
 
   /electron-to-chromium@1.4.453:
@@ -3787,13 +3769,6 @@ packages:
       to-regex: 3.0.2
     transitivePeerDependencies:
       - supports-color
-    dev: true
-
-  /fast-check@3.10.0:
-    resolution: {integrity: sha512-I2FldZwnCbcY6iL+H0rp9m4D+O3PotuFu9FasWjMCzUedYHMP89/37JbSt6/n7Yq/IZmJDW0B2h30sPYdzrfzw==}
-    engines: {node: '>=8.0.0'}
-    dependencies:
-      pure-rand: 6.0.2
     dev: true
 
   /fast-check@3.11.0:
@@ -6193,6 +6168,12 @@ packages:
     hasBin: true
     dev: true
 
+  /prettier@3.0.0:
+    resolution: {integrity: sha512-zBf5eHpwHOGPC47h0zrPyNn+eAEIdEzfywMoYn2XPi0P44Zp0tSq64rq0xAREh4auw2cJZHo9QUob+NqCQky4g==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dev: true
+
   /pretty-format@26.6.2:
     resolution: {integrity: sha512-7AeGuCYNGmycyQbCqd/3PWH4eOoX/OiCa0uphp57NVTeAGdJGaAliecxwBDHYQCIvrW7aDBZCYeNTP/WX69mkg==}
     engines: {node: '>= 10'}
@@ -7196,7 +7177,7 @@ packages:
       code-block-writer: 12.0.0
     dev: true
 
-  /ts-node@10.9.1(@types/node@20.4.0)(typescript@5.1.6):
+  /ts-node@10.9.1(@types/node@20.4.1)(typescript@5.1.6):
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
     peerDependencies:
@@ -7215,7 +7196,7 @@ packages:
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.3
-      '@types/node': 20.4.0
+      '@types/node': 20.4.1
       acorn: 8.8.2
       acorn-walk: 8.2.0
       arg: 4.1.3
@@ -7503,7 +7484,7 @@ packages:
       spdx-expression-parse: 3.0.1
     dev: true
 
-  /vite-node@0.33.0(@types/node@20.4.0):
+  /vite-node@0.33.0(@types/node@20.4.1):
     resolution: {integrity: sha512-19FpHYbwWWxDr73ruNahC+vtEdza52kA90Qb3La98yZ0xULqV8A5JLNPUff0f5zID4984tW7l3DH2przTJUZSw==}
     engines: {node: '>=v14.18.0'}
     hasBin: true
@@ -7513,7 +7494,7 @@ packages:
       mlly: 1.4.0
       pathe: 1.1.1
       picocolors: 1.0.0
-      vite: 4.4.1(@types/node@20.4.0)
+      vite: 4.4.2(@types/node@20.4.1)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -7525,8 +7506,8 @@ packages:
       - terser
     dev: true
 
-  /vite@4.4.1(@types/node@20.4.0):
-    resolution: {integrity: sha512-8mmwPlsy7t+ZcTme7vdbVGuZ3Tri+lrLXr6hsF5UHdyYyARPPPMtM16QlqC9TZuCd5j3NmWs1rwka3cVSRHZTw==}
+  /vite@4.4.2(@types/node@20.4.1):
+    resolution: {integrity: sha512-zUcsJN+UvdSyHhYa277UHhiJ3iq4hUBwHavOpsNUGsTgjBeoBlK8eDt+iT09pBq0h9/knhG/SPrZiM7cGmg7NA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -7553,7 +7534,7 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 20.4.0
+      '@types/node': 20.4.1
       esbuild: 0.18.11
       postcss: 8.4.25
       rollup: 3.26.2
@@ -7594,7 +7575,7 @@ packages:
     dependencies:
       '@types/chai': 4.3.5
       '@types/chai-subset': 1.3.3
-      '@types/node': 20.4.0
+      '@types/node': 20.4.1
       '@vitest/expect': 0.33.0
       '@vitest/runner': 0.33.0
       '@vitest/snapshot': 0.33.0
@@ -7613,8 +7594,8 @@ packages:
       strip-literal: 1.0.1
       tinybench: 2.5.0
       tinypool: 0.6.0
-      vite: 4.4.1(@types/node@20.4.0)
-      vite-node: 0.33.0(@types/node@20.4.0)
+      vite: 4.4.2(@types/node@20.4.1)
+      vite-node: 0.33.0(@types/node@20.4.1)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
       - less

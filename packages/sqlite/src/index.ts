@@ -116,9 +116,9 @@ export const make = (
         sql: string,
         params: ReadonlyArray<Statement.Primitive>,
       ) =>
-        Effect.acquireUseRelease({
-          acquire: prepareCache.get(sql).pipe(Effect.map(_ => _.raw(true))),
-          use: statement =>
+        Effect.acquireUseRelease(
+          prepareCache.get(sql).pipe(Effect.map(_ => _.raw(true))),
+          statement =>
             Effect.try({
               try: () => {
                 if (statement.reader) {
@@ -131,8 +131,8 @@ export const make = (
               },
               catch: handleError,
             }),
-          release: statement => Effect.sync(() => statement.raw(false)),
-        })
+          statement => Effect.sync(() => statement.raw(false)),
+        )
 
       return identity<
         Connection & {

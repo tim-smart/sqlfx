@@ -84,8 +84,8 @@ export const make = (
     )
 
     const makeConnection = pipe(
-      Effect.acquireRelease({
-        acquire: Effect.sync(() =>
+      Effect.acquireRelease(
+        Effect.sync(() =>
           options.url
             ? Mysql.createConnection(ConfigSecret.value(options.url))
             : Mysql.createConnection({
@@ -101,11 +101,11 @@ export const make = (
                   : undefined,
               }),
         ),
-        release: _ =>
+        _ =>
           Effect.async<never, never, void>(resume =>
             _.end(() => resume(Effect.unit)),
           ),
-      }),
+      ),
       Effect.map((conn): Connection => {
         const run = (
           sql: string,

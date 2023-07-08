@@ -146,15 +146,15 @@ export const make =
                   }),
                 ),
           ),
-          Effect.filterOrFail({
-            filter: (_): _ is Effect.Effect<never, never, unknown> =>
+          Effect.filterOrFail(
+            (_): _ is Effect.Effect<never, never, unknown> =>
               Effect.isEffect(_),
-            orFailWith: () =>
+            () =>
               MigrationError({
                 reason: "import-error",
                 message: `Default export was not an Effect for migration "${id}_${name}"`,
               }),
-          }),
+          ),
         )
 
       const runMigration = (

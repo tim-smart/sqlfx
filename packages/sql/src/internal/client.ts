@@ -44,8 +44,8 @@ export function make({
     effect: Effect.Effect<R, E, A>,
   ): Effect.Effect<R, E | SqlError, A> =>
     Effect.scoped(
-      Effect.acquireUseRelease({
-        acquire: pipe(
+      Effect.acquireUseRelease(
+        pipe(
           Effect.serviceOption(TransactionConn),
           Effect.flatMap(
             Option.match({
@@ -61,9 +61,9 @@ export function make({
               : conn.executeRaw(beginTransaction),
           ),
         ),
-        use: ([conn, id]) =>
+        ([conn, id]) =>
           Effect.provideService(effect, TransactionConn, [conn, id]),
-        release: ([conn, id], exit) =>
+        ([conn, id], exit) =>
           Exit.isSuccess(exit)
             ? id > 0
               ? Effect.unit
@@ -71,7 +71,7 @@ export function make({
             : id > 0
             ? Effect.orDie(conn.executeRaw(rollbackSavepoint(`sqlfx${id}`)))
             : Effect.orDie(conn.executeRaw(rollback)),
-      }),
+      ),
     )
 
   function schema<II, IA, AI, A, R, E>(
@@ -319,10 +319,10 @@ export function make({
         pipe(
           encodeRequests(requests.map(_ => _.i0)),
           Effect.flatMap(options.run),
-          Effect.filterOrFail({
-            filter: results => results.length === requests.length,
-            orFailWith: _ => ResultLengthMismatch(requests.length, _.length),
-          }),
+          Effect.filterOrFail(
+            results => results.length === requests.length,
+            _ => ResultLengthMismatch(requests.length, _.length),
+          ),
           Effect.flatMap(results =>
             Effect.forEach(results, (result, i) =>
               pipe(

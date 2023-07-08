@@ -275,8 +275,8 @@ export const make = (
       effect: Effect.Effect<R, E, A>,
     ): Effect.Effect<R, E | SqlError, A> =>
       Effect.scoped(
-        Effect.acquireUseRelease({
-          acquire: pipe(
+        Effect.acquireUseRelease(
+          pipe(
             Effect.serviceOption(TransactionConn),
             Effect.flatMap(
               Option.match({
@@ -289,15 +289,15 @@ export const make = (
               id > 0 ? conn.savepoint(`sqlfx${id}`) : conn.begin,
             ),
           ),
-          use: ([conn, id]) =>
+          ([conn, id]) =>
             Effect.provideService(effect, TransactionConn, [conn, id + 1]),
-          release: ([conn, id], exit) =>
+          ([conn, id], exit) =>
             Exit.isSuccess(exit)
               ? id > 0
                 ? Effect.unit
                 : Effect.orDie(conn.commit)
               : Effect.orDie(conn.rollback(id > 0 ? `sqlfx${id}` : undefined)),
-        }),
+        ),
       )
 
     return Object.assign(

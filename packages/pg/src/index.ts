@@ -114,14 +114,14 @@ export const make = (
     }
 
     const makeConnection = pipe(
-      Effect.acquireRelease({
-        acquire: Effect.sync(() =>
+      Effect.acquireRelease(
+        Effect.sync(() =>
           options.url
             ? postgres(ConfigSecret.value(options.url), opts)
             : postgres(opts),
         ),
-        release: pg => Effect.promise(() => pg.end()),
-      }),
+        pg => Effect.promise(() => pg.end()),
+      ),
       Effect.map((pg): Connection => {
         const run = (query: PendingQuery<any> | PendingValuesQuery<any>) =>
           Effect.asyncInterrupt<never, SqlError, ReadonlyArray<any>>(resume => {
