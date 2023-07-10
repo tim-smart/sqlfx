@@ -4,7 +4,7 @@
 import type { Effect } from "@effect/io/Effect"
 import * as internal from "@sqlfx/sql/internal/statement"
 import type { Equal } from "@effect/data/Equal"
-import type { Pipeable } from "@effect/data/Pipeable"
+import type { PipeableOverride } from "@effect/data/Pipeable"
 import type { Connection, Row } from "./Connection"
 import type { SqlError } from "./Error"
 
@@ -36,8 +36,7 @@ export interface Fragment {
 export interface Statement<A>
   extends Fragment,
     Equal,
-    Pipeable<Statement<A>>,
-    Effect.Variance<never, SqlError, ReadonlyArray<A>> {
+    PipeableOverride<Effect<never, SqlError, ReadonlyArray<A>>, Statement<A>> {
   readonly withoutTransform: Effect<never, SqlError, ReadonlyArray<A>>
   readonly values: Effect<
     never,
