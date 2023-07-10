@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.7.2
+
+### Patch Changes
+
+- [`8e08228`](https://github.com/tim-smart/sqlfx/commit/8e08228c8f3bc02ffceeec3a4599c9178cd4bb7e) Thanks [@tim-smart](https://github.com/tim-smart)! - fix Statement extending effect
+
 ## 0.7.1
 
 ### Patch Changes
