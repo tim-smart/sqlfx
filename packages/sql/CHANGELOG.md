@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.8.0
+
+### Minor Changes
+
+- [`81108d7`](https://github.com/tim-smart/sqlfx/commit/81108d722f4398314dcf2d4263e320df1580e475) Thanks [@tim-smart](https://github.com/tim-smart)! - update deps
+
 ## 0.7.2
 
 ### Patch Changes
