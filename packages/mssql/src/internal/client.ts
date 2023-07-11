@@ -231,6 +231,7 @@ export const make = (
         }),
         savepoint: (name: string) =>
           Effect.async<never, SqlError, void>(resume => {
+            // eslint-disable-next-line no-extra-semi
             ;(conn.saveTransaction as any)((err: Error) => {
               if (err) {
                 resume(Effect.fail(SqlError(err.message, err)))
@@ -241,7 +242,7 @@ export const make = (
           }),
         rollback: (name?: string) =>
           Effect.async<never, SqlError, void>(resume => {
-            ;(conn.rollbackTransaction as any)((err: Error) => {
+            (conn.rollbackTransaction as any)((err: Error) => {
               if (err) {
                 resume(Effect.fail(SqlError(err.message, err)))
               } else {
