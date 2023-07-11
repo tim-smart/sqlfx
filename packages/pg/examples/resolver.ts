@@ -35,9 +35,11 @@ const program = Effect.gen(function* (_) {
 
   const inserted = yield* _(
     Effect.all(
-      Insert.execute({ name: "John Doe" }),
-      Insert.execute({ name: "Joe Bloggs" }),
-      { batched: true },
+      [
+        Insert.execute({ name: "John Doe" }),
+        Insert.execute({ name: "Joe Bloggs" }),
+      ],
+      { batching: true },
     ),
   )
 

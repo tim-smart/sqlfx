@@ -175,7 +175,7 @@ export const make =
         yield* _(lockTable(sql, table))
 
         const [latestMigrationId, current] = yield* _(
-          Effect.all(
+          Effect.all([
             Effect.map(
               latestMigration,
               Option.match({
@@ -184,7 +184,7 @@ export const make =
               }),
             ),
             loader,
-          ),
+          ]),
         )
 
         if (new Set(current.map(([id]) => id)).size !== current.length) {

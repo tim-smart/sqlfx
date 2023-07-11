@@ -89,7 +89,7 @@ export const run: (
       ])
 
       const dumpAll = Effect.map(
-        Effect.all(dumpSchema, dumpMigrations, { concurrency: 2 }),
+        Effect.all([dumpSchema, dumpMigrations], { concurrency: 2 }),
         ([schema, migrations]) => schema + "\n\n" + migrations,
       )
 
