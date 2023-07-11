@@ -58,9 +58,9 @@
     "better-sqlite3": "^8.4.0"
   },
   "devDependencies": {
-    "@effect/schema": "^0.25.0",
+    "@effect/schema": "^0.26.0",
     "@types/better-sqlite3": "^7.6.4",
-    "effect-schema-class": "^0.5.0"
+    "effect-schema-class": "^0.6.0"
   },
   "optionalDependencies": {
     "@sqlite.org/sqlite-wasm": "3.42.0-build2"
