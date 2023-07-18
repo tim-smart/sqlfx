@@ -230,7 +230,7 @@ export const make =
             required,
             ([id, name, effect]) =>
               pipe(
-                Effect.log(`Running migration`, "Debug"),
+                Effect.logDebug(`Running migration`),
                 Effect.zipRight(runMigration(id, name, effect)),
                 Effect.annotateLogs("migration_id", String(id)),
                 Effect.annotateLogs("migration_name", name),
@@ -243,10 +243,10 @@ export const make =
           latestMigration,
           Effect.flatMap(
             Option.match({
-              onNone: () => Effect.log(`Migrations complete`, "Debug"),
+              onNone: () => Effect.logDebug(`Migrations complete`),
               onSome: _ =>
                 pipe(
-                  Effect.log(`Migrations complete`, "Debug"),
+                  Effect.logDebug(`Migrations complete`),
                   Effect.annotateLogs("latest_migration_id", _.id.toString()),
                   Effect.annotateLogs("latest_migration_name", _.name),
                 ),
@@ -263,7 +263,7 @@ export const make =
         sql.withTransaction(run),
         Effect.catchTag("MigrationError", _ =>
           _.reason === "locked"
-            ? Effect.as(Effect.log(_.message, "Debug"), [])
+            ? Effect.as(Effect.logDebug(_.message), [])
             : Effect.fail(_),
         ),
       )
@@ -312,7 +312,7 @@ export const fromDisk = (directory: string): Loader =>
     ),
     Effect.catchAllDefect(_ =>
       Effect.as(
-        Effect.log(`Could not load migrations from disk: ${_}`, "Debug"),
+        Effect.logDebug(`Could not load migrations from disk: ${_}`),
         [],
       ),
     ),
