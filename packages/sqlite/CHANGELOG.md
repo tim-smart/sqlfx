@@ -1,5 +1,16 @@
 # @sqlfx/sqlite
 
+## 0.11.0
+
+### Minor Changes
+
+- [`a20c8a2`](https://github.com/tim-smart/sqlfx/commit/a20c8a2f30da762b61a5c0165f639fc4cdaf6100) Thanks [@tim-smart](https://github.com/tim-smart)! - update dependencies
+
+### Patch Changes
+
+- Updated dependencies [[`a20c8a2`](https://github.com/tim-smart/sqlfx/commit/a20c8a2f30da762b61a5c0165f639fc4cdaf6100)]:
+  - @sqlfx/sql@0.12.0
+
 ## 0.10.0
 
 ### Minor Changes
