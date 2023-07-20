@@ -117,8 +117,8 @@ importers:
         specifier: ^0.16.0
         version: 0.16.0
       '@effect/io':
-        specifier: ^0.35.0
-        version: 0.35.0
+        specifier: ^0.35.1
+        version: 0.35.1
       '@sqlfx/sql':
         specifier: workspace:*
         version: link:../sql/dist
@@ -127,14 +127,14 @@ importers:
         version: 16.2.0
     devDependencies:
       '@effect/schema':
-        specifier: ^0.29.0
-        version: 0.29.0
+        specifier: ^0.30.0
+        version: 0.30.0
       '@types/tedious':
         specifier: ^4.0.9
         version: 4.0.9
       effect-schema-class:
-        specifier: ^0.8.0
-        version: 0.8.0
+        specifier: ^0.10.0
+        version: 0.10.0
     publishDirectory: dist
 
   packages/mysql:
@@ -143,8 +143,8 @@ importers:
         specifier: ^0.16.0
         version: 0.16.0
       '@effect/io':
-        specifier: ^0.35.0
-        version: 0.35.0
+        specifier: ^0.35.1
+        version: 0.35.1
       '@sqlfx/sql':
         specifier: workspace:*
         version: link:../sql/dist
@@ -153,11 +153,11 @@ importers:
         version: 3.5.2
     devDependencies:
       '@effect/schema':
-        specifier: ^0.29.0
-        version: 0.29.0
+        specifier: ^0.30.0
+        version: 0.30.0
       effect-schema-class:
-        specifier: ^0.8.0
-        version: 0.8.0
+        specifier: ^0.10.0
+        version: 0.10.0
     publishDirectory: dist
 
   packages/pg:
@@ -166,8 +166,8 @@ importers:
         specifier: ^0.16.0
         version: 0.16.0
       '@effect/io':
-        specifier: ^0.35.0
-        version: 0.35.0
+        specifier: ^0.35.1
+        version: 0.35.1
       '@sqlfx/sql':
         specifier: workspace:*
         version: link:../sql/dist
@@ -176,11 +176,11 @@ importers:
         version: 3.3.5
     devDependencies:
       '@effect/schema':
-        specifier: ^0.29.0
-        version: 0.29.0
+        specifier: ^0.30.0
+        version: 0.30.0
       effect-schema-class:
-        specifier: ^0.8.0
-        version: 0.8.0
+        specifier: ^0.10.0
+        version: 0.10.0
     publishDirectory: dist
 
   packages/sql:
@@ -189,11 +189,11 @@ importers:
         specifier: ^0.16.0
         version: 0.16.0
       '@effect/io':
-        specifier: ^0.35.0
-        version: 0.35.0
+        specifier: ^0.35.1
+        version: 0.35.1
       '@effect/schema':
-        specifier: ^0.29.0
-        version: 0.29.0
+        specifier: ^0.30.0
+        version: 0.30.0
     publishDirectory: dist
 
   packages/sqlite:
@@ -202,28 +202,28 @@ importers:
         specifier: ^0.16.0
         version: 0.16.0
       '@effect/io':
-        specifier: ^0.35.0
-        version: 0.35.0
+        specifier: ^0.35.1
+        version: 0.35.1
       '@sqlfx/sql':
         specifier: workspace:*
         version: link:../sql/dist
       better-sqlite3:
-        specifier: ^8.4.0
-        version: 8.4.0
+        specifier: ^8.5.0
+        version: 8.5.0
     optionalDependencies:
       '@sqlite.org/sqlite-wasm':
-        specifier: 3.42.0-build2
-        version: 3.42.0-build2
+        specifier: 3.42.0-build3
+        version: 3.42.0-build3
     devDependencies:
       '@effect/schema':
-        specifier: ^0.29.0
-        version: 0.29.0
+        specifier: ^0.30.0
+        version: 0.30.0
       '@types/better-sqlite3':
         specifier: ^7.6.4
         version: 7.6.4
       effect-schema-class:
-        specifier: ^0.8.0
-        version: 0.8.0
+        specifier: ^0.10.0
+        version: 0.10.0
     publishDirectory: dist
 
   packages/sqlite-wasm-example:
@@ -232,8 +232,8 @@ importers:
         specifier: ^0.16.0
         version: 0.16.0
       '@effect/io':
-        specifier: ^0.35.0
-        version: 0.35.0
+        specifier: ^0.35.1
+        version: 0.35.1
       '@sqlfx/sqlite':
         specifier: workspace:*
         version: link:../sqlite/dist
@@ -988,10 +988,6 @@ packages:
       '@babel/core': 7.22.9
     dev: true
 
-  /@effect/data@0.15.1:
-    resolution: {integrity: sha512-dYe3GL2Lq8M56Q+QvEOPRtpRovhy1QprlBRGIjaCRPZ8DbwRFQZSdPPOL+ZX6e7y3DPF0RW+DFLHYRMA6qGOCw==}
-    dev: true
-
   /@effect/data@0.16.0:
     resolution: {integrity: sha512-ckZ/WvvI4zZGo+vRVTRBfBi4KvY9ZjLlnDWlrfhKnAJvgDu6SI8A5FJ8c/eJphmtLWNdoQx8j9pFhWLSIQe5RQ==}
 
@@ -1018,14 +1014,8 @@ packages:
       - '@types/node'
     dev: true
 
-  /@effect/io@0.34.0:
-    resolution: {integrity: sha512-v3elB62xFAoHEXxgJIRwEChw1kLB6139TNO/wOY7nLmHrGyVbonhzfBGlXF6bYleCgSeeM4bfEyoVydm9qWNZQ==}
-    dependencies:
-      '@effect/data': 0.15.1
-    dev: true
-
-  /@effect/io@0.35.0:
-    resolution: {integrity: sha512-6OgaG8+V8Acqy/JI75TNcYJXoLZMTXpRESw5CngVKxuxD6qQJiPia1cxhkfS2v5CmSLt4ZgP4u6gQtWKIYo7Lg==}
+  /@effect/io@0.35.1:
+    resolution: {integrity: sha512-kSYaYXSzBkDdtEgBOBZTOsF+7D9HRiMNwkDTGRARRow/5zXJVZxHxDAZJdA/3Am7irCD7yeDDsxsMVwqgfJdYg==}
     dependencies:
       '@effect/data': 0.16.0
 
@@ -1036,19 +1026,11 @@ packages:
       '@fp-ts/data': 0.0.41
     dev: true
 
-  /@effect/schema@0.28.0:
-    resolution: {integrity: sha512-HIMw//zc0aeHF8PLxtMm0wHo72X5njg8v+0nRGr2gM1nKfFWApuiGI/i/6PZGMg1hD/721vVjCUs+rI+eh8kiw==}
-    dependencies:
-      '@effect/data': 0.15.1
-      '@effect/io': 0.34.0
-      fast-check: 3.11.0
-    dev: true
-
-  /@effect/schema@0.29.0:
-    resolution: {integrity: sha512-yO8FkCoblU1oeB02nHi3yJu0Z66euVd30RbjwyOeZp7YAqyzaA2GPbm6ldd9bNIKDiGz+Zr1gw/wUmS0dvUfHw==}
+  /@effect/schema@0.30.0:
+    resolution: {integrity: sha512-Pj0MUD6kfYwUPUYejig2hAcQUR4aH+9e3My+puc3VkfLLlY1XkyMUIZZGV/B36iZYdMsNF4sEvpzXcZwZOaI6A==}
     dependencies:
       '@effect/data': 0.16.0
-      '@effect/io': 0.35.0
+      '@effect/io': 0.35.1
       fast-check: 3.11.0
 
   /@esbuild/android-arm64@0.18.13:
@@ -1485,11 +1467,11 @@ packages:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
     dev: true
 
-  /@sqlite.org/sqlite-wasm@3.42.0-build2:
-    resolution: {integrity: sha512-CCav4keRFcENRYUkJtCQmOqBQ6BI5ZMo5lcRa7nFkfJVZRIewVWlb327+Re3kuL7oC+Qfc84gC9RqHzLHYt0EQ==}
+  /@sqlite.org/sqlite-wasm@3.42.0-build3:
+    resolution: {integrity: sha512-JrBhZS7u6EtTwhEh7Gx8f/0kYvqSdC3ddYAayFm1rMuosE6JTBr822apPEn+dLuYgoNd7IZdCDbYIRTUVWt41A==}
     hasBin: true
     requiresBuild: true
-    dependencies:
+    optionalDependencies:
       comlink: 4.4.1
     dev: false
     optional: true
@@ -2253,8 +2235,8 @@ packages:
       is-windows: 1.0.2
     dev: true
 
-  /better-sqlite3@8.4.0:
-    resolution: {integrity: sha512-NmsNW1CQvqMszu/CFAJ3pLct6NEFlNfuGM6vw72KHkjOD1UDnL96XNN1BMQc1hiHo8vE2GbOWQYIpZ+YM5wrZw==}
+  /better-sqlite3@8.5.0:
+    resolution: {integrity: sha512-vbPcv/Hx5WYdyNg/NbcfyaBZyv9s/NVbxb7yCeC5Bq1pVocNxeL2tZmSu3Rlm4IEOTjYdGyzWQgyx0OSdORBzw==}
     requiresBuild: true
     dependencies:
       bindings: 1.5.0
@@ -2648,6 +2630,7 @@ packages:
 
   /comlink@4.4.1:
     resolution: {integrity: sha512-+1dlx0aY5Jo1vHy/tSsIGpSkN4tS9rZSW8FIhG0JH/crs9wwweswIo/POr451r7bZww3hFbPAKnTpimzL/mm4Q==}
+    requiresBuild: true
     dev: false
     optional: true
 
@@ -2971,8 +2954,8 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /detect-libc@2.0.1:
-    resolution: {integrity: sha512-463v3ZeIrcWtdgIg6vI6XUncguvr2TnGl4SzDXinkt9mSLpBJKXT3mW6xT3VQdDN11+WVs29pgvivTc4Lp8v+w==}
+  /detect-libc@2.0.2:
+    resolution: {integrity: sha512-UX6sGumvvqSaXgdKGUsgZWqcUyIXZ/vZTrlRT/iobiKhGL0zL4d3osHj3uqllWJK+i+sixDS/3COVEOFbupFyw==}
     engines: {node: '>=8'}
     dev: false
 
@@ -3190,12 +3173,12 @@ packages:
       safe-buffer: 5.2.1
     dev: false
 
-  /effect-schema-class@0.8.0:
-    resolution: {integrity: sha512-2jTcOb7yoS+glsX/EVQgfW/iJtIp1uRCcDiczsFTgQGHskWnWGxKoWbPhf38/VwUFEEK3n2lHzX5pO2uLgBnWw==}
+  /effect-schema-class@0.10.0:
+    resolution: {integrity: sha512-Zf1gU8FNTB+cF6J9zgfw0nej0EAgJAlelbl3Ilga8en6bKbLvpaxjLJjD54uY8tvHxRilQWb7mkOsNSQ7E5JzA==}
     dependencies:
-      '@effect/data': 0.15.1
-      '@effect/io': 0.34.0
-      '@effect/schema': 0.28.0
+      '@effect/data': 0.16.0
+      '@effect/io': 0.35.1
+      '@effect/schema': 0.30.0
     dev: true
 
   /electron-to-chromium@1.4.461:
@@ -5659,8 +5642,8 @@ packages:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
     dev: true
 
-  /node-abi@3.43.0:
-    resolution: {integrity: sha512-QB0MMv+tn9Ur2DtJrc8y09n0n6sw88CyDniWSX2cHW10goQXYPK9ZpFJOktDS4ron501edPX6h9i7Pg+RnH5nQ==}
+  /node-abi@3.45.0:
+    resolution: {integrity: sha512-iwXuFrMAcFVi/ZoZiqq8BzAdsLw9kxDfTC0HMyjXfSL/6CSDAGD5UmR7azrAgWV1zKYq7dUUMj4owusBWKLsiQ==}
     engines: {node: '>=10'}
     dependencies:
       semver: 7.5.4
@@ -6106,13 +6089,13 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
     dependencies:
-      detect-libc: 2.0.1
+      detect-libc: 2.0.2
       expand-template: 2.0.3
       github-from-package: 0.0.0
       minimist: 1.2.8
       mkdirp-classic: 0.5.3
       napi-build-utils: 1.0.2
-      node-abi: 3.43.0
+      node-abi: 3.45.0
       pump: 3.0.0
       rc: 1.2.8
       simple-get: 4.0.1
