@@ -102,9 +102,9 @@ export const make = (
               }),
         ),
         _ =>
-          Effect.async<never, never, void>(resume =>
-            _.end(() => resume(Effect.unit)),
-          ),
+          Effect.async<never, never, void>(resume => {
+            _.end(() => resume(Effect.unit))
+          }),
       ),
       Effect.map((conn): Connection => {
         const run = (
@@ -113,7 +113,7 @@ export const make = (
           transform = true,
           rowsAsArray = false,
         ) =>
-          Effect.async<never, SqlError, any>(resume =>
+          Effect.async<never, SqlError, any>(resume => {
             conn.execute({ sql, values, rowsAsArray }, (error, result: any) => {
               if (error) {
                 resume(Effect.fail(SqlError(error.message, error)))
@@ -126,8 +126,8 @@ export const make = (
               } else {
                 resume(Effect.succeed(result))
               }
-            }),
-          )
+            })
+          })
 
         return {
           execute(statement) {

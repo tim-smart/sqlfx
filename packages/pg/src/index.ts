@@ -124,7 +124,7 @@ export const make = (
       ),
       Effect.map((pg): Connection => {
         const run = (query: PendingQuery<any> | PendingValuesQuery<any>) =>
-          Effect.asyncInterrupt<never, SqlError, ReadonlyArray<any>>(resume => {
+          Effect.async<never, SqlError, ReadonlyArray<any>>(resume => {
             query
               .then(_ => resume(Effect.succeed(_)))
               .catch(error =>
