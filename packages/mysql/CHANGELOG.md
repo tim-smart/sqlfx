@@ -1,5 +1,11 @@
 # @sqlfx/mysql
 
+## 0.11.3
+
+### Patch Changes
+
+- [`df3f990`](https://github.com/tim-smart/sqlfx/commit/df3f99083709686a1c5dad0d8403d0586d9be00b) Thanks [@tim-smart](https://github.com/tim-smart)! - release mysql connection back to pool for pipelining
+
 ## 0.11.2
 
 ### Patch Changes
