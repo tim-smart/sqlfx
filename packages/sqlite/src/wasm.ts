@@ -130,6 +130,9 @@ export const make = (
         executeRaw(sql, params) {
           return runTransform(sql, params)
         },
+        executeStream(_statement) {
+          return Effect.dieMessage("executeStream not implemented")
+        },
         compile(statement) {
           return Effect.sync(() => compiler.compile(statement))
         },

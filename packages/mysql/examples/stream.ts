@@ -3,21 +3,19 @@ import * as Config from "@effect/io/Config"
 import * as ConfigSecret from "@effect/io/Config/Secret"
 import * as Effect from "@effect/io/Effect"
 import * as Sql from "@sqlfx/mysql"
-import * as Migrator from "@sqlfx/mysql/Migrator"
-import * as Layer from "@effect/io/Layer"
+import * as Stream from "@effect/stream/Stream"
 
 const program = Effect.gen(function* (_) {
   const sql = yield* _(Sql.tag)
-
-  const [{ id }] = yield* _(
-    Effect.zipRight(
-      sql`INSERT INTO people (name) VALUES ('John')`,
-      sql<{ id: number }>`SELECT LAST_INSERT_ID() AS id`,
-    ),
+  // yield* _(
+  //   sql`INSERT INTO people (name) VALUES ('John')`.pipe(Effect.repeatN(100)),
+  // )
+  const results = yield* _(
+    sql`SELECT * FROM people`.stream,
+    Stream.tap(_ => Effect.logInfo(_).pipe(Effect.delay("10 millis"))),
+    Stream.runCollect,
   )
-
-  const person = yield* _(sql`SELECT * FROM people WHERE id = ${id}`)
-  console.log(person[0])
+  console.log(results)
 })
 
 const SqlLive = Sql.makeLayer({
@@ -28,17 +26,9 @@ const SqlLive = Sql.makeLayer({
   transformResultNames: Config.succeed(Sql.transform.toCamel),
 })
 
-const MigratorLive = Layer.provide(
-  SqlLive,
-  Migrator.makeLayer({
-    loader: Migrator.fromDisk(`${__dirname}/migrations`),
-    schemaDirectory: "examples/migrations",
-  }),
-)
-
 pipe(
   program,
-  Effect.provideLayer(Layer.mergeAll(SqlLive, MigratorLive)),
+  Effect.provideLayer(SqlLive),
   Effect.tapErrorCause(Effect.logError),
   Effect.runFork,
 )

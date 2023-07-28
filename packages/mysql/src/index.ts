@@ -1,6 +1,7 @@
 /**
  * @since 1.0.0
  */
+import * as Chunk from "@effect/data/Chunk"
 import { Tag } from "@effect/data/Context"
 import * as Duration from "@effect/data/Duration"
 import { pipe } from "@effect/data/Function"
@@ -11,11 +12,13 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Pool from "@effect/io/Pool"
 import type { Scope } from "@effect/io/Scope"
+import * as Stream from "@effect/stream/Stream"
 import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
 import * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
+import { asyncPauseResume } from "@sqlfx/sql/internal/stream"
 import * as Mysql from "mysql2"
 
 export {
@@ -148,6 +151,31 @@ export const make = (
           compile(statement) {
             return Effect.sync(() => compiler.compile(statement))
           },
+          executeStream(statement) {
+            const [sql, params] = compiler.compile(statement)
+
+            const stream = asyncPauseResume<never, SqlError, any>(emit => {
+              const query = conn.execute({ sql, values: params })
+              query.on("error", error =>
+                emit.fail(SqlError(error.message, error)),
+              )
+              query.on("result", emit.single)
+              query.on("end", () => emit.end())
+              return {
+                onInterrupt: pool.invalidate(this),
+                onPause: Effect.sync(() => conn.pause()),
+                onResume: Effect.sync(() => conn.resume()),
+              }
+            })
+
+            return options.transformResultNames
+              ? Stream.mapChunks(stream, _ =>
+                  Chunk.unsafeFromArray(
+                    transformRows(Chunk.toReadonlyArray(_) as Array<object>),
+                  ),
+                )
+              : stream
+          },
         }
       }),
     )
@@ -162,7 +190,10 @@ export const make = (
     )
 
     return Object.assign(
-      Client.make({ acquirer: pool.get(), transactionAcquirer: pool.get() }),
+      Client.make({
+        acquirer: pool.get(),
+        transactionAcquirer: pool.get(),
+      }),
       { config: options },
     )
   })

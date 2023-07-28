@@ -4,6 +4,7 @@
 import { Tag } from "@effect/data/Context"
 import type * as Effect from "@effect/io/Effect"
 import type { Scope } from "@effect/io/Scope"
+import type * as Stream from "@effect/stream/Stream"
 import type { SqlError } from "@sqlfx/sql/Error"
 import type { Primitive, Statement } from "@sqlfx/sql/Statement"
 
@@ -15,6 +16,10 @@ export interface Connection {
   readonly execute: <A extends object = Row>(
     statement: Statement<A>,
   ) => Effect.Effect<never, SqlError, ReadonlyArray<A>>
+
+  readonly executeStream: <A extends object = Row>(
+    statement: Statement<A>,
+  ) => Stream.Stream<never, SqlError, A>
 
   readonly executeWithoutTransform: <A extends object = Row>(
     statement: Statement<A>,

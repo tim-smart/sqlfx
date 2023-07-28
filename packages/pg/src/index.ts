@@ -155,6 +155,9 @@ export const make = (
           executeRaw(sql, params) {
             return runTransform(pg.unsafe(sql, params as any))
           },
+          executeStream(_statement) {
+            return Effect.dieMessage("executeStream not implemented")
+          },
           compile(statement) {
             return Effect.sync(() => compiler.compile(statement))
           },

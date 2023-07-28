@@ -1,10 +1,11 @@
 /**
  * @since 1.0.0
  */
-import type { Effect } from "@effect/io/Effect"
-import * as internal from "@sqlfx/sql/internal/statement"
 import type { Equal } from "@effect/data/Equal"
 import type { Pipeable } from "@effect/data/Pipeable"
+import type { Effect } from "@effect/io/Effect"
+import type * as Stream from "@effect/stream/Stream"
+import * as internal from "@sqlfx/sql/internal/statement"
 import type { Connection, Row } from "./Connection"
 import type { SqlError } from "./Error"
 
@@ -39,6 +40,7 @@ export interface Statement<A>
     Effect<never, SqlError, ReadonlyArray<A>>,
     Pipeable {
   readonly withoutTransform: Effect<never, SqlError, ReadonlyArray<A>>
+  readonly stream: Stream.Stream<never, SqlError, A>
   readonly values: Effect<
     never,
     SqlError,

@@ -205,6 +205,9 @@ export const make = (
         executeRaw(sql, params) {
           return run(sql, params)
         },
+        executeStream(_statement) {
+          return Effect.dieMessage("executeStream not implemented")
+        },
         call: procedure => {
           return runProcedure(procedure)
         },

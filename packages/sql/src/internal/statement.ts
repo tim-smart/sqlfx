@@ -3,6 +3,9 @@ import { identity } from "@effect/data/Function"
 import * as Hash from "@effect/data/Hash"
 import { pipeArguments } from "@effect/data/Pipeable"
 import * as Effect from "@effect/io/Effect"
+import { ChannelTypeId } from "@effect/stream/Channel"
+import { SinkTypeId } from "@effect/stream/Sink"
+import * as Stream from "@effect/stream/Stream"
 import type { Connection, Row } from "@sqlfx/sql/Connection"
 import type { SqlError } from "@sqlfx/sql/Error"
 import type {
@@ -65,6 +68,12 @@ export class StatementPrimitive<A> implements Statement<A> {
     )
   }
 
+  get stream(): Stream.Stream<never, SqlError, A> {
+    return Stream.unwrapScoped(
+      Effect.map(this.i1, _ => _.executeStream<any>(this)),
+    )
+  }
+
   get values(): Effect.Effect<
     never,
     SqlError,
@@ -86,7 +95,10 @@ export class StatementPrimitive<A> implements Statement<A> {
   // Make it a valid effect
   public _tag = "Commit" // OP_COMMIT
   public i2: any = undefined;
-  [Effect.EffectTypeId] = undefined as any
+  [Effect.EffectTypeId] = undefined as any;
+  [Stream.StreamTypeId] = undefined as any;
+  [SinkTypeId] = undefined as any;
+  [ChannelTypeId] = undefined as any
 
   commit(): Effect.Effect<never, SqlError, ReadonlyArray<A>> {
     return Effect.scoped(
