@@ -32,6 +32,8 @@ export interface Connection {
     statement: Statement<A>
   ) => Effect.Effect<never, SqlError, ReadonlyArray<A>>
 
+  readonly executeStream: <A extends object = Row>(statement: Statement<A>) => Stream.Stream<never, SqlError, A>
+
   readonly executeWithoutTransform: <A extends object = Row>(
     statement: Statement<A>
   ) => Effect.Effect<never, SqlError, ReadonlyArray<A>>
