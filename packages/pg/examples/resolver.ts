@@ -46,9 +46,8 @@ const program = Effect.gen(function* (_) {
   console.log(
     yield* _(
       Effect.all(
-        GetById.execute(inserted[0].id),
-        GetById.execute(inserted[1].id),
-        { batched: true },
+        [GetById.execute(inserted[0].id), GetById.execute(inserted[1].id)],
+        { batching: true },
       ),
     ),
   )
@@ -63,6 +62,6 @@ const PgLive = Pg.makeLayer({
 pipe(
   program,
   Effect.provideLayer(PgLive),
-  Effect.tapErrorCause(Effect.logCause({ level: "Error" })),
+  Effect.tapErrorCause(Effect.logError),
   Effect.runFork,
 )

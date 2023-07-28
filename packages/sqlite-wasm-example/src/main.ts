@@ -39,6 +39,6 @@ const EnvLive = Layer.provideMerge(SqlLive, MigratorLive)
 pipe(
   program,
   Effect.provideLayer(EnvLive),
-  Effect.tapErrorCause(Effect.logCause({ level: "Error" })),
+  Effect.tapErrorCause(Effect.logError),
   Effect.runFork,
 )
