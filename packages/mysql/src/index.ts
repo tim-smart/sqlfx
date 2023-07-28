@@ -19,7 +19,7 @@ import { SqlError } from "@sqlfx/sql/Error"
 import * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
 import { asyncPauseResume } from "@sqlfx/sql/internal/stream"
-import * as Mysql from "mysql2"
+import * as Mysql from "mariadb"
 
 export {
   /**
@@ -88,7 +88,7 @@ export const make = (
 
     const makeConnection = pipe(
       Effect.acquireRelease(
-        Effect.sync(() =>
+        Effect.promise(() =>
           options.url
             ? Mysql.createConnection(ConfigSecret.value(options.url))
             : Mysql.createConnection({
@@ -104,10 +104,7 @@ export const make = (
                   : undefined,
               }),
         ),
-        _ =>
-          Effect.async<never, never, void>(resume => {
-            _.end(() => resume(Effect.unit))
-          }),
+        conn => Effect.promise(() => conn.end()),
       ),
       Effect.map((conn): Connection => {
         const run = (
@@ -115,22 +112,18 @@ export const make = (
           values?: ReadonlyArray<any>,
           transform = true,
           rowsAsArray = false,
-        ) =>
-          Effect.async<never, SqlError, any>(resume => {
-            conn.execute({ sql, values, rowsAsArray }, (error, result: any) => {
-              if (error) {
-                resume(Effect.fail(SqlError(error.message, error)))
-              } else if (
-                transform &&
-                !rowsAsArray &&
-                options.transformResultNames
-              ) {
-                resume(Effect.succeed(transformRows(result)))
-              } else {
-                resume(Effect.succeed(result))
-              }
-            })
+        ) => {
+          const result = Effect.tryPromise({
+            try: () => conn.execute({ sql, rowsAsArray }, values),
+            catch: error => SqlError((error as any).message, error),
           })
+
+          if (transform && !rowsAsArray && options.transformResultNames) {
+            return Effect.map(result, transformRows)
+          }
+
+          return result
+        }
 
         return {
           execute(statement) {
@@ -155,16 +148,16 @@ export const make = (
             const [sql, params] = compiler.compile(statement)
 
             const stream = asyncPauseResume<never, SqlError, any>(emit => {
-              const query = conn.execute({ sql, values: params })
+              const query = conn.queryStream(sql, params)
               query.on("error", error =>
                 emit.fail(SqlError(error.message, error)),
               )
-              query.on("result", emit.single)
+              query.on("data", emit.single)
               query.on("end", () => emit.end())
               return {
-                onInterrupt: pool.invalidate(this),
-                onPause: Effect.sync(() => conn.pause()),
-                onResume: Effect.sync(() => conn.resume()),
+                onInterrupt: Effect.sync(() => query.destroy()),
+                onPause: Effect.sync(() => query.pause()),
+                onResume: Effect.sync(() => query.resume()),
               }
             })
 
