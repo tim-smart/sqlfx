@@ -1,5 +1,11 @@
 # @sqlfx/mysql
 
+## 0.11.2
+
+### Patch Changes
+
+- [`0da0c9a`](https://github.com/tim-smart/sqlfx/commit/0da0c9ae9d07984b4cbe959d486f220898a0cdb9) Thanks [@tim-smart](https://github.com/tim-smart)! - replace mysql2 with mariadb
+
 ## 0.11.1
 
 ### Patch Changes
