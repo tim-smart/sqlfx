@@ -7,9 +7,9 @@ import * as Stream from "@effect/stream/Stream"
 
 const program = Effect.gen(function* (_) {
   const sql = yield* _(Sql.tag)
-  // yield* _(
-  //   sql`INSERT INTO people (name) VALUES ('John')`.pipe(Effect.repeatN(100)),
-  // )
+  yield* _(
+    sql`INSERT INTO people (name) VALUES ('John')`.pipe(Effect.repeatN(100)),
+  )
   const results = yield* _(
     sql`SELECT * FROM people`.stream,
     Stream.tap(_ => Effect.logInfo(_).pipe(Effect.delay("10 millis"))),

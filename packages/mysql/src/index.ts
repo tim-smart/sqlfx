@@ -88,22 +88,24 @@ export const make = (
 
     const makeConnection = pipe(
       Effect.acquireRelease(
-        Effect.promise(() =>
-          options.url
-            ? Mysql.createConnection(ConfigSecret.value(options.url))
-            : Mysql.createConnection({
-                host: options.host,
-                port: options.port,
-                database: options.database,
-                user: options.username,
-                password: options.password
-                  ? ConfigSecret.value(options.password)
-                  : undefined,
-                connectTimeout: options.connectTimeout
-                  ? Duration.toMillis(Duration.decode(options.connectTimeout))
-                  : undefined,
-              }),
-        ),
+        Effect.tryPromise({
+          try: () =>
+            options.url
+              ? Mysql.createConnection(ConfigSecret.value(options.url))
+              : Mysql.createConnection({
+                  host: options.host,
+                  port: options.port,
+                  database: options.database,
+                  user: options.username,
+                  password: options.password
+                    ? ConfigSecret.value(options.password)
+                    : undefined,
+                  connectTimeout: options.connectTimeout
+                    ? Duration.toMillis(Duration.decode(options.connectTimeout))
+                    : undefined,
+                }),
+          catch: error => SqlError((error as any).message, error),
+        }),
         conn => Effect.promise(() => conn.end()),
       ),
       Effect.map((conn): Connection => {
@@ -184,7 +186,7 @@ export const make = (
 
     return Object.assign(
       Client.make({
-        acquirer: pool.get(),
+        acquirer: Effect.scoped(pool.get()),
         transactionAcquirer: pool.get(),
       }),
       { config: options },
