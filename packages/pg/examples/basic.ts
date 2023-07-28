@@ -2,6 +2,7 @@ import * as Pg from "@sqlfx/pg"
 import * as Config from "@effect/io/Config"
 import * as Effect from "@effect/io/Effect"
 import { pipe } from "@effect/data/Function"
+import * as Stream from "@effect/stream/Stream"
 
 const PgLive = Pg.makeLayer({
   database: Config.succeed("effect_pg_dev"),
@@ -31,6 +32,12 @@ const program = Effect.gen(function* (_) {
     `,
   )
   console.log(result)
+
+  yield* _(
+    sql`SELECT * FROM people`.stream,
+    Stream.tap(Effect.logInfo),
+    Stream.runDrain,
+  )
 })
 
 pipe(

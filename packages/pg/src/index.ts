@@ -11,6 +11,7 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Pool from "@effect/io/Pool"
 import type { Scope } from "@effect/io/Scope"
+import * as Stream from "@effect/stream/Stream"
 import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
@@ -155,8 +156,26 @@ export const make = (
           executeRaw(sql, params) {
             return runTransform(pg.unsafe(sql, params as any))
           },
-          executeStream(_statement) {
-            return Effect.dieMessage("executeStream not implemented")
+          executeStream(statement) {
+            const [sql, params] = compiler.compile(statement)
+            return Effect.sync(
+              () =>
+                pg.unsafe(sql, params as any).cursor(16) as AsyncIterable<
+                  Array<any>
+                >,
+            ).pipe(
+              Effect.map(_ =>
+                Stream.fromAsyncIterable(_, e =>
+                  SqlError((e as Error).message, { ...(e as any).__proto__ }),
+                ),
+              ),
+              Stream.unwrap,
+              Stream.flatMap(_ =>
+                Stream.fromIterable(
+                  options.transformResultNames ? transformRows(_) : _,
+                ),
+              ),
+            )
           },
           compile(statement) {
             return Effect.sync(() => compiler.compile(statement))
