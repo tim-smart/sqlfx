@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.14.1
+
+### Patch Changes
+
+- [`5d3c589`](https://github.com/tim-smart/sqlfx/commit/5d3c589b311cde1e9481fed9dbfe7dd74cb9323b) Thanks [@tim-smart](https://github.com/tim-smart)! - add streaming support to mysql client
+
 ## 0.14.0
 
 ### Minor Changes
