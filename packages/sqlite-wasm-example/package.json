@@ -10,11 +10,11 @@
   },
   "dependencies": {
     "@effect/data": "^0.17.1",
-    "@effect/io": "^0.37.0",
+    "@effect/io": "^0.38.0",
     "@sqlfx/sqlite": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.1.6",
-    "vite": "^4.4.7"
+    "vite": "^4.4.8"
   }
 }

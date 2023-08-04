@@ -115,11 +115,11 @@ importers:
         specifier: ^0.17.1
         version: 0.17.1
       '@effect/io':
-        specifier: ^0.37.0
-        version: 0.37.0
+        specifier: ^0.38.0
+        version: 0.38.0(@effect/data@0.17.1)
       '@effect/schema':
-        specifier: ^0.32.0
-        version: 0.32.0
+        specifier: ^0.33.0
+        version: 0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0)
       '@sqlfx/sql':
         specifier: workspace:^
         version: link:../sql/dist
@@ -127,8 +127,8 @@ importers:
         specifier: ^4.0.9
         version: 4.0.9
       effect-schema-class:
-        specifier: ^0.11.0
-        version: 0.11.0
+        specifier: ^0.13.0
+        version: 0.13.0(@effect/data@0.17.1)(@effect/io@0.38.0)(@effect/schema@0.33.0)
     publishDirectory: dist
 
   packages/mysql:
@@ -141,20 +141,20 @@ importers:
         specifier: ^0.17.1
         version: 0.17.1
       '@effect/io':
-        specifier: ^0.37.0
-        version: 0.37.0
+        specifier: ^0.38.0
+        version: 0.38.0(@effect/data@0.17.1)
       '@effect/schema':
-        specifier: ^0.32.0
-        version: 0.32.0
-      '@effect/stream':
         specifier: ^0.33.0
-        version: 0.33.0
+        version: 0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0)
+      '@effect/stream':
+        specifier: ^0.34.0
+        version: 0.34.0(@effect/data@0.17.1)(@effect/io@0.38.0)
       '@sqlfx/sql':
         specifier: workspace:^
         version: link:../sql/dist
       effect-schema-class:
-        specifier: ^0.11.0
-        version: 0.11.0
+        specifier: ^0.13.0
+        version: 0.13.0(@effect/data@0.17.1)(@effect/io@0.38.0)(@effect/schema@0.33.0)
     publishDirectory: dist
 
   packages/pg:
@@ -167,20 +167,20 @@ importers:
         specifier: ^0.17.1
         version: 0.17.1
       '@effect/io':
-        specifier: ^0.37.0
-        version: 0.37.0
+        specifier: ^0.38.0
+        version: 0.38.0(@effect/data@0.17.1)
       '@effect/schema':
-        specifier: ^0.32.0
-        version: 0.32.0
-      '@effect/stream':
         specifier: ^0.33.0
-        version: 0.33.0
+        version: 0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0)
+      '@effect/stream':
+        specifier: ^0.34.0
+        version: 0.34.0(@effect/data@0.17.1)(@effect/io@0.38.0)
       '@sqlfx/sql':
         specifier: workspace:^
         version: link:../sql/dist
       effect-schema-class:
-        specifier: ^0.11.0
-        version: 0.11.0
+        specifier: ^0.13.0
+        version: 0.13.0(@effect/data@0.17.1)(@effect/io@0.38.0)(@effect/schema@0.33.0)
     publishDirectory: dist
 
   packages/sql:
@@ -189,14 +189,14 @@ importers:
         specifier: ^0.17.1
         version: 0.17.1
       '@effect/io':
-        specifier: ^0.37.0
-        version: 0.37.0
+        specifier: ^0.38.0
+        version: 0.38.0(@effect/data@0.17.1)
       '@effect/schema':
-        specifier: ^0.32.0
-        version: 0.32.0
-      '@effect/stream':
         specifier: ^0.33.0
-        version: 0.33.0
+        version: 0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0)
+      '@effect/stream':
+        specifier: ^0.34.0
+        version: 0.34.0(@effect/data@0.17.1)(@effect/io@0.38.0)
     publishDirectory: dist
 
   packages/sqlite:
@@ -213,11 +213,11 @@ importers:
         specifier: ^0.17.1
         version: 0.17.1
       '@effect/io':
-        specifier: ^0.37.0
-        version: 0.37.0
+        specifier: ^0.38.0
+        version: 0.38.0(@effect/data@0.17.1)
       '@effect/schema':
-        specifier: ^0.32.0
-        version: 0.32.0
+        specifier: ^0.33.0
+        version: 0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0)
       '@sqlfx/sql':
         specifier: workspace:^
         version: link:../sql/dist
@@ -225,8 +225,8 @@ importers:
         specifier: ^7.6.4
         version: 7.6.4
       effect-schema-class:
-        specifier: ^0.11.0
-        version: 0.11.0
+        specifier: ^0.13.0
+        version: 0.13.0(@effect/data@0.17.1)(@effect/io@0.38.0)(@effect/schema@0.33.0)
     publishDirectory: dist
 
   packages/sqlite-wasm-example:
@@ -235,8 +235,8 @@ importers:
         specifier: ^0.17.1
         version: 0.17.1
       '@effect/io':
-        specifier: ^0.37.0
-        version: 0.37.0
+        specifier: ^0.38.0
+        version: 0.38.0(@effect/data@0.17.1)
       '@sqlfx/sqlite':
         specifier: workspace:*
         version: link:../sqlite/dist
@@ -245,8 +245,8 @@ importers:
         specifier: ^5.1.6
         version: 5.1.6
       vite:
-        specifier: ^4.4.7
-        version: 4.4.7(@types/node@20.4.7)
+        specifier: ^4.4.8
+        version: 4.4.8(@types/node@20.4.7)
 
 packages:
 
@@ -972,14 +972,10 @@ packages:
       diff: 5.1.0
     dev: true
 
-  /@effect/io@0.36.1:
-    resolution: {integrity: sha512-qktbbvQX+tCQ2wxBcpr8g89ZAIAzRaq+/tWGogdVxfthWIhiLSagMeKYzLHqQ/MaXzN7sQSYLHbFgxcE+D8keQ==}
-    dependencies:
-      '@effect/data': 0.17.1
-    dev: true
-
-  /@effect/io@0.37.0:
-    resolution: {integrity: sha512-Y45STkhyBmv/oep/+6kGEces9Btp/cfWkSX5Qqi4ar5MRK13DJrexWF8+jAuixGhXWwWQHHasE9z6w6lFgQWJQ==}
+  /@effect/io@0.38.0(@effect/data@0.17.1):
+    resolution: {integrity: sha512-qlVC9ASxNC+L2NKX5qOV9672CE5wWizfwBSFaX2XLI7CC118WRvohCTIPQ52n50Bj5TmR20+na+U9C7e4VkqzA==}
+    peerDependencies:
+      '@effect/data': ^0.17.1
     dependencies:
       '@effect/data': 0.17.1
 
@@ -990,27 +986,25 @@ packages:
       '@fp-ts/data': 0.0.41
     dev: true
 
-  /@effect/schema@0.31.0:
-    resolution: {integrity: sha512-bVAUl6Y0Fn0VL+gGHFsuqjtj4OvPl4bdEK/AFG3jsNor/cZK5vY1H8j1xDiCVJro2Wsu/GuISNu8wJQoXVRxEQ==}
+  /@effect/schema@0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0):
+    resolution: {integrity: sha512-K/IDp8aZpqqy2IBydnRtjNF7Sg/qZjiR5t+OANDZ2yOmTHRgtvWM4fwYV5kGYzEBZaBZEqUGjzj4KOqbsQhCEw==}
+    peerDependencies:
+      '@effect/data': ^0.17.1
+      '@effect/io': ^0.38.0
     dependencies:
       '@effect/data': 0.17.1
-      '@effect/io': 0.36.1
+      '@effect/io': 0.38.0(@effect/data@0.17.1)
       fast-check: 3.12.0
     dev: true
 
-  /@effect/schema@0.32.0:
-    resolution: {integrity: sha512-4HJK/cFkVPdIjYICy0eRsL7JuuLJ6mE3aJC5rX9OuUIei/qfctFEEX2NaARjtGX7hACBrRcuJCNwiq+54TTjFw==}
+  /@effect/stream@0.34.0(@effect/data@0.17.1)(@effect/io@0.38.0):
+    resolution: {integrity: sha512-8eDDQ0JG+ctsstLH/Qo4ojBkcEIFtqpEsWZS6leAwY9gXVmEG54PMWXZiX6dTchgQXKmSnLkEh36leAq4piawQ==}
+    peerDependencies:
+      '@effect/data': ^0.17.1
+      '@effect/io': ^0.38.0
     dependencies:
       '@effect/data': 0.17.1
-      '@effect/io': 0.37.0
-      fast-check: 3.12.0
-    dev: true
-
-  /@effect/stream@0.33.0:
-    resolution: {integrity: sha512-4RjcsLOFc2w6zo243qNMGHDhpIZf3lgPALqvOLt1fvWqIaQdeQ4PF6lfFCTHfzfnRSiW3Hm5K8KDiGwwY/azfA==}
-    dependencies:
-      '@effect/data': 0.17.1
-      '@effect/io': 0.37.0
+      '@effect/io': 0.38.0(@effect/data@0.17.1)
     dev: true
 
   /@esbuild/android-arm64@0.18.17:
@@ -2915,12 +2909,16 @@ packages:
       safe-buffer: 5.2.1
     dev: false
 
-  /effect-schema-class@0.11.0:
-    resolution: {integrity: sha512-dLYBrTGKm2kW2U60tW+6L+niXJgGIIwPz+SBWRtk1O75XIh8j5Q+MgTT9in2s1IkeDNvERT2KCxBzwyDdMCDTA==}
+  /effect-schema-class@0.13.0(@effect/data@0.17.1)(@effect/io@0.38.0)(@effect/schema@0.33.0):
+    resolution: {integrity: sha512-NRVAGS6yJel7eyQcUKtsomGjNiR2e7q1pJHyKuwsjsL2JvCWdcfXI5VU5tQnUh13QVhZC/+9cIFgpxcxYnLU/Q==}
+    peerDependencies:
+      '@effect/data': ^0.17.1
+      '@effect/io': ^0.38.0
+      '@effect/schema': ^0.33.0
     dependencies:
       '@effect/data': 0.17.1
-      '@effect/io': 0.36.1
-      '@effect/schema': 0.31.0
+      '@effect/io': 0.38.0(@effect/data@0.17.1)
+      '@effect/schema': 0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0)
     dev: true
 
   /electron-to-chromium@1.4.484:
@@ -5796,14 +5794,6 @@ packages:
       glob: 10.3.3
     dev: true
 
-  /rollup@3.26.3:
-    resolution: {integrity: sha512-7Tin0C8l86TkpcMtXvQu6saWH93nhG3dGQ1/+l5V2TDMceTxO7kDiK6GzbfLWNNxqJXm591PcEZUozZm51ogwQ==}
-    engines: {node: '>=14.18.0', npm: '>=8.0.0'}
-    hasBin: true
-    optionalDependencies:
-      fsevents: 2.3.2
-    dev: true
-
   /rollup@3.27.1:
     resolution: {integrity: sha512-tXNDFwOkN6C2w5Blj1g6ForKeFw6c1mDu5jxoeDO3/pmYjgt+8yvIFjKzH5FQUq70OKZBkOt0zzv0THXL7vwzQ==}
     engines: {node: '>=14.18.0', npm: '>=8.0.0'}
@@ -6716,42 +6706,6 @@ packages:
       - sugarss
       - supports-color
       - terser
-    dev: true
-
-  /vite@4.4.7(@types/node@20.4.7):
-    resolution: {integrity: sha512-6pYf9QJ1mHylfVh39HpuSfMPojPSKVxZvnclX1K1FyZ1PXDOcLBibdq5t1qxJSnL63ca8Wf4zts6mD8u8oc9Fw==}
-    engines: {node: ^14.18.0 || >=16.0.0}
-    hasBin: true
-    peerDependencies:
-      '@types/node': '>= 14'
-      less: '*'
-      lightningcss: ^1.21.0
-      sass: '*'
-      stylus: '*'
-      sugarss: '*'
-      terser: ^5.4.0
-    peerDependenciesMeta:
-      '@types/node':
-        optional: true
-      less:
-        optional: true
-      lightningcss:
-        optional: true
-      sass:
-        optional: true
-      stylus:
-        optional: true
-      sugarss:
-        optional: true
-      terser:
-        optional: true
-    dependencies:
-      '@types/node': 20.4.7
-      esbuild: 0.18.17
-      postcss: 8.4.27
-      rollup: 3.26.3
-    optionalDependencies:
-      fsevents: 2.3.2
     dev: true
 
   /vite@4.4.8(@types/node@20.4.7):
