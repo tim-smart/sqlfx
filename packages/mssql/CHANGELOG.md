@@ -1,5 +1,14 @@
 # @sqlfx/mssql
 
+## 0.13.1
+
+### Patch Changes
+
+- [`9582dc2`](https://github.com/tim-smart/sqlfx/commit/9582dc23dd42475c7564ded245f65eb0545470d0) Thanks [@tim-smart](https://github.com/tim-smart)! - update deps
+
+- Updated dependencies [[`9582dc2`](https://github.com/tim-smart/sqlfx/commit/9582dc23dd42475c7564ded245f65eb0545470d0)]:
+  - @sqlfx/sql@0.16.1
+
 ## 0.13.0
 
 ### Minor Changes
