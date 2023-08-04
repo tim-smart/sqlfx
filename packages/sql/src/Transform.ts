@@ -13,8 +13,9 @@
  */
 export const toCamel = (x: string) => {
   let str = x[0]
-  for (let i = 1; i < x.length; i++)
+  for (let i = 1; i < x.length; i++) {
     str += x[i] === "_" ? x[++i].toUpperCase() : x[i]
+  }
   return str
 }
 
@@ -24,8 +25,9 @@ export const toCamel = (x: string) => {
  */
 export const toPascal = (x: string) => {
   let str = x[0].toUpperCase()
-  for (let i = 1; i < x.length; i++)
+  for (let i = 1; i < x.length; i++) {
     str += x[i] === "_" ? x[++i].toUpperCase() : x[i]
+  }
   return str
 }
 

@@ -73,7 +73,7 @@ export interface PgClientConfig {
   readonly transformQueryNames?: (str: string) => string
 }
 
-const escape = Statement.defaultEscape('"')
+const escape = Statement.defaultEscape("\"")
 
 /**
  * @category constructor
@@ -82,7 +82,7 @@ const escape = Statement.defaultEscape('"')
 export const make = (
   options: PgClientConfig,
 ): Effect.Effect<Scope, never, PgClient> =>
-  Effect.gen(function* (_) {
+  Effect.gen(function*(_) {
     const compiler = makeCompiler(options.transformQueryNames)
 
     const transformRows = Client.defaultRowTransform(
@@ -94,13 +94,13 @@ export const make = (
       max_lifetime: 0,
       idle_timeout: options.idleTimeout
         ? Math.round(
-            Duration.toMillis(Duration.decode(options.idleTimeout)) / 1000,
-          )
+          Duration.toMillis(Duration.decode(options.idleTimeout)) / 1000,
+        )
         : undefined,
       connect_timeout: options.connectTimeout
         ? Math.round(
-            Duration.toMillis(Duration.decode(options.connectTimeout)) / 1000,
-          )
+          Duration.toMillis(Duration.decode(options.connectTimeout)) / 1000,
+        )
         : undefined,
 
       host: options.host,
@@ -119,7 +119,7 @@ export const make = (
         Effect.sync(() =>
           options.url
             ? postgres(ConfigSecret.value(options.url), opts)
-            : postgres(opts),
+            : postgres(opts)
         ),
         pg => Effect.promise(() => pg.end()),
       ),
@@ -131,7 +131,7 @@ export const make = (
               .catch(error =>
                 resume(
                   Effect.fail(SqlError(error.message, { ...error.__proto__ })),
-                ),
+                )
               )
             return Effect.sync(() => query.cancel())
           })
@@ -166,19 +166,20 @@ export const make = (
             ).pipe(
               Effect.map(_ =>
                 Stream.fromAsyncIterable(_, e =>
-                  SqlError((e as Error).message, { ...(e as any).__proto__ }),
-                ),
+                  SqlError((e as Error).message, { ...(e as any).__proto__ }))
               ),
               Stream.unwrap,
               Stream.flatMap(_ =>
                 Stream.fromIterable(
                   options.transformResultNames ? transformRows(_) : _,
-                ),
+                )
               ),
             )
           },
           compile(statement) {
-            return Effect.sync(() => compiler.compile(statement))
+            return Effect.sync(() =>
+              compiler.compile(statement)
+            )
           },
         }
       }),

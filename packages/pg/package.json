@@ -24,7 +24,7 @@
     "build": "pnpm build-all && pnpm build-pack",
     "build-cjs": "babel build/esm --config-file ../../.babel.cjs.json --out-dir build/cjs --out-file-extension .js --source-maps",
     "build-mjs": "babel build/esm --config-file ../../.babel.mjs.json --out-dir build/mjs --out-file-extension .mjs --source-maps",
-    "build-post": "build-utils pack-v4",
+    "build-post": "build-utils pack-v1",
     "build-pack": "concurrently \"pnpm build-cjs\" \"pnpm build-mjs\" && pnpm build-post",
     "build-all": "tsc -b tsconfig.json",
     "build-watch": "tsc -b tsconfig.json --watch",
@@ -52,14 +52,20 @@
     "global": []
   },
   "dependencies": {
-    "@effect/data": "^0.17.1",
-    "@effect/io": "^0.37.0",
-    "@effect/stream": "^0.33.0",
-    "@sqlfx/sql": "workspace:*",
     "postgres": "^3.3.5"
   },
   "devDependencies": {
+    "@effect/data": "^0.17.1",
+    "@effect/io": "^0.37.0",
     "@effect/schema": "^0.32.0",
+    "@effect/stream": "^0.33.0",
+    "@sqlfx/sql": "workspace:^",
     "effect-schema-class": "^0.11.0"
+  },
+  "peerDependencies": {
+    "@effect/data": "^0.17.1",
+    "@effect/io": "^0.37.0",
+    "@effect/stream": "^0.33.0",
+    "@sqlfx/sql": "workspace:^"
   }
 }

@@ -17,10 +17,10 @@ import type { ProcedureWithValues } from "@sqlfx/mssql/Procedure"
 import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
+import * as sqlClient from "@sqlfx/sql/internal/client"
 import type { Primitive as _Primitive } from "@sqlfx/sql/Statement"
 import * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
-import * as sqlClient from "@sqlfx/sql/internal/client"
 import * as Tedious from "tedious"
 
 /** @internal */
@@ -46,7 +46,7 @@ const TransactionConn = (sqlClient as any).TransactionConn as Tag<
 export const make = (
   options: MssqlClientConfig,
 ): Effect.Effect<Scope, never, MssqlClient> =>
-  Effect.gen(function* (_) {
+  Effect.gen(function*(_) {
     const parameterTypes = options.parameterTypes ?? defaultParameterTypes
     const compiler = makeCompiler(options.transformQueryNames)
 
@@ -57,7 +57,7 @@ export const make = (
     // eslint-disable-next-line prefer-const
     let pool: Pool.Pool<SqlError, MssqlConnection>
 
-    const makeConnection = Effect.gen(function* (_) {
+    const makeConnection = Effect.gen(function*(_) {
       const conn = new Tedious.Connection({
         options: {
           port: options.port,
@@ -87,7 +87,7 @@ export const make = (
           Effect.async<never, never, void>(resume => {
             conn.once("end", () => resume(Effect.unit))
             conn.close()
-          }),
+          })
         ),
       )
 
@@ -245,7 +245,7 @@ export const make = (
           }),
         rollback: (name?: string) =>
           Effect.async<never, SqlError, void>(resume => {
-            (conn.rollbackTransaction as any)((err: Error) => {
+            ;(conn.rollbackTransaction as any)((err: Error) => {
               if (err) {
                 resume(Effect.fail(SqlError(err.message, err)))
               } else {
@@ -290,7 +290,7 @@ export const make = (
               }),
             ),
             Effect.tap(([conn, id]) =>
-              id > 0 ? conn.savepoint(`sqlfx${id}`) : conn.begin,
+              id > 0 ? conn.savepoint(`sqlfx${id}`) : conn.begin
             ),
           ),
           ([conn, id]) =>
@@ -412,13 +412,14 @@ function rowsToObjects(rows: ReadonlyArray<any>) {
 
 type MssqlCustom = MssqlParam
 
-interface MssqlParam
-  extends Statement.Custom<
+interface MssqlParam extends
+  Statement.Custom<
     "MssqlParam",
     Tedious.TediousType,
     Statement.Primitive,
     Tedious.ParameterOptions
-  > {}
+  >
+{}
 
 const mssqlParam = Statement.custom<MssqlParam>("MssqlParam")
 const isMssqlParam = Statement.isCustom<MssqlParam>("MssqlParam")

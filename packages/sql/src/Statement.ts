@@ -35,10 +35,8 @@ export interface Fragment {
  * @since 1.0.0
  */
 export interface Statement<A>
-  extends Fragment,
-    Equal,
-    Effect<never, SqlError, ReadonlyArray<A>>,
-    Pipeable {
+  extends Fragment, Equal, Effect<never, SqlError, ReadonlyArray<A>>, Pipeable
+{
   readonly withoutTransform: Effect<never, SqlError, ReadonlyArray<A>>
   readonly stream: Stream.Stream<never, SqlError, A>
   readonly values: Effect<

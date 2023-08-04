@@ -41,7 +41,8 @@ export const run: (
   ensureTable(sql, table) {
     return Effect.catchAll(
       sql`select ${table}::regclass`,
-      () => sql`
+      () =>
+        sql`
         CREATE TABLE ${sql(table)} (
           migration_id integer primary key,
           created_at timestamp with time zone not null default now(),
@@ -119,8 +120,7 @@ export const run: (
             recursive: true,
           })
           NFS.writeFileSync(path, sql)
-        }),
-      )
+        }))
 
     return pgDumpFile(path)
   },

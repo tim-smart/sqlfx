@@ -1,6 +1,7 @@
 /**
  * @since 1.0.0
  */
+import * as ConfigSecret from "@effect/io/Config/Secret"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Sql from "@sqlfx/mysql"
@@ -9,7 +10,6 @@ import * as _ from "@sqlfx/sql/Migrator"
 import { execFile } from "node:child_process"
 import * as NFS from "node:fs"
 import * as Path from "node:path"
-import * as ConfigSecret from "@effect/io/Config/Secret"
 
 const { fromDisk, fromGlob } = _
 
@@ -109,8 +109,7 @@ export const run: (
             recursive: true,
           })
           NFS.writeFileSync(path, sql)
-        }),
-      )
+        }))
 
     return dumpFile(path)
   },

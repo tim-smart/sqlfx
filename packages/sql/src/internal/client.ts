@@ -3,11 +3,11 @@
 import * as Context from "@effect/data/Context"
 import { Tag } from "@effect/data/Context"
 import { pipe } from "@effect/data/Function"
+import * as MutableMap from "@effect/data/MutableHashMap"
 import * as Option from "@effect/data/Option"
 import * as ROA from "@effect/data/ReadonlyArray"
 import * as Effect from "@effect/io/Effect"
 import * as Exit from "@effect/io/Exit"
-import * as MutableMap from "@effect/data/MutableHashMap"
 import * as FiberRef from "@effect/io/FiberRef"
 import * as request from "@effect/io/Request"
 import * as RequestResolver from "@effect/io/RequestResolver"
@@ -20,8 +20,9 @@ import * as SqlSchema from "@sqlfx/sql/Schema"
 import * as Statement from "@sqlfx/sql/Statement"
 
 /** @internal */
-export const TransactionConn =
-  Tag<readonly [conn: Connection, counter: number]>()
+export const TransactionConn = Tag<
+  readonly [conn: Connection, counter: number]
+>()
 
 /** @internal */
 export function make({
@@ -58,7 +59,7 @@ export function make({
           Effect.tap(([conn, id]) =>
             id > 0
               ? conn.executeRaw(savepoint(`sqlfx${id}`))
-              : conn.executeRaw(beginTransaction),
+              : conn.executeRaw(beginTransaction)
           ),
         ),
         ([conn, id]) =>
@@ -125,52 +126,51 @@ export function make({
       )
   }
 
-  const makeExecuteRequest =
-    <E, A, RA>(
-      Request: request.Request.Constructor<
-        request.Request<SchemaError | E, A> & { i0: RA }
-      >,
-    ) =>
-    (
-      Resolver: RequestResolver.RequestResolver<any>,
-      context = Context.empty() as Context.Context<any>,
-    ) => {
-      const resolverWithSql = Effect.map(
-        Effect.serviceOption(TransactionConn),
-        _ =>
-          RequestResolver.provideContext(
-            Resolver,
-            Option.match(_, {
-              onNone: () => context,
-              onSome: tconn => Context.add(context, TransactionConn, tconn),
-            }),
-          ),
+  const makeExecuteRequest = <E, A, RA>(
+    Request: request.Request.Constructor<
+      request.Request<SchemaError | E, A> & { i0: RA }
+    >,
+  ) =>
+  (
+    Resolver: RequestResolver.RequestResolver<any>,
+    context = Context.empty() as Context.Context<any>,
+  ) => {
+    const resolverWithSql = Effect.map(
+      Effect.serviceOption(TransactionConn),
+      _ =>
+        RequestResolver.provideContext(
+          Resolver,
+          Option.match(_, {
+            onNone: () => context,
+            onSome: tconn => Context.add(context, TransactionConn, tconn),
+          }),
+        ),
+    )
+    return (i0: RA) =>
+      Effect.flatMap(
+        resolverWithSql,
+        resolver => Effect.request(Request({ i0 }), resolver),
       )
-      return (i0: RA) =>
-        Effect.flatMap(resolverWithSql, resolver =>
-          Effect.request(Request({ i0 }), resolver),
-        )
-    }
+  }
 
-  const makePopulateCache =
-    <E, A, RA>(
-      Request: request.Request.Constructor<
-        request.Request<SchemaError | E, A> & { i0: RA }
-      >,
-    ) =>
-    (id: RA, _: A) =>
-      Effect.cacheRequestResult(Request({ i0: id }), Exit.succeed(_))
+  const makePopulateCache = <E, A, RA>(
+    Request: request.Request.Constructor<
+      request.Request<SchemaError | E, A> & { i0: RA }
+    >,
+  ) =>
+  (id: RA, _: A) =>
+    Effect.cacheRequestResult(Request({ i0: id }), Exit.succeed(_))
 
-  const makeInvalidateCache =
-    <E, A, RA>(
-      Request: request.Request.Constructor<
-        request.Request<SchemaError | E, A> & { i0: RA }
-      >,
-    ) =>
-    (id: RA) =>
-      Effect.flatMap(FiberRef.get(FiberRef.currentRequestCache), cache =>
-        cache.invalidate(Request({ i0: id })),
-      )
+  const makeInvalidateCache = <E, A, RA>(
+    Request: request.Request.Constructor<
+      request.Request<SchemaError | E, A> & { i0: RA }
+    >,
+  ) =>
+  (id: RA) =>
+    Effect.flatMap(
+      FiberRef.get(FiberRef.currentRequestCache),
+      cache => cache.invalidate(Request({ i0: id })),
+    )
 
   function singleResolverOption<T extends string, II, IA, AI, A, E>(
     tag: T,
@@ -278,7 +278,7 @@ export function make({
           Effect.catchAll(error =>
             Effect.forEach(requests, req => request.fail(req, error), {
               discard: true,
-            }),
+            })
           ),
         ),
     )
@@ -307,8 +307,9 @@ export function make({
       ) => Effect.Effect<never, E, ReadonlyArray<AI>>
     },
   ): Resolver<T, IA, A, E | ResultLengthMismatch> {
-    const Request =
-      request.tagged<Request<T, IA, E | ResultLengthMismatch, A>>(tag)
+    const Request = request.tagged<Request<T, IA, E | ResultLengthMismatch, A>>(
+      tag,
+    )
     const encodeRequests = SqlSchema.encode(
       Schema.array(options.request),
       "request",
@@ -329,15 +330,14 @@ export function make({
                 decodeResult(result),
                 Effect.flatMap(result => request.succeed(requests[i], result)),
                 Effect.catchAll(error =>
-                  request.fail(requests[i], error as any),
+                  request.fail(requests[i], error as any)
                 ),
-              ),
-            ),
+              ))
           ),
           Effect.catchAll(error =>
             Effect.forEach(requests, req => request.fail(req, error), {
               discard: true,
-            }),
+            })
           ),
         ),
     )
@@ -395,7 +395,7 @@ export function make({
                   K,
                   readonly [Request<T, IA, E, ReadonlyArray<A>>, Array<A>]
                 >(),
-              ),
+              )
             ),
           }),
           Effect.tap(({ requestsMap, results }) =>
@@ -414,30 +414,30 @@ export function make({
                   Effect.tap(result =>
                     Effect.sync(() => {
                       req.value[1].push(result)
-                    }),
+                    })
                   ),
                   Effect.catchAll(error =>
                     Effect.zipRight(
                       Effect.sync(() => MutableMap.remove(requestsMap, id)),
                       request.fail(req.value[0], error),
-                    ),
+                    )
                   ),
                 )
               },
               { concurrency: "unbounded", discard: true },
-            ),
+            )
           ),
           Effect.tap(({ requestsMap }) =>
             Effect.forEach(
               requestsMap,
               ([, [req, results]]) => request.succeed(req, results),
               { discard: true },
-            ),
+            )
           ),
           Effect.catchAll(error =>
             Effect.forEach(requests, req => request.fail(req, error as any), {
               discard: true,
-            }),
+            })
           ),
         ),
     )
@@ -483,7 +483,7 @@ export function make({
               requests.reduce(
                 (acc, request) => acc.set(request.i0, request),
                 new Map<IA, Request<T, IA, E, Option.Option<A>>>(),
-              ),
+              )
             ),
           }),
           Effect.tap(({ requestsMap, results }) =>
@@ -502,25 +502,25 @@ export function make({
                 return pipe(
                   decodeResult(result),
                   Effect.flatMap(result =>
-                    request.succeed(req, Option.some(result)),
+                    request.succeed(req, Option.some(result))
                   ),
                   Effect.catchAll(error => request.fail(req, error as any)),
                 )
               },
               { concurrency: "unbounded", discard: true },
-            ),
+            )
           ),
           Effect.tap(({ requestsMap }) =>
             Effect.forEach(
               requestsMap.values(),
               req => request.succeed(req, Option.none()),
               { discard: true },
-            ),
+            )
           ),
           Effect.catchAll(error =>
             Effect.forEach(requests, req => request.fail(req, error as any), {
               discard: true,
-            }),
+            })
           ),
         ),
     )
@@ -558,7 +558,6 @@ export function make({
     idResolver,
     idResolverMany,
   })
-
   ;(client as any).safe = client
 
   return client

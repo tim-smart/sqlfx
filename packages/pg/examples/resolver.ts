@@ -1,8 +1,8 @@
-import * as Pg from "@sqlfx/pg"
+import { pipe } from "@effect/data/Function"
 import * as Config from "@effect/io/Config"
 import * as Effect from "@effect/io/Effect"
-import { pipe } from "@effect/data/Function"
 import * as Schema from "@effect/schema/Schema"
+import * as Pg from "@sqlfx/pg"
 import { SchemaClass } from "effect-schema-class"
 
 class Person extends SchemaClass({
@@ -16,7 +16,7 @@ const InsertPersonSchema = pipe(
   Schema.omit("id", "createdAt"),
 )
 
-const program = Effect.gen(function* (_) {
+const program = Effect.gen(function*(_) {
   const sql = yield* _(Pg.tag)
 
   const Insert = sql.resolver("InsertPerson", {

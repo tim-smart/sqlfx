@@ -2,10 +2,10 @@ import { pipe } from "@effect/data/Function"
 import * as Config from "@effect/io/Config"
 import * as ConfigSecret from "@effect/io/Config/Secret"
 import * as Effect from "@effect/io/Effect"
-import * as Sql from "@sqlfx/mysql"
 import * as Stream from "@effect/stream/Stream"
+import * as Sql from "@sqlfx/mysql"
 
-const program = Effect.gen(function* (_) {
+const program = Effect.gen(function*(_) {
   const sql = yield* _(Sql.tag)
   yield* _(
     sql`INSERT INTO people (name) VALUES ('John')`.pipe(Effect.repeatN(100)),

@@ -12,10 +12,10 @@ import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
+import type { SqliteClient } from "@sqlfx/sqlite"
 import * as internal from "@sqlfx/sqlite/internal/client"
 import type { DB, OpenMode, RowMode } from "@sqlite.org/sqlite-wasm"
 import sqliteInit from "@sqlite.org/sqlite-wasm"
-import type { SqliteClient } from "@sqlfx/sqlite"
 
 export {
   /**
@@ -38,19 +38,19 @@ export const tag: Tag<SqliteClient, SqliteClient> = internal.tag
  */
 export type SqliteWasmClientConfig =
   | {
-      readonly mode?: "vfs"
-      readonly dbName?: string
-      readonly openMode?: OpenMode
-      readonly transformResultNames?: (str: string) => string
-      readonly transformQueryNames?: (str: string) => string
-    }
+    readonly mode?: "vfs"
+    readonly dbName?: string
+    readonly openMode?: OpenMode
+    readonly transformResultNames?: (str: string) => string
+    readonly transformQueryNames?: (str: string) => string
+  }
   | {
-      readonly mode: "opfs"
-      readonly dbName: string
-      readonly openMode?: OpenMode
-      readonly transformResultNames?: (str: string) => string
-      readonly transformQueryNames?: (str: string) => string
-    }
+    readonly mode: "opfs"
+    readonly dbName: string
+    readonly openMode?: OpenMode
+    readonly transformResultNames?: (str: string) => string
+    readonly transformQueryNames?: (str: string) => string
+  }
 
 const initEffect = Effect.runSync(
   Effect.cached(Effect.promise(() => sqliteInit())),
@@ -63,7 +63,7 @@ const initEffect = Effect.runSync(
 export const make = (
   options: SqliteWasmClientConfig,
 ): Effect.Effect<Scope, never, SqliteClient> =>
-  Effect.gen(function* (_) {
+  Effect.gen(function*(_) {
     const compiler = makeCompiler(options.transformQueryNames)
     const transformRows = Client.defaultRowTransform(
       options.transformResultNames!,
@@ -71,7 +71,7 @@ export const make = (
 
     const handleError = (error: any) => SqlError(error.message, { ...error })
 
-    const makeConnection = Effect.gen(function* (_) {
+    const makeConnection = Effect.gen(function*(_) {
       const sqlite3 = yield* _(initEffect)
 
       let db: DB
@@ -107,7 +107,7 @@ export const make = (
 
       const runTransform = options.transformResultNames
         ? (sql: string, params?: ReadonlyArray<Statement.Primitive>) =>
-            Effect.map(run(sql, params), transformRows)
+          Effect.map(run(sql, params), transformRows)
         : run
 
       return identity<

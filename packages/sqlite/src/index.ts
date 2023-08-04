@@ -62,7 +62,7 @@ export interface SqliteClientConfig {
 export const make = (
   options: SqliteClientConfig,
 ): Effect.Effect<Scope, never, SqliteClient> =>
-  Effect.gen(function* (_) {
+  Effect.gen(function*(_) {
     const compiler = makeCompiler(options.transformQueryNames)
     const transformRows = Client.defaultRowTransform(
       options.transformResultNames!,
@@ -70,7 +70,7 @@ export const make = (
 
     const handleError = (error: any) => SqlError(error.message, { ...error })
 
-    const makeConnection = Effect.gen(function* (_) {
+    const makeConnection = Effect.gen(function*(_) {
       const db = new Sqlite(options.filename, {
         readonly: options.readonly ?? false,
       })
@@ -104,12 +104,11 @@ export const make = (
               return []
             },
             catch: handleError,
-          }),
-        )
+          }))
 
       const runTransform = options.transformResultNames
         ? (sql: string, params?: ReadonlyArray<Statement.Primitive>) =>
-            Effect.map(run(sql, params), transformRows)
+          Effect.map(run(sql, params), transformRows)
         : run
 
       const runValues = (

@@ -1,7 +1,7 @@
-import * as Sql from "@sqlfx/sqlite"
+import { pipe } from "@effect/data/Function"
 import * as Config from "@effect/io/Config"
 import * as Effect from "@effect/io/Effect"
-import { pipe } from "@effect/data/Function"
+import * as Sql from "@sqlfx/sqlite"
 
 const SqlLive = Sql.makeLayer({
   filename: Config.succeed("examples/db.sqlite"),
@@ -9,15 +9,17 @@ const SqlLive = Sql.makeLayer({
   transformResultNames: Config.succeed(Sql.transform.toCamel),
 })
 
-const program = Effect.gen(function* (_) {
+const program = Effect.gen(function*(_) {
   const sql = yield* _(Sql.tag)
   yield* _(
     sql`
-      INSERT INTO people ${sql([
+      INSERT INTO people ${
+      sql([
         { name: "John" },
         { name: "Jane" },
         { name: "Fred" },
-      ])}
+      ])
+    }
     `,
   )
   const result = yield* _(sql`SELECT * FROM people`)

@@ -45,7 +45,7 @@ export const run: (
     `
   },
   dumpSchema: (sql, path, table) =>
-    Effect.gen(function* ($) {
+    Effect.gen(function*($) {
       const { execFile } = yield* $(
         Effect.promise(() => import("node:child_process")),
       )
@@ -100,8 +100,7 @@ export const run: (
               recursive: true,
             })
             NFS.writeFileSync(path, sql)
-          }),
-        )
+          }))
 
       return yield* $(dumpFile(path))
     }),

@@ -9,6 +9,7 @@ import type * as ConfigSecret from "@effect/io/Config/Secret"
 import type * as Effect from "@effect/io/Effect"
 import type * as Layer from "@effect/io/Layer"
 import type { Scope } from "@effect/io/Scope"
+import * as internal from "@sqlfx/mssql/internal/client"
 import type { Parameter } from "@sqlfx/mssql/Parameter"
 import type { Procedure, ProcedureWithValues } from "@sqlfx/mssql/Procedure"
 import type * as Client from "@sqlfx/sql/Client"
@@ -16,24 +17,22 @@ import type { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
 import * as Tedious from "tedious"
-import * as internal from "@sqlfx/mssql/internal/client"
 
 const TYPES = Tedious.TYPES
 
 export {
-  /**
-   * Parameter types
-   *
-   * @since 1.0.0
-   */
-  TYPES,
-
   /**
    * Column renaming helpers.
    *
    * @since 1.0.0
    */
   transform,
+  /**
+   * Parameter types
+   *
+   * @since 1.0.0
+   */
+  TYPES,
 }
 
 /**

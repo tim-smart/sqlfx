@@ -13,13 +13,13 @@ import type {
   SchemaError,
   SqlError,
 } from "@sqlfx/sql/Error"
+import * as internal from "@sqlfx/sql/internal/client"
 import type {
   Constructor,
   Fragment,
   Primitive,
   Statement,
 } from "@sqlfx/sql/Statement"
-import * as internal from "@sqlfx/sql/internal/client"
 
 /**
  * @category model
@@ -278,7 +278,8 @@ export const make: ({
  * @since 1.0.0
  */
 export interface Request<T extends string, I, E, A>
-  extends request.Request<SchemaError | E, A> {
+  extends request.Request<SchemaError | E, A>
+{
   readonly _tag: T
   readonly i0: I
 }

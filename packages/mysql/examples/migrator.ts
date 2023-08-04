@@ -2,11 +2,11 @@ import { pipe } from "@effect/data/Function"
 import * as Config from "@effect/io/Config"
 import * as ConfigSecret from "@effect/io/Config/Secret"
 import * as Effect from "@effect/io/Effect"
+import * as Layer from "@effect/io/Layer"
 import * as Sql from "@sqlfx/mysql"
 import * as Migrator from "@sqlfx/mysql/Migrator"
-import * as Layer from "@effect/io/Layer"
 
-const program = Effect.gen(function* (_) {
+const program = Effect.gen(function*(_) {
   const sql = yield* _(Sql.tag)
 
   const [{ id }] = yield* _(
