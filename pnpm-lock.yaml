@@ -154,8 +154,8 @@ importers:
         specifier: workspace:^
         version: link:../sql
       postgres:
-        specifier: ^3.3.5
-        version: 3.3.5
+        specifier: ^3.4.0
+        version: 3.4.0
     devDependencies:
       '@effect/schema':
         specifier: ^0.43.0
@@ -9492,8 +9492,8 @@ packages:
       source-map-js: 1.0.2
     dev: true
 
-  /postgres@3.3.5:
-    resolution: {integrity: sha512-+JD93VELV9gHkqpV5gdL5/70HdGtEw4/XE1S4BC8f1mcPmdib3K5XsKVbnR1XcAyC41zOnifJ+9YRKxdIsXiUw==}
+  /postgres@3.4.0:
+    resolution: {integrity: sha512-d7UtSoCg4hUtzxM9aRi3J8BrM6t0h4bQmgAHG96cDCNpP9CnnWQRdRl7WWNvKs0oOaQU2InGoOi1jETmdZK02g==}
     dev: false
 
   /pouchdb-collections@1.0.1:
