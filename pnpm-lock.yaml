@@ -1,4 +1,4 @@
-lockfileVersion: '6.0'
+lockfileVersion: '6.1'
 
 settings:
   autoInstallPeers: true
@@ -112,23 +112,20 @@ importers:
         version: 16.4.0
     devDependencies:
       '@effect/data':
-        specifier: ^0.17.1
-        version: 0.17.1
+        specifier: ^0.17.6
+        version: 0.17.6
       '@effect/io':
-        specifier: ^0.38.0
-        version: 0.38.0(@effect/data@0.17.1)
+        specifier: ^0.38.2
+        version: 0.38.2(@effect/data@0.17.6)
       '@effect/schema':
-        specifier: ^0.33.0
-        version: 0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0)
+        specifier: ^0.33.2
+        version: 0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2)
       '@sqlfx/sql':
         specifier: workspace:^
         version: link:../sql/dist
       '@types/tedious':
         specifier: ^4.0.9
         version: 4.0.9
-      effect-schema-class:
-        specifier: ^0.13.0
-        version: 0.13.0(@effect/data@0.17.1)(@effect/io@0.38.0)(@effect/schema@0.33.0)
     publishDirectory: dist
 
   packages/mysql:
@@ -138,23 +135,20 @@ importers:
         version: 3.2.0
     devDependencies:
       '@effect/data':
-        specifier: ^0.17.1
-        version: 0.17.1
+        specifier: ^0.17.6
+        version: 0.17.6
       '@effect/io':
-        specifier: ^0.38.0
-        version: 0.38.0(@effect/data@0.17.1)
+        specifier: ^0.38.2
+        version: 0.38.2(@effect/data@0.17.6)
       '@effect/schema':
-        specifier: ^0.33.0
-        version: 0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0)
+        specifier: ^0.33.2
+        version: 0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2)
       '@effect/stream':
         specifier: ^0.34.0
-        version: 0.34.0(@effect/data@0.17.1)(@effect/io@0.38.0)
+        version: 0.34.0(@effect/data@0.17.6)(@effect/io@0.38.2)
       '@sqlfx/sql':
         specifier: workspace:^
         version: link:../sql/dist
-      effect-schema-class:
-        specifier: ^0.13.0
-        version: 0.13.0(@effect/data@0.17.1)(@effect/io@0.38.0)(@effect/schema@0.33.0)
     publishDirectory: dist
 
   packages/pg:
@@ -164,39 +158,36 @@ importers:
         version: 3.3.5
     devDependencies:
       '@effect/data':
-        specifier: ^0.17.1
-        version: 0.17.1
+        specifier: ^0.17.6
+        version: 0.17.6
       '@effect/io':
-        specifier: ^0.38.0
-        version: 0.38.0(@effect/data@0.17.1)
+        specifier: ^0.38.2
+        version: 0.38.2(@effect/data@0.17.6)
       '@effect/schema':
-        specifier: ^0.33.0
-        version: 0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0)
+        specifier: ^0.33.2
+        version: 0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2)
       '@effect/stream':
         specifier: ^0.34.0
-        version: 0.34.0(@effect/data@0.17.1)(@effect/io@0.38.0)
+        version: 0.34.0(@effect/data@0.17.6)(@effect/io@0.38.2)
       '@sqlfx/sql':
         specifier: workspace:^
         version: link:../sql/dist
-      effect-schema-class:
-        specifier: ^0.13.0
-        version: 0.13.0(@effect/data@0.17.1)(@effect/io@0.38.0)(@effect/schema@0.33.0)
     publishDirectory: dist
 
   packages/sql:
     devDependencies:
       '@effect/data':
-        specifier: ^0.17.1
-        version: 0.17.1
+        specifier: ^0.17.6
+        version: 0.17.6
       '@effect/io':
-        specifier: ^0.38.0
-        version: 0.38.0(@effect/data@0.17.1)
+        specifier: ^0.38.2
+        version: 0.38.2(@effect/data@0.17.6)
       '@effect/schema':
-        specifier: ^0.33.0
-        version: 0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0)
+        specifier: ^0.33.2
+        version: 0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2)
       '@effect/stream':
         specifier: ^0.34.0
-        version: 0.34.0(@effect/data@0.17.1)(@effect/io@0.38.0)
+        version: 0.34.0(@effect/data@0.17.6)(@effect/io@0.38.2)
     publishDirectory: dist
 
   packages/sqlite:
@@ -210,33 +201,30 @@ importers:
         version: 3.42.0-build4
     devDependencies:
       '@effect/data':
-        specifier: ^0.17.1
-        version: 0.17.1
+        specifier: ^0.17.6
+        version: 0.17.6
       '@effect/io':
-        specifier: ^0.38.0
-        version: 0.38.0(@effect/data@0.17.1)
+        specifier: ^0.38.2
+        version: 0.38.2(@effect/data@0.17.6)
       '@effect/schema':
-        specifier: ^0.33.0
-        version: 0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0)
+        specifier: ^0.33.2
+        version: 0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2)
       '@sqlfx/sql':
         specifier: workspace:^
         version: link:../sql/dist
       '@types/better-sqlite3':
         specifier: ^7.6.4
         version: 7.6.4
-      effect-schema-class:
-        specifier: ^0.13.0
-        version: 0.13.0(@effect/data@0.17.1)(@effect/io@0.38.0)(@effect/schema@0.33.0)
     publishDirectory: dist
 
   packages/sqlite-wasm-example:
     dependencies:
       '@effect/data':
-        specifier: ^0.17.1
-        version: 0.17.1
+        specifier: ^0.17.6
+        version: 0.17.6
       '@effect/io':
-        specifier: ^0.38.0
-        version: 0.38.0(@effect/data@0.17.1)
+        specifier: ^0.38.2
+        version: 0.38.2(@effect/data@0.17.6)
       '@sqlfx/sqlite':
         specifier: workspace:*
         version: link:../sqlite/dist
@@ -938,8 +926,8 @@ packages:
     hasBin: true
     dev: true
 
-  /@effect/data@0.17.1:
-    resolution: {integrity: sha512-QCYkLE5Y5Dm5Yax5R3GmW4ZIgTx7W+kSZ7yq5eqQ/mFWa8i4yxbLuu8cudqzdeZtRtTGZKlhDxfFfgVtMywXJg==}
+  /@effect/data@0.17.6:
+    resolution: {integrity: sha512-/vwz7Jh05eS0qY8kczR/YyJd18d0C+PMtUkAealh4f6gwvhABLGCnktNJTcq/+UHxY0Cbv18r5uaJ4+7PPC+WQ==}
 
   /@effect/docgen@0.1.2(@types/node@20.4.7)(typescript@5.1.6):
     resolution: {integrity: sha512-qy1pA8SKsqla7/35Q2NuUeT/VwO/olg9hdmmY929wSrKhRVVPOmnF4cbCvFxbykikYek0/6/thupSUenYV0DvQ==}
@@ -972,12 +960,12 @@ packages:
       diff: 5.1.0
     dev: true
 
-  /@effect/io@0.38.0(@effect/data@0.17.1):
-    resolution: {integrity: sha512-qlVC9ASxNC+L2NKX5qOV9672CE5wWizfwBSFaX2XLI7CC118WRvohCTIPQ52n50Bj5TmR20+na+U9C7e4VkqzA==}
+  /@effect/io@0.38.2(@effect/data@0.17.6):
+    resolution: {integrity: sha512-rnAXFo9BDLbY7DgQE1e8uP/sEniyVCsB7gNs+yXPu0XK9s4kaGinH6XgwYRDBuu7Fu1tQ1yd7JoAdEb7yutNRg==}
     peerDependencies:
       '@effect/data': ^0.17.1
     dependencies:
-      '@effect/data': 0.17.1
+      '@effect/data': 0.17.6
 
   /@effect/language-service@0.0.19:
     resolution: {integrity: sha512-sKNVo031dkwLfe1jHZzdTiF1UXgLq1lAYd2JG7q416dlmMoxRcMXrZWyw6a/SxIDM0hyIJAEmrz5iUkQPcPdBQ==}
@@ -986,25 +974,25 @@ packages:
       '@fp-ts/data': 0.0.41
     dev: true
 
-  /@effect/schema@0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0):
-    resolution: {integrity: sha512-K/IDp8aZpqqy2IBydnRtjNF7Sg/qZjiR5t+OANDZ2yOmTHRgtvWM4fwYV5kGYzEBZaBZEqUGjzj4KOqbsQhCEw==}
+  /@effect/schema@0.33.2(@effect/data@0.17.6)(@effect/io@0.38.2):
+    resolution: {integrity: sha512-GfV4kXAs4tkx09bGD6J4RDqVN+xea4UP0I05r1wloox6j0eYgXYaSKAXAZ7qBKVywkba3cDUDZhc9nplAD8TAA==}
     peerDependencies:
       '@effect/data': ^0.17.1
       '@effect/io': ^0.38.0
     dependencies:
-      '@effect/data': 0.17.1
-      '@effect/io': 0.38.0(@effect/data@0.17.1)
+      '@effect/data': 0.17.6
+      '@effect/io': 0.38.2(@effect/data@0.17.6)
       fast-check: 3.12.0
     dev: true
 
-  /@effect/stream@0.34.0(@effect/data@0.17.1)(@effect/io@0.38.0):
+  /@effect/stream@0.34.0(@effect/data@0.17.6)(@effect/io@0.38.2):
     resolution: {integrity: sha512-8eDDQ0JG+ctsstLH/Qo4ojBkcEIFtqpEsWZS6leAwY9gXVmEG54PMWXZiX6dTchgQXKmSnLkEh36leAq4piawQ==}
     peerDependencies:
       '@effect/data': ^0.17.1
       '@effect/io': ^0.38.0
     dependencies:
-      '@effect/data': 0.17.1
-      '@effect/io': 0.38.0(@effect/data@0.17.1)
+      '@effect/data': 0.17.6
+      '@effect/io': 0.38.2(@effect/data@0.17.6)
     dev: true
 
   /@esbuild/android-arm64@0.18.17:
@@ -2908,18 +2896,6 @@ packages:
     dependencies:
       safe-buffer: 5.2.1
     dev: false
-
-  /effect-schema-class@0.13.0(@effect/data@0.17.1)(@effect/io@0.38.0)(@effect/schema@0.33.0):
-    resolution: {integrity: sha512-NRVAGS6yJel7eyQcUKtsomGjNiR2e7q1pJHyKuwsjsL2JvCWdcfXI5VU5tQnUh13QVhZC/+9cIFgpxcxYnLU/Q==}
-    peerDependencies:
-      '@effect/data': ^0.17.1
-      '@effect/io': ^0.38.0
-      '@effect/schema': ^0.33.0
-    dependencies:
-      '@effect/data': 0.17.1
-      '@effect/io': 0.38.0(@effect/data@0.17.1)
-      '@effect/schema': 0.33.0(@effect/data@0.17.1)(@effect/io@0.38.0)
-    dev: true
 
   /electron-to-chromium@1.4.484:
     resolution: {integrity: sha512-nO3ZEomTK2PO/3TUXgEx0A97xZTpKVf4p427lABHuCpT1IQ2N+njVh29DkQkCk6Q4m2wjU+faK4xAcfFndwjvw==}

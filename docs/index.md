@@ -44,10 +44,9 @@ pipe(program, Effect.provideLayer(PgLive), Effect.runPromise)
 import { pipe } from "@effect/data/Function"
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
-import { SchemaClass } from "effect-schema-class"
 import * as Pg from "@sqlfx/pg"
 
-class Person extends SchemaClass({
+class Person extends Schema.Class({
   id: Schema.number,
   name: Schema.string,
   createdAt: Schema.DateFromSelf,
@@ -55,7 +54,7 @@ class Person extends SchemaClass({
 }) {}
 
 const InsertPersonSchema = pipe(
-  Person.structSchema(),
+  Person.schemaStruct(),
   Schema.omit("id", "createdAt", "updatedAt"),
 )
 
@@ -83,10 +82,9 @@ export const makePersonService = Effect.gen(function* (_) {
 ```ts
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
-import { SchemaClass } from "effect-schema-class"
 import * as Pg from "@sqlfx/pg"
 
-class Person extends SchemaClass({
+class Person extends Schema.Class({
   id: Schema.number,
   name: Schema.string,
   createdAt: Schema.DateFromSelf,
