@@ -1,5 +1,11 @@
 # @sqlfx/mssql
 
+## 0.13.2
+
+### Patch Changes
+
+- [#82](https://github.com/tim-smart/sqlfx/pull/82) [`733bc18`](https://github.com/tim-smart/sqlfx/commit/733bc18aa1995d1b0b25aef8564bc8832fc7d972) Thanks [@tim-smart](https://github.com/tim-smart)! - add Pipeable to Procedure
+
 ## 0.13.1
 
 ### Patch Changes
