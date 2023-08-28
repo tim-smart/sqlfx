@@ -2,6 +2,8 @@
  * @since 1.0.0
  */
 import { identity } from "@effect/data/Function"
+import type { Pipeable } from "@effect/data/Pipeable"
+import { pipeArguments } from "@effect/data/Pipeable"
 import * as Parameter from "@sqlfx/mssql/Parameter"
 import type { Row } from "@sqlfx/sql/Connection"
 import type * as Tedious from "tedious"
@@ -10,13 +12,13 @@ import type * as Tedious from "tedious"
  * @category type id
  * @since 1.0.0
  */
-export const ProcedureId = Symbol.for("@sqlfx/mssql/Procedure")
+export const TypeId = Symbol.for("@sqlfx/mssql/Procedure")
 
 /**
  * @category type id
  * @since 1.0.0
  */
-export type ProcedureId = typeof ProcedureId
+export type TypeId = typeof TypeId
 
 /**
  * @category model
@@ -26,8 +28,8 @@ export interface Procedure<
   I extends Record<string, Parameter.Parameter<any>>,
   O extends Record<string, Parameter.Parameter<any>>,
   A = never,
-> {
-  readonly [ProcedureId]: (_: never) => A
+> extends Pipeable {
+  readonly [TypeId]: (_: never) => A
   readonly _tag: "Procedure"
   readonly name: string
   readonly params: I
@@ -77,17 +79,25 @@ export namespace Procedure {
 
 type Simplify<A> = { [K in keyof A]: A[K] } & {}
 
+const procedureProto = {
+  [TypeId]: identity,
+  _tag: "Procedure",
+  pipe() {
+    return pipeArguments(this, arguments)
+  },
+}
+
 /**
  * @category constructor
  * @since 1.0.0
  */
-export const make = (name: string): Procedure<{}, {}> => ({
-  [ProcedureId]: identity,
-  _tag: "Procedure",
-  name,
-  params: {},
-  outputParams: {},
-})
+export const make = (name: string): Procedure<{}, {}> => {
+  const procedure = Object.create(procedureProto)
+  procedure.name = name
+  procedure.params = {}
+  procedure.outputParams = {}
+  return procedure
+}
 
 /**
  * @category combinator

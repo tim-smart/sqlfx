@@ -23,8 +23,8 @@ Added in v1.0.0
   - [Procedure (interface)](#procedure-interface)
   - [ProcedureWithValues (interface)](#procedurewithvalues-interface)
 - [type id](#type-id)
-  - [ProcedureId](#procedureid)
-  - [ProcedureId (type alias)](#procedureid-type-alias)
+  - [TypeId](#typeid)
+  - [TypeId (type alias)](#typeid-type-alias)
 
 ---
 
@@ -128,8 +128,8 @@ export interface Procedure<
   I extends Record<string, Parameter.Parameter<any>>,
   O extends Record<string, Parameter.Parameter<any>>,
   A = never
-> {
-  readonly [ProcedureId]: (_: never) => A
+> extends Pipeable {
+  readonly [TypeId]: (_: never) => A
   readonly _tag: 'Procedure'
   readonly name: string
   readonly params: I
@@ -157,22 +157,22 @@ Added in v1.0.0
 
 # type id
 
-## ProcedureId
+## TypeId
 
 **Signature**
 
 ```ts
-export declare const ProcedureId: typeof ProcedureId
+export declare const TypeId: typeof TypeId
 ```
 
 Added in v1.0.0
 
-## ProcedureId (type alias)
+## TypeId (type alias)
 
 **Signature**
 
 ```ts
-export type ProcedureId = typeof ProcedureId
+export type TypeId = typeof TypeId
 ```
 
 Added in v1.0.0
