@@ -3,16 +3,15 @@ import * as Config from "@effect/io/Config"
 import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
 import * as Pg from "@sqlfx/pg"
-import { SchemaClass } from "effect-schema-class"
 
-class Person extends SchemaClass({
+class Person extends Schema.Class({
   id: Schema.number,
   name: Schema.string,
   createdAt: Schema.DateFromSelf,
 }) {}
 
 const InsertPersonSchema = pipe(
-  Person.structSchema(),
+  Person.schemaStruct(),
   Schema.omit("id", "createdAt"),
 )
 

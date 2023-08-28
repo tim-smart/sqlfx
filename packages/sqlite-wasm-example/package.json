@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@effect/data": "^0.17.1",
-    "@effect/io": "^0.38.0",
+    "@effect/data": "^0.17.6",
+    "@effect/io": "^0.38.2",
     "@sqlfx/sqlite": "workspace:*"
   },
   "devDependencies": {
