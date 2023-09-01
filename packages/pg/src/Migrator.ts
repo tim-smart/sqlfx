@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import * as ConfigSecret from "@effect/io/Config/Secret"
+import * as ConfigSecret from "@effect/io/ConfigSecret"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Pg from "@sqlfx/pg"

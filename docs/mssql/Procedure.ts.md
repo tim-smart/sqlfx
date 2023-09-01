@@ -25,6 +25,10 @@ Added in v1.0.0
 - [type id](#type-id)
   - [TypeId](#typeid)
   - [TypeId (type alias)](#typeid-type-alias)
+- [utils](#utils)
+  - [Procedure (namespace)](#procedure-namespace)
+    - [Result (interface)](#result-interface)
+    - [ParametersRecord (type alias)](#parametersrecord-type-alias)
 
 ---
 
@@ -173,6 +177,37 @@ Added in v1.0.0
 
 ```ts
 export type TypeId = typeof TypeId
+```
+
+Added in v1.0.0
+
+# utils
+
+## Procedure (namespace)
+
+Added in v1.0.0
+
+### Result (interface)
+
+**Signature**
+
+```ts
+export interface Result<O extends Record<string, Parameter.Parameter<any>>, A> {
+  readonly output: ParametersRecord<O>
+  readonly rows: ReadonlyArray<A>
+}
+```
+
+Added in v1.0.0
+
+### ParametersRecord (type alias)
+
+**Signature**
+
+```ts
+export type ParametersRecord<A extends Record<string, Parameter.Parameter<any>>> = {
+  readonly [K in keyof A]: A[K] extends Parameter.Parameter<infer T> ? T : never
+} & {}
 ```
 
 Added in v1.0.0

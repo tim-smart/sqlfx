@@ -17,6 +17,9 @@ Added in v1.0.0
   - [Row (type alias)](#row-type-alias)
 - [tag](#tag)
   - [Connection](#connection)
+- [utils](#utils)
+  - [Connection (namespace)](#connection-namespace)
+    - [Acquirer (type alias)](#acquirer-type-alias)
 
 ---
 
@@ -73,6 +76,22 @@ Added in v1.0.0
 
 ```ts
 export declare const Connection: Tag<Connection, Connection>
+```
+
+Added in v1.0.0
+
+# utils
+
+## Connection (namespace)
+
+Added in v1.0.0
+
+### Acquirer (type alias)
+
+**Signature**
+
+```ts
+export type Acquirer = Effect.Effect<Scope, SqlError, Connection>
 ```
 
 Added in v1.0.0

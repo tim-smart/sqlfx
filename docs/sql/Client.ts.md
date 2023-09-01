@@ -20,6 +20,8 @@ Added in v1.0.0
   - [Request (interface)](#request-interface)
   - [Resolver (interface)](#resolver-interface)
 - [utils](#utils)
+  - [Client (namespace)](#client-namespace)
+    - [MakeOptions (interface)](#makeoptions-interface)
   - [defaultRowTransform](#defaultrowtransform)
 
 ---
@@ -292,6 +294,28 @@ export interface Resolver<T extends string, I, A, E> {
 Added in v1.0.0
 
 # utils
+
+## Client (namespace)
+
+Added in v1.0.0
+
+### MakeOptions (interface)
+
+**Signature**
+
+```ts
+export interface MakeOptions {
+  acquirer: Connection.Acquirer
+  transactionAcquirer: Connection.Acquirer
+  beginTransaction?: string
+  rollback?: string
+  commit?: string
+  savepoint?: (name: string) => string
+  rollbackSavepoint?: (name: string) => string
+}
+```
+
+Added in v1.0.0
 
 ## defaultRowTransform
 

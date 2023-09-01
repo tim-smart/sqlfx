@@ -1,6 +1,6 @@
 import { pipe } from "@effect/data/Function"
 import * as Config from "@effect/io/Config"
-import * as ConfigSecret from "@effect/io/Config/Secret"
+import * as ConfigSecret from "@effect/io/ConfigSecret"
 import * as Effect from "@effect/io/Effect"
 import * as Stream from "@effect/stream/Stream"
 import * as Sql from "@sqlfx/mysql"
