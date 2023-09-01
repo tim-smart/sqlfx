@@ -1,5 +1,14 @@
 # @sqlfx/pg
 
+## 0.15.1
+
+### Patch Changes
+
+- [`a17f214`](https://github.com/tim-smart/sqlfx/commit/a17f214e8c4be2194dd542d49b39d26551f3a0d8) Thanks [@tim-smart](https://github.com/tim-smart)! - bump peer deps
+
+- Updated dependencies [[`a17f214`](https://github.com/tim-smart/sqlfx/commit/a17f214e8c4be2194dd542d49b39d26551f3a0d8)]:
+  - @sqlfx/sql@0.17.1
+
 ## 0.15.0
 
 ### Minor Changes
