@@ -9,7 +9,7 @@ const PgLive = Pg.makeLayer({
   transformResultNames: Config.succeed(Pg.transform.toCamel),
 })
 
-const program = Effect.gen(function*(_) {
+const program = Effect.gen(function* (_) {
   const sql = yield* _(Pg.tag)
   const result = yield* _(
     sql.withTransaction(sql`SELECT * FROM people LIMIT 1`),

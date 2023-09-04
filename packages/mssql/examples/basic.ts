@@ -21,7 +21,7 @@ const peopleProcedure = pipe(
   Proc.compile,
 )
 
-const program = Effect.gen(function*(_) {
+const program = Effect.gen(function* (_) {
   const sql = yield* _(Sql.tag)
 
   yield* _(
@@ -48,12 +48,10 @@ const program = Effect.gen(function*(_) {
 
   // Insert
   const [inserted] = yield* _(
-    sql`INSERT INTO ${sql("people")} ${
-      sql({
-        name: "Tim",
-        createdAt: new Date(),
-      })
-    }`,
+    sql`INSERT INTO ${sql("people")} ${sql({
+      name: "Tim",
+      createdAt: new Date(),
+    })}`,
   )
   console.log(inserted)
 

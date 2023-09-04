@@ -16,12 +16,10 @@ describe("pg", () => {
 
   it("update helper", () => {
     const [query, params] = compiler.compile(
-      sql`UPDATE people SET name = data.name FROM ${
-        sql(
-          [{ name: "Tim" }, { name: "John" }],
-          "data",
-        )
-      }`,
+      sql`UPDATE people SET name = data.name FROM ${sql(
+        [{ name: "Tim" }, { name: "John" }],
+        "data",
+      )}`,
     )
     expect(query).toEqual(
       `UPDATE people SET name = data.name FROM (values ($1),($2)) AS data("name")`,

@@ -278,8 +278,7 @@ export const make: ({
  * @since 1.0.0
  */
 export interface Request<T extends string, I, E, A>
-  extends request.Request<SchemaError | E, A>
-{
+  extends request.Request<SchemaError | E, A> {
   readonly _tag: T
   readonly i0: I
 }

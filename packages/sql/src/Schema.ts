@@ -11,7 +11,7 @@ import { SchemaError } from "@sqlfx/sql/Error"
 export const parse = <I, A>(
   schema: Schema.Schema<I, A>,
   type: SchemaError["type"],
-): (input: unknown) => Effect.Effect<never, SchemaError, A> => {
+): ((input: unknown) => Effect.Effect<never, SchemaError, A>) => {
   const parse = Schema.parse(schema)
 
   return input =>
@@ -24,7 +24,7 @@ export const parse = <I, A>(
 export const encode = <I, A>(
   schema: Schema.Schema<I, A>,
   type: SchemaError["type"],
-): (input: A) => Effect.Effect<never, SchemaError, I> => {
+): ((input: A) => Effect.Effect<never, SchemaError, I>) => {
   const encode = Schema.encode(schema)
 
   return input =>
