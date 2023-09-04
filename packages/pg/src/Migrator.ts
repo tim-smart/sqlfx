@@ -120,7 +120,8 @@ export const run: (
             recursive: true,
           })
           NFS.writeFileSync(path, sql)
-        }))
+        }),
+      )
 
     return pgDumpFile(path)
   },

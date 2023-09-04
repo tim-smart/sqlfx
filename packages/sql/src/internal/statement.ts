@@ -181,19 +181,20 @@ export const custom =
     new FragmentImpl([new CustomImpl(kind, i0, i1, i2)])
 
 const isHelper = (u: unknown): u is Helper =>
-  u instanceof ArrayHelperImpl
-  || u instanceof RecordInsertHelperImpl
-  || u instanceof RecordUpdateHelperImpl
-  || u instanceof IdentifierImpl
+  u instanceof ArrayHelperImpl ||
+  u instanceof RecordInsertHelperImpl ||
+  u instanceof RecordUpdateHelperImpl ||
+  u instanceof IdentifierImpl
 
 const isPrimitive = (u: unknown): u is Primitive =>
-  typeof u === "string"
-  || typeof u === "number"
-  || typeof u === "boolean"
-  || u instanceof Date
-  || u === null
-  || u === undefined
-  || typeof u === "object" && "buffer" in u && u.buffer instanceof ArrayBuffer
+  typeof u === "string" ||
+  typeof u === "number" ||
+  typeof u === "boolean" ||
+  u instanceof Date ||
+  u === null ||
+  u === undefined ||
+  u instanceof Uint8Array ||
+  u instanceof Int8Array
 
 /** @internal */
 export const make = (acquirer: Connection.Acquirer): Constructor =>
@@ -202,9 +203,9 @@ export const make = (acquirer: Connection.Acquirer): Constructor =>
       return statement(acquirer, strings as TemplateStringsArray, ...args)
     } else if (Array.isArray(strings)) {
       if (
-        strings.length > 0
-        && !isPrimitive(strings[0])
-        && typeof strings[0] === "object"
+        strings.length > 0 &&
+        !isPrimitive(strings[0]) &&
+        typeof strings[0] === "object"
       ) {
         if (typeof args[0] === "string") {
           return new RecordUpdateHelperImpl(strings, args[0])
@@ -231,9 +232,8 @@ export function statement(
   strings: TemplateStringsArray,
   ...args: Array<Argument>
 ): Statement<Row> {
-  const segments: Array<Segment> = strings[0].length > 0
-    ? [new LiteralImpl(strings[0])]
-    : []
+  const segments: Array<Segment> =
+    strings[0].length > 0 ? [new LiteralImpl(strings[0])] : []
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]
@@ -280,7 +280,7 @@ function convertLiteralOrFragment(clause: string | Fragment): Array<Segment> {
 export function join(literal: string, addParens = true, fallback = "") {
   const literalSegment = new LiteralImpl(literal)
 
-  return function(clauses: ReadonlyArray<string | Fragment>): Fragment {
+  return function (clauses: ReadonlyArray<string | Fragment>): Fragment {
     if (clauses.length === 0) {
       return unsafeFragment(fallback)
     } else if (clauses.length === 1) {
@@ -420,17 +420,13 @@ class CompilerImpl implements Compiler {
             sql += s
             binds.push.apply(binds, b as any)
           } else {
-            sql += `${
-              generateColumns(
-                keys,
-                this.onIdentifier,
-              )
-            } VALUES ${
-              placeholders(
-                generatePlaceholder(placeholder, keys.length),
-                segment.value.length,
-              )
-            }`
+            sql += `${generateColumns(
+              keys,
+              this.onIdentifier,
+            )} VALUES ${placeholders(
+              generatePlaceholder(placeholder, keys.length),
+              segment.value.length,
+            )}`
 
             for (let i = 0, len = segment.value.length; i < len; i++) {
               for (let j = 0, len = keys.length; j < len; j++) {

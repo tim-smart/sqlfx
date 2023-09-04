@@ -15,7 +15,7 @@ const InsertPersonSchema = pipe(
   Schema.omit("id", "createdAt"),
 )
 
-const program = Effect.gen(function*(_) {
+const program = Effect.gen(function* (_) {
   const sql = yield* _(Pg.tag)
 
   const Insert = sql.resolver("InsertPerson", {

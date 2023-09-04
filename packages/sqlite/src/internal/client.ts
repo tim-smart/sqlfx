@@ -5,7 +5,7 @@ import type { SqliteClient } from "@sqlfx/sqlite"
 /** @internal */
 export const tag = Tag<SqliteClient>()
 
-const escape = Statement.defaultEscape("\"")
+const escape = Statement.defaultEscape('"')
 
 /** @internal */
 export const makeCompiler = (transform?: (_: string) => string) =>

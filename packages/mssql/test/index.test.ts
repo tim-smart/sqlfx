@@ -19,12 +19,10 @@ describe("mssql", () => {
 
   it("update helper", () => {
     const [query, params] = compiler.compile(
-      sql`UPDATE people SET name = data.name FROM ${
-        sql(
-          [{ name: "Tim" }, { name: "John" }],
-          "data",
-        )
-      }`,
+      sql`UPDATE people SET name = data.name FROM ${sql(
+        [{ name: "Tim" }, { name: "John" }],
+        "data",
+      )}`,
     )
     expect(query).toEqual(
       `UPDATE people SET name = data.name FROM (values (@a),(@b)) AS data([name])`,
@@ -42,12 +40,10 @@ describe("mssql", () => {
 
   it("param types", () => {
     const [query, params] = compiler.compile(
-      sql`SELECT * FROM ${sql("people")} WHERE id = ${
-        sql.param(
-          _.TYPES.BigInt,
-          1,
-        )
-      }`,
+      sql`SELECT * FROM ${sql("people")} WHERE id = ${sql.param(
+        _.TYPES.BigInt,
+        1,
+      )}`,
     )
     expect(query).toEqual(`SELECT * FROM [people] WHERE id = @a`)
     expect(Statement.isCustom("MssqlParam")(params[0])).toEqual(true)

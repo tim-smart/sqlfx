@@ -4,17 +4,15 @@ import * as Layer from "@effect/io/Layer"
 import * as Migrator from "@sqlfx/sqlite/Migrator"
 import * as Sql from "@sqlfx/sqlite/wasm"
 
-const program = Effect.gen(function*(_) {
+const program = Effect.gen(function* (_) {
   const sql = yield* _(Sql.tag)
   yield* _(
     sql`
-      INSERT INTO people ${
-      sql([
+      INSERT INTO people ${sql([
         { name: "John" },
         { name: "Jane" },
         { name: "Fred" },
-      ])
-    }
+      ])}
     `,
   )
   const result = yield* _(sql`SELECT * FROM people`)

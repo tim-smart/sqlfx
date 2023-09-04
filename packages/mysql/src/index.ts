@@ -79,7 +79,7 @@ const escape = Statement.defaultEscape("`")
 export const make = (
   options: MysqlClientConfig,
 ): Effect.Effect<Scope, never, MysqlClient> =>
-  Effect.gen(function*(_) {
+  Effect.gen(function* (_) {
     const compiler = makeCompiler(options.transformQueryNames)
 
     const transformRows = Client.defaultRowTransform(
@@ -93,17 +93,17 @@ export const make = (
             options.url
               ? Mysql.createConnection(ConfigSecret.value(options.url))
               : Mysql.createConnection({
-                host: options.host,
-                port: options.port,
-                database: options.database,
-                user: options.username,
-                password: options.password
-                  ? ConfigSecret.value(options.password)
-                  : undefined,
-                connectTimeout: options.connectTimeout
-                  ? Duration.toMillis(Duration.decode(options.connectTimeout))
-                  : undefined,
-              }),
+                  host: options.host,
+                  port: options.port,
+                  database: options.database,
+                  user: options.username,
+                  password: options.password
+                    ? ConfigSecret.value(options.password)
+                    : undefined,
+                  connectTimeout: options.connectTimeout
+                    ? Duration.toMillis(Duration.decode(options.connectTimeout))
+                    : undefined,
+                }),
           catch: error => SqlError((error as any).message, error),
         }),
         conn => Effect.promise(() => conn.end()),
@@ -152,10 +152,10 @@ export const make = (
             const stream = asyncPauseResume<never, SqlError, any>(emit => {
               const query = conn.queryStream(sql, params)
               query.on("error", error =>
-                emit.fail(SqlError(error.message, error)))
+                emit.fail(SqlError(error.message, error)),
+              )
               query.on("data", emit.single)
-              query.on("end", () =>
-                emit.end())
+              query.on("end", () => emit.end())
               return {
                 onInterrupt: Effect.sync(() => query.destroy()),
                 onPause: Effect.sync(() => query.pause()),
@@ -165,9 +165,10 @@ export const make = (
 
             return options.transformResultNames
               ? Stream.mapChunks(stream, _ =>
-                Chunk.unsafeFromArray(
-                  transformRows(Chunk.toReadonlyArray(_) as Array<object>),
-                ))
+                  Chunk.unsafeFromArray(
+                    transformRows(Chunk.toReadonlyArray(_) as Array<object>),
+                  ),
+                )
               : stream
           },
         }

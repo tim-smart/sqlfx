@@ -10,7 +10,7 @@ const PgLive = Pg.makeLayer({
   transformResultNames: Config.succeed(Pg.transform.toCamel),
 })
 
-const program = Effect.gen(function*(_) {
+const program = Effect.gen(function* (_) {
   const sql = yield* _(Pg.tag)
   const query = yield* _(sql`SELECT ${sql.array([1, 2, "test"])} as test_arr`)
   console.log(query)
