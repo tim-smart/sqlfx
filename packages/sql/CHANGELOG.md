@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.17.2
+
+### Patch Changes
+
+- [#87](https://github.com/tim-smart/sqlfx/pull/87) [`5c154a1`](https://github.com/tim-smart/sqlfx/commit/5c154a1e9d51a1897b937af1bc4076cb99f16a74) Thanks [@vecerek](https://github.com/vecerek)! - add Uint8Array to isPrimitive check
+
 ## 0.17.1
 
 ### Patch Changes
