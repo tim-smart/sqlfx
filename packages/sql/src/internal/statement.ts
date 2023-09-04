@@ -193,6 +193,7 @@ const isPrimitive = (u: unknown): u is Primitive =>
   || u instanceof Date
   || u === null
   || u === undefined
+  || typeof u === "object" && "buffer" in u && u.buffer instanceof ArrayBuffer
 
 /** @internal */
 export const make = (acquirer: Connection.Acquirer): Constructor =>
