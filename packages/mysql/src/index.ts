@@ -114,9 +114,10 @@ export const make = (
           values?: ReadonlyArray<any>,
           transform = true,
           rowsAsArray = false,
+          method: "execute" | "query" = "execute",
         ) => {
           const result = Effect.tryPromise({
-            try: () => conn.execute({ sql, rowsAsArray }, values),
+            try: () => conn[method]({ sql, rowsAsArray }, values),
             catch: error => SqlError((error as any).message, error),
           })
 
@@ -141,7 +142,7 @@ export const make = (
             return run(sql, params, true, true)
           },
           executeRaw(sql, params) {
-            return run(sql, params)
+            return run(sql, params, true, false, "query")
           },
           compile(statement) {
             return Effect.sync(() => compiler.compile(statement))
