@@ -27,6 +27,7 @@ import type {
   Segment,
   Statement,
 } from "@sqlfx/sql/Statement"
+import * as Inspectable from "@effect/data/Inspectable"
 
 /** @internal */
 export const FragmentId: _FragmentId = Symbol.for(
@@ -54,23 +55,19 @@ export class StatementPrimitive<A> implements Statement<A> {
   }
 
   constructor(
-    readonly i0: ReadonlyArray<Segment>,
-    readonly i1: Connection.Acquirer,
+    readonly segments: ReadonlyArray<Segment>,
+    readonly acquirer: Connection.Acquirer,
   ) {}
-
-  get segments(): ReadonlyArray<Segment> {
-    return this.i0
-  }
 
   get withoutTransform(): Effect.Effect<never, SqlError, ReadonlyArray<A>> {
     return Effect.scoped(
-      Effect.flatMap(this.i1, _ => _.executeWithoutTransform<any>(this)),
+      Effect.flatMap(this.acquirer, _ => _.executeWithoutTransform<any>(this)),
     )
   }
 
   get stream(): Stream.Stream<never, SqlError, A> {
     return Stream.unwrapScoped(
-      Effect.map(this.i1, _ => _.executeStream<any>(this)),
+      Effect.map(this.acquirer, _ => _.executeStream<any>(this)),
     )
   }
 
@@ -80,7 +77,7 @@ export class StatementPrimitive<A> implements Statement<A> {
     ReadonlyArray<ReadonlyArray<Primitive>>
   > {
     return Effect.scoped(
-      Effect.flatMap(this.i1, _ => _.executeValues<any>(this)),
+      Effect.flatMap(this.acquirer, _ => _.executeValues<any>(this)),
     )
   }
 
@@ -89,7 +86,9 @@ export class StatementPrimitive<A> implements Statement<A> {
     SqlError,
     readonly [sql: string, params: ReadonlyArray<Primitive>]
   > {
-    return Effect.scoped(Effect.flatMap(this.i1, _ => _.compile(this as any)))
+    return Effect.scoped(
+      Effect.flatMap(this.acquirer, _ => _.compile(this as any)),
+    )
   }
 
   // Make it a valid effect
@@ -102,7 +101,7 @@ export class StatementPrimitive<A> implements Statement<A> {
 
   commit(): Effect.Effect<never, SqlError, ReadonlyArray<A>> {
     return Effect.scoped(
-      Effect.flatMap(this.i1, _ => _.execute(this as any) as any),
+      Effect.flatMap(this.acquirer, _ => _.execute(this as any) as any),
     )
   }
 
@@ -114,6 +113,18 @@ export class StatementPrimitive<A> implements Statement<A> {
   }
   [Hash.symbol](this: StatementPrimitive<Row>): number {
     return Hash.random(this)
+  }
+  toJSON() {
+    return {
+      _id: "Statement",
+      segments: this.segments,
+    }
+  }
+  toString() {
+    return Inspectable.toString(this)
+  }
+  [Inspectable.NodeInspectSymbol]() {
+    return this.toJSON()
   }
 
   pipe() {
