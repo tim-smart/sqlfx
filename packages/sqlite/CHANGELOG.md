@@ -1,5 +1,14 @@
 # @sqlfx/sqlite
 
+## 0.19.1
+
+### Patch Changes
+
+- [`d800c20`](https://github.com/tim-smart/sqlfx/commit/d800c20d02e46ddfe6979d3052d0dc6ff9a11061) Thanks [@tim-smart](https://github.com/tim-smart)! - add fromRecord loader for migrations
+
+- Updated dependencies [[`d800c20`](https://github.com/tim-smart/sqlfx/commit/d800c20d02e46ddfe6979d3052d0dc6ff9a11061)]:
+  - @sqlfx/sql@0.19.1
+
 ## 0.19.0
 
 ### Minor Changes
