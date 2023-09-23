@@ -1,10 +1,10 @@
 ---
-title: wasm.ts
-nav_order: 7
+title: react-native.ts
+nav_order: 5
 parent: "@sqlfx/sqlite"
 ---
 
-## wasm overview
+## react-native overview
 
 Added in v1.0.0
 
@@ -18,7 +18,7 @@ Added in v1.0.0
   - [makeLayer](#makelayer)
 - [models](#models)
   - [SqliteClient](#sqliteclient)
-  - [SqliteWasmClientConfig (type alias)](#sqlitewasmclientconfig-type-alias)
+  - [SqliteRNClientConfig (type alias)](#sqliternclientconfig-type-alias)
 - [tags](#tags)
   - [tag](#tag)
 - [utils](#utils)
@@ -33,7 +33,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: (options: SqliteWasmClientConfig) => Effect.Effect<Scope, never, SqliteClient>
+export declare const make: (options: SqliteRNClientConfig) => Effect.Effect<Scope, never, SqliteClient>
 ```
 
 Added in v1.0.0
@@ -53,7 +53,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeLayer: (config: SqliteWasmClientConfig) => Layer.Layer<never, never, SqliteClient>
+export declare const makeLayer: (config: SqliteRNClientConfig) => Layer.Layer<never, never, SqliteClient>
 ```
 
 Added in v1.0.0
@@ -70,26 +70,15 @@ export declare const SqliteClient: any
 
 Added in v1.0.0
 
-## SqliteWasmClientConfig (type alias)
+## SqliteRNClientConfig (type alias)
 
 **Signature**
 
 ```ts
-export type SqliteWasmClientConfig =
-  | {
-      readonly mode?: 'vfs'
-      readonly dbName?: string
-      readonly openMode?: OpenMode
-      readonly transformResultNames?: (str: string) => string
-      readonly transformQueryNames?: (str: string) => string
-    }
-  | {
-      readonly mode: 'opfs'
-      readonly dbName: string
-      readonly openMode?: OpenMode
-      readonly transformResultNames?: (str: string) => string
-      readonly transformQueryNames?: (str: string) => string
-    }
+export type SqliteRNClientConfig = Sqlite.DatabaseParams & {
+  readonly transformResultNames?: (str: string) => string
+  readonly transformQueryNames?: (str: string) => string
+}
 ```
 
 Added in v1.0.0

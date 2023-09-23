@@ -1,6 +1,6 @@
 import { Tag } from "@effect/data/Context"
 import * as Statement from "@sqlfx/sql/Statement"
-import type { SqliteClient } from "@sqlfx/sqlite"
+import type { SqliteClient } from "@sqlfx/sqlite/Client"
 
 /** @internal */
 export const tag = Tag<SqliteClient>()

@@ -1,7 +1,6 @@
 /**
  * @since 1.0.0
  */
-import type { Tag } from "@effect/data/Context"
 import * as Duration from "@effect/data/Duration"
 import { identity } from "@effect/data/Function"
 import * as Cache from "@effect/io/Cache"
@@ -15,45 +14,32 @@ import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
-import * as transform from "@sqlfx/sql/Transform"
+import {
+  tag,
+  type SqliteClient,
+  type SqliteClientConfig,
+} from "@sqlfx/sqlite/Client"
 import * as internal from "@sqlfx/sqlite/internal/client"
 import Sqlite from "better-sqlite3"
 
 export {
+  /**
+   * @category tags
+   * @since 1.0.0
+   */
+  tag,
   /**
    * Column renaming helpers.
    *
    * @since 1.0.0
    */
   transform,
-}
-
-/**
- * @category model
- * @since 1.0.0
- */
-export interface SqliteClient extends Client.Client {
-  readonly config: SqliteClientConfig
-  readonly export: Effect.Effect<never, SqlError, Uint8Array>
-}
-
-/**
- * @category tag
- * @since 1.0.0
- */
-export const tag: Tag<SqliteClient, SqliteClient> = internal.tag
-
-/**
- * @category constructor
- * @since 1.0.0
- */
-export interface SqliteClientConfig {
-  readonly filename: string
-  readonly readonly?: boolean
-  readonly prepareCacheSize?: number
-  readonly transformResultNames?: (str: string) => string
-  readonly transformQueryNames?: (str: string) => string
-}
+  /**
+   * @category models
+   * @since 1.0.0
+   */
+  SqliteClient,
+} from "@sqlfx/sqlite/Client"
 
 /**
  * @category constructor

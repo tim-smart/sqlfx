@@ -5,7 +5,7 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import type { SqlError } from "@sqlfx/sql/Error"
 import * as _ from "@sqlfx/sql/Migrator"
-import type { SqliteClient } from "@sqlfx/sqlite"
+import type { SqliteClient } from "@sqlfx/sqlite/node"
 import * as internal from "@sqlfx/sqlite/internal/client"
 
 const { fromDisk, fromGlob } = _

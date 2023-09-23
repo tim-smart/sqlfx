@@ -12,15 +12,9 @@ import { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
 import { tag, type SqliteClient } from "@sqlfx/sqlite/Client"
 import * as internal from "@sqlfx/sqlite/internal/client"
-import type { DB, OpenMode, RowMode } from "@sqlite.org/sqlite-wasm"
-import sqliteInit from "@sqlite.org/sqlite-wasm"
+import Sqlite from "react-native-sqlite-storage"
 
 export {
-  /**
-   * @category models
-   * @since 1.0.0
-   */
-  SqliteClient,
   /**
    * @category tags
    * @since 1.0.0
@@ -32,38 +26,28 @@ export {
    * @since 1.0.0
    */
   transform,
+  /**
+   * @category models
+   * @since 1.0.0
+   */
+  SqliteClient,
 } from "@sqlfx/sqlite/Client"
 
 /**
  * @category models
  * @since 1.0.0
  */
-export type SqliteWasmClientConfig =
-  | {
-      readonly mode?: "vfs"
-      readonly dbName?: string
-      readonly openMode?: OpenMode
-      readonly transformResultNames?: (str: string) => string
-      readonly transformQueryNames?: (str: string) => string
-    }
-  | {
-      readonly mode: "opfs"
-      readonly dbName: string
-      readonly openMode?: OpenMode
-      readonly transformResultNames?: (str: string) => string
-      readonly transformQueryNames?: (str: string) => string
-    }
-
-const initEffect = Effect.runSync(
-  Effect.cached(Effect.promise(() => sqliteInit())),
-)
+export type SqliteRNClientConfig = Sqlite.DatabaseParams & {
+  readonly transformResultNames?: (str: string) => string
+  readonly transformQueryNames?: (str: string) => string
+}
 
 /**
  * @category constructor
  * @since 1.0.0
  */
 export const make = (
-  options: SqliteWasmClientConfig,
+  options: SqliteRNClientConfig,
 ): Effect.Effect<Scope, never, SqliteClient> =>
   Effect.gen(function* (_) {
     const compiler = makeCompiler(options.transformQueryNames)
@@ -71,40 +55,43 @@ export const make = (
       options.transformResultNames!,
     )
 
-    const handleError = (error: any) => SqlError(error.message, { ...error })
+    const handleError = (error: Sqlite.SQLError) =>
+      SqlError(error.message, error)
 
     const makeConnection = Effect.gen(function* (_) {
-      const sqlite3 = yield* _(initEffect)
+      const db = yield* _(
+        Effect.async<never, SqlError, Sqlite.SQLiteDatabase>(resume => {
+          const db: Sqlite.SQLiteDatabase = Sqlite.openDatabase(
+            options,
+            () => resume(Effect.succeed(db)),
+            error => resume(Effect.fail(handleError(error))),
+          )
+        }),
+      )
 
-      let db: DB
-      if (options.mode === "opfs") {
-        if (!sqlite3.oo1.OpfsDb) {
-          yield* _(Effect.dieMessage("opfs mode not available"))
-        }
-        db = new sqlite3.oo1.OpfsDb!(options.dbName, options.openMode ?? "c")
-      } else {
-        db = new sqlite3.oo1.DB(options.dbName, options.openMode)
-      }
-
-      yield* _(Effect.addFinalizer(() => Effect.sync(() => db.close())))
+      const close = Effect.async<never, SqlError, void>(resume => {
+        db.close(
+          () => resume(Effect.unit),
+          error => resume(Effect.fail(handleError(error))),
+        )
+      })
+      yield* _(Effect.addFinalizer(() => Effect.orDie(close)))
 
       const run = (
         sql: string,
         params: ReadonlyArray<Statement.Primitive> = [],
-        rowMode: RowMode = "object",
       ) =>
-        Effect.try({
-          try: () => {
-            const results: Array<any> = []
-            db.exec({
-              sql,
-              bind: params.length ? params : undefined,
-              rowMode,
-              resultRows: results,
-            })
-            return results
-          },
-          catch: handleError,
+        Effect.async<never, SqlError, Array<any>>(resume => {
+          db.executeSql(
+            sql,
+            params as Array<any>,
+            function (_tx, results) {
+              resume(Effect.succeed(results.rows.raw()))
+            },
+            function (_tx, error) {
+              resume(Effect.fail(handleError(error)))
+            },
+          )
         })
 
       const runTransform = options.transformResultNames
@@ -123,7 +110,13 @@ export const make = (
         },
         executeValues(statement) {
           const [sql, params] = compiler.compile(statement)
-          return run(sql, params, "array")
+          return Effect.map(run(sql, params), results => {
+            if (results.length === 0) {
+              return []
+            }
+            const columns = Object.keys(results[0])
+            return results.map(row => columns.map(column => row[column]))
+          })
         },
         executeWithoutTransform(statement) {
           const [sql, params] = compiler.compile(statement)
@@ -138,10 +131,7 @@ export const make = (
         compile(statement) {
           return Effect.sync(() => compiler.compile(statement))
         },
-        export: Effect.try({
-          try: () => sqlite3.capi.sqlite3_js_db_export(db.pointer),
-          catch: handleError,
-        }),
+        export: Effect.dieMessage("export not implemented"),
       })
     })
 
@@ -163,7 +153,7 @@ export const make = (
  * @category constructor
  * @since 1.0.0
  */
-export const makeLayer = (config: SqliteWasmClientConfig) =>
+export const makeLayer = (config: SqliteRNClientConfig) =>
   Layer.scoped(tag, make(config))
 
 /**

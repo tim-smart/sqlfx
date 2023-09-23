@@ -1,10 +1,10 @@
 ---
-title: wasm.ts
-nav_order: 7
+title: node.ts
+nav_order: 4
 parent: "@sqlfx/sqlite"
 ---
 
-## wasm overview
+## node overview
 
 Added in v1.0.0
 
@@ -18,7 +18,6 @@ Added in v1.0.0
   - [makeLayer](#makelayer)
 - [models](#models)
   - [SqliteClient](#sqliteclient)
-  - [SqliteWasmClientConfig (type alias)](#sqlitewasmclientconfig-type-alias)
 - [tags](#tags)
   - [tag](#tag)
 - [utils](#utils)
@@ -33,7 +32,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: (options: SqliteWasmClientConfig) => Effect.Effect<Scope, never, SqliteClient>
+export declare const make: (options: SqliteClientConfig) => Effect.Effect<Scope, never, SqliteClient>
 ```
 
 Added in v1.0.0
@@ -53,7 +52,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeLayer: (config: SqliteWasmClientConfig) => Layer.Layer<never, never, SqliteClient>
+export declare const makeLayer: (
+  config: Config.Config.Wrap<SqliteClientConfig>
+) => Layer.Layer<never, ConfigError, SqliteClient>
 ```
 
 Added in v1.0.0
@@ -66,30 +67,6 @@ Added in v1.0.0
 
 ```ts
 export declare const SqliteClient: any
-```
-
-Added in v1.0.0
-
-## SqliteWasmClientConfig (type alias)
-
-**Signature**
-
-```ts
-export type SqliteWasmClientConfig =
-  | {
-      readonly mode?: 'vfs'
-      readonly dbName?: string
-      readonly openMode?: OpenMode
-      readonly transformResultNames?: (str: string) => string
-      readonly transformQueryNames?: (str: string) => string
-    }
-  | {
-      readonly mode: 'opfs'
-      readonly dbName: string
-      readonly openMode?: OpenMode
-      readonly transformResultNames?: (str: string) => string
-      readonly transformQueryNames?: (str: string) => string
-    }
 ```
 
 Added in v1.0.0
