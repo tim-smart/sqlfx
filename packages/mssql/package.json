@@ -56,10 +56,10 @@
     "tedious": "^16.4.0"
   },
   "devDependencies": {
-    "@effect/data": "^0.18.5",
-    "@effect/io": "^0.40.1",
-    "@effect/schema": "^0.36.1",
-    "@types/tedious": "^4.0.11"
+    "@effect/data": "^0.18.6",
+    "@effect/io": "^0.40.3",
+    "@effect/schema": "^0.36.5",
+    "@types/tedious": "^4.0.12"
   },
   "peerDependencies": {
     "@effect/data": "^0.18.5",
