@@ -1,5 +1,11 @@
 # @sqlfx/sqlite
 
+## 0.19.3
+
+### Patch Changes
+
+- [`f058eca`](https://github.com/tim-smart/sqlfx/commit/f058eca33ebab0778cf8e78055c01c44eed96046) Thanks [@tim-smart](https://github.com/tim-smart)! - add expo sqlite
+
 ## 0.19.2
 
 ### Patch Changes
