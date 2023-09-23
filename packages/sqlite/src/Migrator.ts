@@ -8,7 +8,7 @@ import * as _ from "@sqlfx/sql/Migrator"
 import type { SqliteClient } from "@sqlfx/sqlite/node"
 import * as internal from "@sqlfx/sqlite/internal/client"
 
-const { fromDisk, fromGlob } = _
+const { fromDisk, fromGlob, fromRecord } = _
 
 export {
   /**
@@ -21,6 +21,11 @@ export {
    * @since 1.0.0
    */
   fromGlob,
+  /**
+   * @category loader
+   * @since 1.0.0
+   */
+  fromRecord,
 }
 
 /**

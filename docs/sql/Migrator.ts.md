@@ -25,6 +25,7 @@ Added in v1.0.0
 - [utils](#utils)
   - [fromDisk](#fromdisk)
   - [fromGlob](#fromglob)
+  - [fromRecord](#fromrecord)
 
 ---
 
@@ -148,6 +149,16 @@ Added in v1.0.0
 
 ```ts
 export declare const fromGlob: (migrations: Record<string, () => Promise<any>>) => Loader
+```
+
+Added in v1.0.0
+
+## fromRecord
+
+**Signature**
+
+```ts
+export declare const fromRecord: (migrations: Record<string, any>) => Loader
 ```
 
 Added in v1.0.0
