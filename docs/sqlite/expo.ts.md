@@ -1,10 +1,10 @@
 ---
-title: node.ts
-nav_order: 5
+title: expo.ts
+nav_order: 3
 parent: "@sqlfx/sqlite"
 ---
 
-## node overview
+## expo overview
 
 Added in v1.0.0
 
@@ -18,6 +18,7 @@ Added in v1.0.0
   - [makeLayer](#makelayer)
 - [models](#models)
   - [SqliteClient](#sqliteclient)
+  - [SqliteExpoClientConfig (interface)](#sqliteexpoclientconfig-interface)
 - [tags](#tags)
   - [tag](#tag)
 - [utils](#utils)
@@ -32,7 +33,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: (options: SqliteClientConfig) => Effect.Effect<Scope, never, SqliteClient>
+export declare const make: (options: SqliteExpoClientConfig) => Effect.Effect<Scope, never, SqliteClient>
 ```
 
 Added in v1.0.0
@@ -52,9 +53,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeLayer: (
-  config: Config.Config.Wrap<SqliteClientConfig>
-) => Layer.Layer<never, ConfigError, SqliteClient>
+export declare const makeLayer: (config: SqliteExpoClientConfig) => Layer.Layer<never, never, SqliteClient>
 ```
 
 Added in v1.0.0
@@ -67,6 +66,21 @@ Added in v1.0.0
 
 ```ts
 export declare const SqliteClient: any
+```
+
+Added in v1.0.0
+
+## SqliteExpoClientConfig (interface)
+
+**Signature**
+
+```ts
+export interface SqliteExpoClientConfig {
+  readonly database: string
+  readonly version?: string
+  readonly transformResultNames?: (str: string) => string
+  readonly transformQueryNames?: (str: string) => string
+}
 ```
 
 Added in v1.0.0

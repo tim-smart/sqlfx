@@ -12,7 +12,7 @@ import { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
 import { tag, type SqliteClient } from "@sqlfx/sqlite/Client"
 import * as internal from "@sqlfx/sqlite/internal/client"
-import * as Sqlite from "react-native-sqlite-storage"
+import * as Sqlite from "expo-sqlite"
 
 export {
   /**
@@ -37,7 +37,9 @@ export {
  * @category models
  * @since 1.0.0
  */
-export type SqliteRNClientConfig = Sqlite.DatabaseParams & {
+export interface SqliteExpoClientConfig {
+  readonly database: string
+  readonly version?: string
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
 }
@@ -47,7 +49,7 @@ export type SqliteRNClientConfig = Sqlite.DatabaseParams & {
  * @since 1.0.0
  */
 export const make = (
-  options: SqliteRNClientConfig,
+  options: SqliteExpoClientConfig,
 ): Effect.Effect<Scope, never, SqliteClient> =>
   Effect.gen(function* (_) {
     const compiler = makeCompiler(options.transformQueryNames)
@@ -55,44 +57,30 @@ export const make = (
       options.transformResultNames!,
     )
 
-    const handleError = (error: Sqlite.SQLError) =>
-      SqlError(error.message, error)
+    const handleError = (error: any) => SqlError(error.message, error)
 
     const makeConnection = Effect.gen(function* (_) {
-      const db = yield* _(
-        Effect.async<never, SqlError, Sqlite.SQLiteDatabase>(resume => {
-          const db: Sqlite.SQLiteDatabase = Sqlite.openDatabase(
-            options,
-            () => resume(Effect.succeed(db)),
-            error => resume(Effect.fail(handleError(error))),
-          )
-        }),
-      )
-
-      const close = Effect.async<never, SqlError, void>(resume => {
-        db.close(
-          () => resume(Effect.unit),
-          error => resume(Effect.fail(handleError(error))),
-        )
-      })
-      yield* _(Effect.addFinalizer(() => Effect.orDie(close)))
+      const db = Sqlite.openDatabase(options.database, options.version)
+      yield* _(Effect.addFinalizer(() => Effect.promise(() => db.closeAsync())))
 
       const run = (
         sql: string,
         params: ReadonlyArray<Statement.Primitive> = [],
       ) =>
-        Effect.async<never, SqlError, Array<any>>(resume => {
-          db.executeSql(
-            sql,
-            params as Array<any>,
-            function (_tx, results) {
-              resume(Effect.succeed(results.rows.raw()))
-            },
-            function (_tx, error) {
-              resume(Effect.fail(handleError(error)))
-            },
-          )
-        })
+        Effect.flatMap(
+          Effect.tryPromise({
+            try: () =>
+              db.execAsync([{ sql, args: params as Array<any> }], false),
+            catch: handleError,
+          }),
+          function (results) {
+            const result = results[0]
+            if ("error" in result) {
+              return Effect.fail(handleError(result.error))
+            }
+            return Effect.succeed(result.rows as Array<any>)
+          },
+        )
 
       const runTransform = options.transformResultNames
         ? (sql: string, params?: ReadonlyArray<Statement.Primitive>) =>
@@ -153,7 +141,7 @@ export const make = (
  * @category constructor
  * @since 1.0.0
  */
-export const makeLayer = (config: SqliteRNClientConfig) =>
+export const makeLayer = (config: SqliteExpoClientConfig) =>
   Layer.scoped(tag, make(config))
 
 /**
