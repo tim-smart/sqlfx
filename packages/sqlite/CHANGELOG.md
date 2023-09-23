@@ -1,5 +1,11 @@
 # @sqlfx/sqlite
 
+## 0.19.0
+
+### Minor Changes
+
+- [`00c7730`](https://github.com/tim-smart/sqlfx/commit/00c7730014fc17cafca3596f338776a0cb5a4171) Thanks [@tim-smart](https://github.com/tim-smart)! - sqlite react-native & deps
+
 ## 0.18.0
 
 ### Minor Changes
