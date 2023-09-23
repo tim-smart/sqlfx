@@ -1,5 +1,11 @@
 # @sqlfx/sqlite
 
+## 0.19.2
+
+### Patch Changes
+
+- [`467e304`](https://github.com/tim-smart/sqlfx/commit/467e304bf011dc4a069fbfad03094f0d642237e2) Thanks [@tim-smart](https://github.com/tim-smart)! - export fromRecord loader
+
 ## 0.19.1
 
 ### Patch Changes
