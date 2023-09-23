@@ -1,5 +1,5 @@
 import * as Effect from "@effect/io/Effect"
-import * as Sql from "@sqlfx/sqlite"
+import * as Sql from "@sqlfx/sqlite/Client"
 
 export default Effect.flatMap(
   Sql.tag,

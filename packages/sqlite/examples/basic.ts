@@ -1,7 +1,7 @@
 import { pipe } from "@effect/data/Function"
 import * as Config from "@effect/io/Config"
 import * as Effect from "@effect/io/Effect"
-import * as Sql from "@sqlfx/sqlite"
+import * as Sql from "@sqlfx/sqlite/node"
 
 const SqlLive = Sql.makeLayer({
   filename: Config.succeed("examples/db.sqlite"),

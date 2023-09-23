@@ -5,6 +5,8 @@ import * as Data from "@effect/data/Data"
 import { pipe } from "@effect/data/Function"
 import * as Option from "@effect/data/Option"
 import * as Effect from "@effect/io/Effect"
+import * as Order from "@effect/data/Order"
+import * as ReadonlyArray from "@effect/data/ReadonlyArray"
 import type { Client } from "@sqlfx/sql/Client"
 import type { SqlError } from "@sqlfx/sql/Error"
 
@@ -319,25 +321,48 @@ export const fromDisk = (directory: string): Loader =>
     ),
   )
 
+const migrationOrder = Order.make<ResolvedMigration>(([a], [b]) =>
+  Order.number(a, b),
+)
+
 /**
  * @since 1.0.0
  */
 export const fromGlob = (
   migrations: Record<string, () => Promise<any>>,
 ): Loader =>
-  Effect.succeed(
-    Object.keys(migrations)
-      .map(_ =>
-        Option.fromNullable(_.match(/^(?:.*\/)?(\d+)_([^.]+)\.(js|ts)$/)),
-      )
-      .flatMap(
-        Option.match({
-          onNone: () => [],
-          onSome: ([key, id, name]) =>
-            [
-              [Number(id), name, Effect.promise(() => migrations[key]())],
-            ] as const,
-        }),
-      )
-      .sort(([a], [b]) => a - b),
+  pipe(
+    Object.keys(migrations),
+    ReadonlyArray.filterMap(_ =>
+      Option.fromNullable(_.match(/^(?:.*\/)?(\d+)_([^.]+)\.(js|ts)$/)),
+    ),
+    ReadonlyArray.map(
+      ([key, id, name]): ResolvedMigration => [
+        Number(id),
+        name,
+        Effect.promise(() => migrations[key]()),
+      ],
+    ),
+    ReadonlyArray.sort(migrationOrder),
+    Effect.succeed,
+  )
+
+/**
+ * @since 1.0.0
+ */
+export const fromRecord = (migrations: Record<string, any>): Loader =>
+  pipe(
+    Object.keys(migrations),
+    ReadonlyArray.filterMap(_ =>
+      Option.fromNullable(_.match(/^(?:.*\/)?(\d+)_([^.]+)\.(js|ts)$/)),
+    ),
+    ReadonlyArray.map(
+      ([key, id, name]): ResolvedMigration => [
+        Number(id),
+        name,
+        Effect.succeed(migrations[key]),
+      ],
+    ),
+    ReadonlyArray.sort(migrationOrder),
+    Effect.succeed,
   )

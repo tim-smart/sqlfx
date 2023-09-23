@@ -4,30 +4,27 @@ import * as Effect from "@effect/io/Effect"
 import * as Schema from "@effect/schema/Schema"
 import * as Pg from "@sqlfx/pg"
 
-class Person extends Schema.Class({
+class Person extends Schema.Class<Person>()({
   id: Schema.number,
   name: Schema.string,
   createdAt: Schema.DateFromSelf,
 }) {}
 
-const InsertPersonSchema = pipe(
-  Person.schemaStruct(),
-  Schema.omit("id", "createdAt"),
-)
+const InsertPersonSchema = pipe(Person.struct, Schema.omit("id", "createdAt"))
 
 const program = Effect.gen(function* (_) {
   const sql = yield* _(Pg.tag)
 
   const Insert = sql.resolver("InsertPerson", {
     request: InsertPersonSchema,
-    result: Person.schema(),
+    result: Person,
     run: requests =>
       sql`INSERT INTO people ${sql(requests)} RETURNING people.*`,
   })
 
   const GetById = sql.idResolver("GetPersonById", {
     id: Schema.number,
-    result: Person.schema(),
+    result: Person,
     resultId: _ => _.id,
     run: ids => sql`SELECT * FROM people WHERE id IN ${sql(ids)}`,
   })
