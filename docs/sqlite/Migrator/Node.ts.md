@@ -1,10 +1,10 @@
 ---
-title: MigratorNode.ts
+title: Migrator/Node.ts
 nav_order: 5
 parent: "@sqlfx/sqlite"
 ---
 
-## MigratorNode overview
+## Node overview
 
 Added in v1.0.0
 

@@ -5,12 +5,21 @@ import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import type { SqlError } from "@sqlfx/sql/Error"
 import * as _ from "@sqlfx/sql/Migrator"
-import type { SqliteClient } from "@sqlfx/sqlite/node"
+import { fromDisk } from "@sqlfx/sql/Migrator/Node"
 import * as internal from "@sqlfx/sqlite/internal/client"
+import type { SqliteClient } from "@sqlfx/sqlite/node"
+import { execFile } from "node:child_process"
+import * as NFS from "node:fs"
+import * as Path from "node:path"
 
-const { fromBabelGlob, fromDisk, fromGlob } = _
+const { fromBabelGlob, fromGlob } = _
 
 export {
+  /**
+   * @category loader
+   * @since 1.0.0
+   */
+  fromBabelGlob,
   /**
    * @category loader
    * @since 1.0.0
@@ -21,11 +30,6 @@ export {
    * @since 1.0.0
    */
   fromGlob,
-  /**
-   * @category loader
-   * @since 1.0.0
-   */
-  fromBabelGlob,
 }
 
 /**
@@ -51,12 +55,6 @@ export const run: (
   },
   dumpSchema: (sql, path, table) =>
     Effect.gen(function* ($) {
-      const { execFile } = yield* $(
-        Effect.promise(() => import("node:child_process")),
-      )
-      const NFS = yield* $(Effect.promise(() => import("node:fs")))
-      const Path = yield* $(Effect.promise(() => import("node:path")))
-
       const sqliteDump = (args: Array<string>) =>
         Effect.map(
           Effect.async<never, _.MigrationError, string>(resume => {

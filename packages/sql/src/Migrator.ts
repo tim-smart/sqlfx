@@ -140,7 +140,9 @@ export const make =
             ),
           ),
           Effect.flatMap(_ =>
-            _.default
+            Effect.isEffect(_)
+              ? Effect.succeed(_)
+              : _.default
               ? Effect.succeed(_.default?.default ?? _.default)
               : Effect.fail(
                   MigrationError({
@@ -282,46 +284,6 @@ export const make =
 
       return completed
     })
-
-/**
- * @since 1.0.0
- */
-export const fromDisk = (directory: string): Loader =>
-  pipe(
-    Effect.promise(() => import("node:fs")),
-    Effect.map(NFS =>
-      NFS.readdirSync(directory)
-        .map(_ =>
-          Option.fromNullable(_.match(/^(?:.*\/)?(\d+)_([^.]+)\.(js|ts)$/)),
-        )
-        .flatMap(
-          Option.match({
-            onNone: () => [],
-            onSome: ([basename, id, name]): ReadonlyArray<ResolvedMigration> =>
-              [
-                [
-                  Number(id),
-                  name,
-                  Effect.promise(
-                    () =>
-                      import(
-                        /* @vite-ignore */
-                        `${directory}/${basename}`
-                      ),
-                  ),
-                ],
-              ] as const,
-          }),
-        )
-        .sort(([a], [b]) => a - b),
-    ),
-    Effect.catchAllDefect(_ =>
-      Effect.as(
-        Effect.logDebug(`Could not load migrations from disk: ${_}`),
-        [],
-      ),
-    ),
-  )
 
 const migrationOrder = Order.make<ResolvedMigration>(([a], [b]) =>
   Order.number(a, b),

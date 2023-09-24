@@ -24,7 +24,6 @@ Added in v1.0.0
   - [ResolvedMigration (type alias)](#resolvedmigration-type-alias)
 - [utils](#utils)
   - [fromBabelGlob](#frombabelglob)
-  - [fromDisk](#fromdisk)
   - [fromGlob](#fromglob)
 
 ---
@@ -139,16 +138,6 @@ Added in v1.0.0
 
 ```ts
 export declare const fromBabelGlob: (migrations: Record<string, any>) => Loader
-```
-
-Added in v1.0.0
-
-## fromDisk
-
-**Signature**
-
-```ts
-export declare const fromDisk: (directory: string) => Loader
 ```
 
 Added in v1.0.0
