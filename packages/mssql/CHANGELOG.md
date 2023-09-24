@@ -1,5 +1,12 @@
 # @sqlfx/mssql
 
+## 0.17.4
+
+### Patch Changes
+
+- Updated dependencies [[`01281eb`](https://github.com/tim-smart/sqlfx/commit/01281ebe56ca0925e4a1f230bab7c8c7ce334009)]:
+  - @sqlfx/sql@0.19.4
+
 ## 0.17.3
 
 ### Patch Changes
