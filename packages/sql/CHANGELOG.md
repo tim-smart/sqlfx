@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.19.2
+
+### Patch Changes
+
+- [`2561970`](https://github.com/tim-smart/sqlfx/commit/2561970541f6aa027024c6614ffd7488440849e4) Thanks [@tim-smart](https://github.com/tim-smart)! - fromBabelGlob migration loader
+
 ## 0.19.1
 
 ### Patch Changes
