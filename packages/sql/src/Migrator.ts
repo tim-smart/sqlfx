@@ -350,11 +350,11 @@ export const fromGlob = (
 /**
  * @since 1.0.0
  */
-export const fromRecord = (migrations: Record<string, any>): Loader =>
+export const fromBabelGlob = (migrations: Record<string, any>): Loader =>
   pipe(
     Object.keys(migrations),
     ReadonlyArray.filterMap(_ =>
-      Option.fromNullable(_.match(/^(?:.*\/)?(\d+)_([^.]+)\.(js|ts)$/)),
+      Option.fromNullable(_.match(/^_(\d+)_([^.]+?)(Js|Ts)?$/)),
     ),
     ReadonlyArray.map(
       ([key, id, name]): ResolvedMigration => [

@@ -11,7 +11,7 @@ import { execFile } from "node:child_process"
 import * as NFS from "node:fs"
 import * as Path from "node:path"
 
-const { fromDisk, fromGlob, fromRecord } = _
+const { fromBabelGlob, fromDisk, fromGlob } = _
 
 export {
   /**
@@ -28,7 +28,7 @@ export {
    * @category loader
    * @since 1.0.0
    */
-  fromRecord,
+  fromBabelGlob,
 }
 
 /**
