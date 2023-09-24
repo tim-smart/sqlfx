@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.19.3
+
+### Patch Changes
+
+- [`dfe30bb`](https://github.com/tim-smart/sqlfx/commit/dfe30bbfc1f833f1a263c6a4c6fe5393bbe9e772) Thanks [@tim-smart](https://github.com/tim-smart)! - seperate node Migrator for sqlite
+
 ## 0.19.2
 
 ### Patch Changes
