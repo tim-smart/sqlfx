@@ -274,7 +274,9 @@ export const make =
       if (schemaDirectory && completed.length > 0) {
         yield* _(
           dumpSchema(sql, `${schemaDirectory}/_schema.sql`, table),
-          Effect.ignoreLogged,
+          Effect.catchAllCause(cause =>
+            Effect.logInfo("Could not dump schema", cause),
+          ),
         )
       }
 

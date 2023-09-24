@@ -1,10 +1,10 @@
 ---
-title: Migrator.ts
-nav_order: 4
+title: MigratorNode.ts
+nav_order: 5
 parent: "@sqlfx/sqlite"
 ---
 
-## Migrator overview
+## MigratorNode overview
 
 Added in v1.0.0
 
@@ -17,6 +17,7 @@ Added in v1.0.0
   - [run](#run)
 - [loader](#loader)
   - [fromBabelGlob](#frombabelglob)
+  - [fromDisk](#fromdisk)
   - [fromGlob](#fromglob)
 
 ---
@@ -55,6 +56,16 @@ Added in v1.0.0
 
 ```ts
 export declare const fromBabelGlob: (migrations: Record<string, any>) => _.Loader
+```
+
+Added in v1.0.0
+
+## fromDisk
+
+**Signature**
+
+```ts
+export declare const fromDisk: (directory: string) => _.Loader
 ```
 
 Added in v1.0.0
