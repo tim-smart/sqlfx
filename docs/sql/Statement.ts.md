@@ -41,6 +41,7 @@ Added in v1.0.0
   - [PrimitiveKind (type alias)](#primitivekind-type-alias)
   - [RecordInsertHelper (interface)](#recordinserthelper-interface)
   - [RecordUpdateHelper (interface)](#recordupdatehelper-interface)
+  - [RecordUpdateHelperSingle (interface)](#recordupdatehelpersingle-interface)
   - [Segment (type alias)](#segment-type-alias)
   - [Statement (interface)](#statement-interface)
 - [type id](#type-id)
@@ -75,6 +76,12 @@ export declare const makeCompiler: <C extends Custom<any, any, any, any> = any>(
         placeholders: string,
         values: ReadonlyArray<ReadonlyArray<Primitive>>
       ) => readonly [sql: string, binds: ReadonlyArray<Primitive>])
+    | undefined,
+  onRecordUpdateSingle?:
+    | ((
+        columns: ReadonlyArray<string>,
+        values: ReadonlyArray<Primitive>
+      ) => readonly [sql: string, params: ReadonlyArray<Primitive>])
     | undefined
 ) => Compiler
 ```
@@ -249,7 +256,7 @@ export interface Constructor {
   (value: ReadonlyArray<Record<string, Primitive>>, alias: string): RecordUpdateHelper
 
   (value: Record<string, Primitive>): RecordInsertHelper
-  (value: Record<string, Primitive>, alias: string): RecordUpdateHelper
+  <A extends Record<string, Primitive>>(value: A, omit: ReadonlyArray<keyof A>): RecordUpdateHelperSingle
 }
 ```
 
@@ -289,7 +296,13 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Helper = ArrayHelper | RecordInsertHelper | RecordUpdateHelper | Identifier | Custom
+export type Helper =
+  | ArrayHelper
+  | RecordInsertHelper
+  | RecordUpdateHelper
+  | RecordUpdateHelperSingle
+  | Identifier
+  | Custom
 ```
 
 Added in v1.0.0
@@ -381,12 +394,34 @@ export interface RecordUpdateHelper {
 
 Added in v1.0.0
 
+## RecordUpdateHelperSingle (interface)
+
+**Signature**
+
+```ts
+export interface RecordUpdateHelperSingle {
+  readonly _tag: 'RecordUpdateHelperSingle'
+  readonly value: Record<string, Primitive>
+  readonly omit: ReadonlyArray<string>
+}
+```
+
+Added in v1.0.0
+
 ## Segment (type alias)
 
 **Signature**
 
 ```ts
-export type Segment = Literal | Identifier | Parameter | ArrayHelper | RecordInsertHelper | RecordUpdateHelper | Custom
+export type Segment =
+  | Literal
+  | Identifier
+  | Parameter
+  | ArrayHelper
+  | RecordInsertHelper
+  | RecordUpdateHelper
+  | RecordUpdateHelperSingle
+  | Custom
 ```
 
 Added in v1.0.0

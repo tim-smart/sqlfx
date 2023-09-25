@@ -26,6 +26,7 @@ import type {
   RecordUpdateHelper,
   Segment,
   Statement,
+  RecordUpdateHelperSingle,
 } from "@sqlfx/sql/Statement"
 import * as Inspectable from "@effect/data/Inspectable"
 
@@ -175,6 +176,14 @@ class RecordUpdateHelperImpl implements RecordUpdateHelper {
   ) {}
 }
 
+class RecordUpdateHelperSingleImpl implements RecordUpdateHelperSingle {
+  readonly _tag = "RecordUpdateHelperSingle"
+  constructor(
+    readonly value: Record<string, Primitive>,
+    readonly omit: ReadonlyArray<string>,
+  ) {}
+}
+
 class CustomImpl<T extends string, A, B, C> implements Custom<T, A, B, C> {
   readonly _tag = "Custom"
   constructor(
@@ -195,6 +204,7 @@ const isHelper = (u: unknown): u is Helper =>
   u instanceof ArrayHelperImpl ||
   u instanceof RecordInsertHelperImpl ||
   u instanceof RecordUpdateHelperImpl ||
+  u instanceof RecordUpdateHelperSingleImpl ||
   u instanceof IdentifierImpl
 
 const isPrimitive = (u: unknown): u is Primitive =>
@@ -228,8 +238,8 @@ export const make = (acquirer: Connection.Acquirer): Constructor =>
     } else if (typeof strings === "string") {
       return new IdentifierImpl(strings)
     } else if (typeof strings === "object") {
-      if (typeof args[0] === "string") {
-        return new RecordUpdateHelperImpl([strings as any], args[0])
+      if (Array.isArray(args[0])) {
+        return new RecordUpdateHelperSingleImpl(strings as any, args[0])
       }
       return new RecordInsertHelperImpl([strings as any])
     }
@@ -370,6 +380,10 @@ class CompilerImpl implements Compiler {
       placeholders: string,
       values: ReadonlyArray<ReadonlyArray<Primitive>>,
     ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
+    readonly onRecordUpdateSingle?: (
+      columns: ReadonlyArray<string>,
+      values: ReadonlyArray<Primitive>,
+    ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
   ) {}
 
   compile(
@@ -448,6 +462,32 @@ class CompilerImpl implements Compiler {
           break
         }
 
+        case "RecordUpdateHelperSingle": {
+          let keys = Object.keys(segment.value)
+          if (segment.omit.length > 0) {
+            keys = keys.filter(key => !segment.omit.includes(key))
+          }
+          if (this.onRecordUpdateSingle) {
+            const [s, b] = this.onRecordUpdateSingle(
+              keys.map(this.onIdentifier),
+              keys.map(key => segment.value[key]),
+            )
+            sql += s
+            binds.push.apply(binds, b as any)
+          } else {
+            for (let i = 0, len = keys.length; i < len; i++) {
+              const column = this.onIdentifier(keys[i])
+              if (i === 0) {
+                sql += `${column} = ${placeholder()}`
+              } else {
+                sql += `, ${column} = ${placeholder()},`
+              }
+              binds.push(segment.value[keys[i]])
+            }
+          }
+          break
+        }
+
         case "RecordUpdateHelper": {
           const keys = Object.keys(segment.value[0])
           const [s, b] = this.onRecordUpdate(
@@ -496,6 +536,10 @@ export const makeCompiler = <C extends Custom<any, any, any, any> = any>(
     placeholders: string,
     values: ReadonlyArray<ReadonlyArray<Primitive>>,
   ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
+  onRecordUpdateSingle?: (
+    columns: ReadonlyArray<string>,
+    values: ReadonlyArray<Primitive>,
+  ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
 ): Compiler =>
   new CompilerImpl(
     parameterPlaceholder,
@@ -503,6 +547,7 @@ export const makeCompiler = <C extends Custom<any, any, any, any> = any>(
     onRecordUpdate,
     onCustom as any,
     onInsert,
+    onRecordUpdateSingle,
   )
 
 const placeholders = (evaluate: () => string, count: number): string => {

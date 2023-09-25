@@ -78,6 +78,7 @@ export type Segment =
   | ArrayHelper
   | RecordInsertHelper
   | RecordUpdateHelper
+  | RecordUpdateHelperSingle
   | Custom
 
 /**
@@ -134,6 +135,16 @@ export interface RecordUpdateHelper {
   readonly _tag: "RecordUpdateHelper"
   readonly value: ReadonlyArray<Record<string, Primitive>>
   readonly alias: string
+}
+
+/**
+ * @category model
+ * @since 1.0.0
+ */
+export interface RecordUpdateHelperSingle {
+  readonly _tag: "RecordUpdateHelperSingle"
+  readonly value: Record<string, Primitive>
+  readonly omit: ReadonlyArray<string>
 }
 
 /**
@@ -197,6 +208,7 @@ export type Helper =
   | ArrayHelper
   | RecordInsertHelper
   | RecordUpdateHelper
+  | RecordUpdateHelperSingle
   | Identifier
   | Custom
 
@@ -227,7 +239,10 @@ export interface Constructor {
   ): RecordUpdateHelper
 
   (value: Record<string, Primitive>): RecordInsertHelper
-  (value: Record<string, Primitive>, alias: string): RecordUpdateHelper
+  <A extends Record<string, Primitive>>(
+    value: A,
+    omit: ReadonlyArray<keyof A>,
+  ): RecordUpdateHelperSingle
 }
 
 /**
@@ -322,6 +337,10 @@ export const makeCompiler: <C extends Custom<any, any, any, any> = any>(
     placeholders: string,
     values: ReadonlyArray<ReadonlyArray<Primitive>>,
   ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
+  onRecordUpdateSingle?: (
+    columns: ReadonlyArray<string>,
+    values: ReadonlyArray<Primitive>,
+  ) => readonly [sql: string, params: ReadonlyArray<Primitive>],
 ) => Compiler = internal.makeCompiler
 
 /**
