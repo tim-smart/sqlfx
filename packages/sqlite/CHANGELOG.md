@@ -1,5 +1,14 @@
 # @sqlfx/sqlite
 
+## 0.19.8
+
+### Patch Changes
+
+- [`687197c`](https://github.com/tim-smart/sqlfx/commit/687197cea0351faff843f1bfee4958c925e07ab0) Thanks [@tim-smart](https://github.com/tim-smart)! - fix extraneous comma in update helper
+
+- Updated dependencies [[`687197c`](https://github.com/tim-smart/sqlfx/commit/687197cea0351faff843f1bfee4958c925e07ab0)]:
+  - @sqlfx/sql@0.19.6
+
 ## 0.19.7
 
 ### Patch Changes
