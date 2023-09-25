@@ -1,5 +1,11 @@
 # @sqlfx/sqlite
 
+## 0.19.9
+
+### Patch Changes
+
+- [`6106a85`](https://github.com/tim-smart/sqlfx/commit/6106a85a563927f0bab8c3ef8a9b1ddc68e83e29) Thanks [@tim-smart](https://github.com/tim-smart)! - switch to react-native-quick-sqlite for react-native
+
 ## 0.19.8
 
 ### Patch Changes
