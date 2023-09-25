@@ -480,7 +480,7 @@ class CompilerImpl implements Compiler {
               if (i === 0) {
                 sql += `${column} = ${placeholder()}`
               } else {
-                sql += `, ${column} = ${placeholder()},`
+                sql += `, ${column} = ${placeholder()}`
               }
               binds.push(segment.value[keys[i]])
             }

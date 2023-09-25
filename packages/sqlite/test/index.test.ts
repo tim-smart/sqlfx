@@ -16,10 +16,10 @@ describe("sqlite", () => {
 
   it("update helper", () => {
     const [query, params] = compiler.compile(
-      sql`UPDATE people SET ${sql({ id: 1, name: "Tim" }, ["id"])}`,
+      sql`UPDATE people SET ${sql({ id: 1, name: "Tim", age: 30 }, ["id"])}`,
     )
-    expect(query).toEqual(`UPDATE people SET "name" = ?`)
-    expect(params).toEqual(["Tim"])
+    expect(query).toEqual(`UPDATE people SET "name" = ?, "age" = ?`)
+    expect(params).toEqual(["Tim", 30])
   })
 
   it("array helper", () => {
