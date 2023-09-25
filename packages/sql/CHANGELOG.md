@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.19.4
+
+### Patch Changes
+
+- [`01281eb`](https://github.com/tim-smart/sqlfx/commit/01281ebe56ca0925e4a1f230bab7c8c7ce334009) Thanks [@tim-smart](https://github.com/tim-smart)! - seperate fromDisk migration loader
+
 ## 0.19.3
 
 ### Patch Changes
