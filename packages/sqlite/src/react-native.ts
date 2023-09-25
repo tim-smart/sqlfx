@@ -2,7 +2,9 @@
  * @since 1.0.0
  */
 import { identity } from "@effect/data/Function"
+import { globalValue } from "@effect/data/GlobalValue"
 import * as Effect from "@effect/io/Effect"
+import * as FiberRef from "@effect/io/FiberRef"
 import * as Layer from "@effect/io/Layer"
 import * as Pool from "@effect/io/Pool"
 import type { Scope } from "@effect/io/Scope"
@@ -10,11 +12,20 @@ import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
-import { tag, type SqliteClient } from "@sqlfx/sqlite/Client"
-import * as internal from "@sqlfx/sqlite/internal/client"
-import * as Sqlite from "react-native-sqlite-storage"
+import { makeCompiler, tag, type SqliteClient } from "@sqlfx/sqlite/Client"
+import * as Sqlite from "react-native-quick-sqlite"
 
 export {
+  /**
+   * @category models
+   * @since 1.0.0
+   */
+  SqliteClient,
+  /**
+   * @category constructors
+   * @since 1.0.0
+   */
+  makeCompiler,
   /**
    * @category tags
    * @since 1.0.0
@@ -26,21 +37,34 @@ export {
    * @since 1.0.0
    */
   transform,
-  /**
-   * @category models
-   * @since 1.0.0
-   */
-  SqliteClient,
 } from "@sqlfx/sqlite/Client"
 
 /**
  * @category models
  * @since 1.0.0
  */
-export type SqliteRNClientConfig = Sqlite.DatabaseParams & {
+export interface SqliteRNClientConfig {
+  readonly filename: string
+  readonly location?: string
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
 }
+
+/**
+ * @category fiber refs
+ * @since 1.0.0
+ */
+export const asyncQuery: FiberRef.FiberRef<boolean> = globalValue(
+  "@sqlfx/sqlite/react-native/asyncQuery",
+  () => FiberRef.unsafeMake(false),
+)
+
+/**
+ * @category fiber refs
+ * @since 1.0.0
+ */
+export const withAsyncQuery = <R, E, A>(effect: Effect.Effect<R, E, A>) =>
+  Effect.locally(effect, asyncQuery, true)
 
 /**
  * @category constructor
@@ -55,44 +79,33 @@ export const make = (
       options.transformResultNames!,
     )
 
-    const handleError = (error: Sqlite.SQLError) =>
-      SqlError(error.message, error)
+    const handleError = (error: any) => SqlError(error.message, error)
 
     const makeConnection = Effect.gen(function* (_) {
-      const db = yield* _(
-        Effect.async<never, SqlError, Sqlite.SQLiteDatabase>(resume => {
-          const db: Sqlite.SQLiteDatabase = Sqlite.openDatabase(
-            options,
-            () => resume(Effect.succeed(db)),
-            error => resume(Effect.fail(handleError(error))),
-          )
-        }),
-      )
-
-      const close = Effect.async<never, SqlError, void>(resume => {
-        db.close(
-          () => resume(Effect.unit),
-          error => resume(Effect.fail(handleError(error))),
-        )
+      const db = Sqlite.open({
+        name: options.filename,
+        location: options.location,
       })
-      yield* _(Effect.addFinalizer(() => Effect.orDie(close)))
+      yield* _(Effect.addFinalizer(() => Effect.sync(() => db.close())))
 
       const run = (
         sql: string,
         params: ReadonlyArray<Statement.Primitive> = [],
       ) =>
-        Effect.async<never, SqlError, Array<any>>(resume => {
-          db.executeSql(
-            sql,
-            params as Array<any>,
-            function (_tx, results) {
-              resume(Effect.succeed(results.rows.raw()))
-            },
-            function (_tx, error) {
-              resume(Effect.fail(handleError(error)))
-            },
-          )
-        })
+        Effect.map(
+          FiberRef.getWith(asyncQuery, asyncQuery =>
+            asyncQuery
+              ? Effect.tryPromise({
+                  try: () => db.executeAsync(sql, params as Array<any>),
+                  catch: handleError,
+                })
+              : Effect.try({
+                  try: () => db.execute(sql, params as Array<any>),
+                  catch: handleError,
+                }),
+          ),
+          result => result.rows?._array ?? [],
+        )
 
       const runTransform = options.transformResultNames
         ? (sql: string, params?: ReadonlyArray<Statement.Primitive>) =>
@@ -155,11 +168,3 @@ export const make = (
  */
 export const makeLayer = (config: SqliteRNClientConfig) =>
   Layer.scoped(tag, make(config))
-
-/**
- * @category constructor
- * @since 1.0.0
- */
-export const makeCompiler: (
-  transform?: ((_: string) => string) | undefined,
-) => Statement.Compiler = internal.makeCompiler

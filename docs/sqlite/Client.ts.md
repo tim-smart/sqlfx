@@ -13,7 +13,7 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [constructor](#constructor)
-  - [SqliteClientConfig (interface)](#sqliteclientconfig-interface)
+  - [makeCompiler](#makecompiler)
 - [model](#model)
   - [SqliteClient (interface)](#sqliteclient-interface)
 - [tag](#tag)
@@ -25,18 +25,12 @@ Added in v1.0.0
 
 # constructor
 
-## SqliteClientConfig (interface)
+## makeCompiler
 
 **Signature**
 
 ```ts
-export interface SqliteClientConfig {
-  readonly filename: string
-  readonly readonly?: boolean
-  readonly prepareCacheSize?: number
-  readonly transformResultNames?: (str: string) => string
-  readonly transformQueryNames?: (str: string) => string
-}
+export declare const makeCompiler: (transform?: ((_: string) => string) | undefined) => Statement.Compiler
 ```
 
 Added in v1.0.0
@@ -49,7 +43,7 @@ Added in v1.0.0
 
 ```ts
 export interface SqliteClient extends Client.Client {
-  readonly config: SqliteClientConfig
+  readonly config: unknown
   readonly export: Effect.Effect<never, SqlError, Uint8Array>
 }
 ```

@@ -14,15 +14,20 @@ import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
-import {
-  tag,
-  type SqliteClient,
-  type SqliteClientConfig,
-} from "@sqlfx/sqlite/Client"
-import * as internal from "@sqlfx/sqlite/internal/client"
+import { tag, type SqliteClient, makeCompiler } from "@sqlfx/sqlite/Client"
 import Sqlite from "better-sqlite3"
 
 export {
+  /**
+   * @category models
+   * @since 1.0.0
+   */
+  SqliteClient,
+  /**
+   * @category constructor
+   * @since 1.0.0
+   */
+  makeCompiler,
   /**
    * @category tags
    * @since 1.0.0
@@ -34,19 +39,26 @@ export {
    * @since 1.0.0
    */
   transform,
-  /**
-   * @category models
-   * @since 1.0.0
-   */
-  SqliteClient,
 } from "@sqlfx/sqlite/Client"
+
+/**
+ * @category models
+ * @since 1.0.0
+ */
+export interface SqliteNodeConfig {
+  readonly filename: string
+  readonly readonly?: boolean
+  readonly prepareCacheSize?: number
+  readonly transformResultNames?: (str: string) => string
+  readonly transformQueryNames?: (str: string) => string
+}
 
 /**
  * @category constructor
  * @since 1.0.0
  */
 export const make = (
-  options: SqliteClientConfig,
+  options: SqliteNodeConfig,
 ): Effect.Effect<Scope, never, SqliteClient> =>
   Effect.gen(function* (_) {
     const compiler = makeCompiler(options.transformQueryNames)
@@ -172,16 +184,8 @@ export const make = (
  * @since 1.0.0
  */
 export const makeLayer: (
-  config: Config.Config.Wrap<SqliteClientConfig>,
+  config: Config.Config.Wrap<SqliteNodeConfig>,
 ) => Layer.Layer<never, ConfigError, SqliteClient> = (
-  config: Config.Config.Wrap<SqliteClientConfig>,
+  config: Config.Config.Wrap<SqliteNodeConfig>,
 ) =>
   Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
-
-/**
- * @category constructor
- * @since 1.0.0
- */
-export const makeCompiler: (
-  transform?: ((_: string) => string) | undefined,
-) => Statement.Compiler = internal.makeCompiler

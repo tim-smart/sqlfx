@@ -14,11 +14,15 @@ Added in v1.0.0
 
 - [constructor](#constructor)
   - [make](#make)
-  - [makeCompiler](#makecompiler)
   - [makeLayer](#makelayer)
+- [constructors](#constructors)
+  - [makeCompiler](#makecompiler)
+- [fiber refs](#fiber-refs)
+  - [asyncQuery](#asyncquery)
+  - [withAsyncQuery](#withasyncquery)
 - [models](#models)
   - [SqliteClient](#sqliteclient)
-  - [SqliteRNClientConfig (type alias)](#sqliternclientconfig-type-alias)
+  - [SqliteRNClientConfig (interface)](#sqliternclientconfig-interface)
 - [tags](#tags)
   - [tag](#tag)
 - [utils](#utils)
@@ -38,6 +42,18 @@ export declare const make: (options: SqliteRNClientConfig) => Effect.Effect<Scop
 
 Added in v1.0.0
 
+## makeLayer
+
+**Signature**
+
+```ts
+export declare const makeLayer: (config: SqliteRNClientConfig) => Layer.Layer<never, never, SqliteClient>
+```
+
+Added in v1.0.0
+
+# constructors
+
 ## makeCompiler
 
 **Signature**
@@ -48,12 +64,24 @@ export declare const makeCompiler: (transform?: ((_: string) => string) | undefi
 
 Added in v1.0.0
 
-## makeLayer
+# fiber refs
+
+## asyncQuery
 
 **Signature**
 
 ```ts
-export declare const makeLayer: (config: SqliteRNClientConfig) => Layer.Layer<never, never, SqliteClient>
+export declare const asyncQuery: FiberRef.FiberRef<boolean>
+```
+
+Added in v1.0.0
+
+## withAsyncQuery
+
+**Signature**
+
+```ts
+export declare const withAsyncQuery: <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, E, A>
 ```
 
 Added in v1.0.0
@@ -70,12 +98,14 @@ export declare const SqliteClient: any
 
 Added in v1.0.0
 
-## SqliteRNClientConfig (type alias)
+## SqliteRNClientConfig (interface)
 
 **Signature**
 
 ```ts
-export type SqliteRNClientConfig = Sqlite.DatabaseParams & {
+export interface SqliteRNClientConfig {
+  readonly filename: string
+  readonly location?: string
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
 }

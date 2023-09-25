@@ -18,6 +18,7 @@ Added in v1.0.0
   - [makeLayer](#makelayer)
 - [models](#models)
   - [SqliteClient](#sqliteclient)
+  - [SqliteNodeConfig (interface)](#sqlitenodeconfig-interface)
 - [tags](#tags)
   - [tag](#tag)
 - [utils](#utils)
@@ -32,7 +33,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: (options: SqliteClientConfig) => Effect.Effect<Scope, never, SqliteClient>
+export declare const make: (options: SqliteNodeConfig) => Effect.Effect<Scope, never, SqliteClient>
 ```
 
 Added in v1.0.0
@@ -53,7 +54,7 @@ Added in v1.0.0
 
 ```ts
 export declare const makeLayer: (
-  config: Config.Config.Wrap<SqliteClientConfig>
+  config: Config.Config.Wrap<SqliteNodeConfig>
 ) => Layer.Layer<never, ConfigError, SqliteClient>
 ```
 
@@ -67,6 +68,22 @@ Added in v1.0.0
 
 ```ts
 export declare const SqliteClient: any
+```
+
+Added in v1.0.0
+
+## SqliteNodeConfig (interface)
+
+**Signature**
+
+```ts
+export interface SqliteNodeConfig {
+  readonly filename: string
+  readonly readonly?: boolean
+  readonly prepareCacheSize?: number
+  readonly transformResultNames?: (str: string) => string
+  readonly transformQueryNames?: (str: string) => string
+}
 ```
 
 Added in v1.0.0

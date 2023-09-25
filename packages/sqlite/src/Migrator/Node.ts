@@ -7,7 +7,7 @@ import type { SqlError } from "@sqlfx/sql/Error"
 import * as _ from "@sqlfx/sql/Migrator"
 import { fromDisk } from "@sqlfx/sql/Migrator/Node"
 import * as internal from "@sqlfx/sqlite/internal/client"
-import type { SqliteClient } from "@sqlfx/sqlite/node"
+import type { SqliteClient, SqliteNodeConfig } from "@sqlfx/sqlite/node"
 import { execFile } from "node:child_process"
 import * as NFS from "node:fs"
 import * as Path from "node:path"
@@ -60,7 +60,7 @@ export const run: (
           Effect.async<never, _.MigrationError, string>(resume => {
             execFile(
               "sqlite3",
-              [sql.config.filename, ...args],
+              [(sql.config as SqliteNodeConfig).filename, ...args],
               (error, sql) => {
                 if (error) {
                   resume(

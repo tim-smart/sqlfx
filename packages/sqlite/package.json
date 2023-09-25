@@ -63,6 +63,7 @@
     "@types/better-sqlite3": "^7.6.5",
     "@types/react-native-sqlite-storage": "^6.0.0",
     "expo-sqlite": "^11.6.0",
+    "react-native-quick-sqlite": "^8.0.4",
     "react-native-sqlite-storage": "^6.0.1"
   },
   "peerDependencies": {
@@ -71,7 +72,7 @@
     "@sqlite.org/sqlite-wasm": "3.43.0-build3",
     "better-sqlite3": "^8.6.0",
     "expo-sqlite": "^11.6.0",
-    "react-native-sqlite-storage": "^6.0.1"
+    "react-native-quick-sqlite": "^8.0.4"
   },
   "peerDependenciesMeta": {
     "@sqlite.org/sqlite-wasm": {
@@ -83,7 +84,7 @@
     "expo-sqlite": {
       "optional": true
     },
-    "react-native-sqlite-storage": {
+    "react-native-quick-sqlite": {
       "optional": true
     }
   }

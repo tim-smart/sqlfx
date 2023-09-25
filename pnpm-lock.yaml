@@ -228,6 +228,9 @@ importers:
       expo-sqlite:
         specifier: ^11.6.0
         version: 11.6.0(expo@49.0.11)
+      react-native-quick-sqlite:
+        specifier: ^8.0.4
+        version: 8.0.4(react-native@0.72.4)(react@18.2.0)
       react-native-sqlite-storage:
         specifier: ^6.0.1
         version: 6.0.1(react-native@0.72.4)
@@ -9749,6 +9752,16 @@ packages:
 
   /react-is@18.2.0:
     resolution: {integrity: sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==}
+    dev: true
+
+  /react-native-quick-sqlite@8.0.4(react-native@0.72.4)(react@18.2.0):
+    resolution: {integrity: sha512-cdIkZl9pCOuEoUwUs2oekWV4YzKpigvlnaOuCovix3pmKd7cRK3buoidRqUkBYuUpObV28Xy7Mhj0BeDQI9mSA==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+    dependencies:
+      react: 18.2.0
+      react-native: 0.72.4(@babel/core@7.22.20)(@babel/preset-env@7.22.20)(react@18.2.0)
     dev: true
 
   /react-native-sqlite-storage@6.0.1(react-native@0.72.4):
