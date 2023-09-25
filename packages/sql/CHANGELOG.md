@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.19.6
+
+### Patch Changes
+
+- [`687197c`](https://github.com/tim-smart/sqlfx/commit/687197cea0351faff843f1bfee4958c925e07ab0) Thanks [@tim-smart](https://github.com/tim-smart)! - fix extraneous comma in update helper
+
 ## 0.19.5
 
 ### Patch Changes
