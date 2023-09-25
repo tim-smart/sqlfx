@@ -14,7 +14,7 @@ describe("sqlite", () => {
     expect(params).toEqual(["Tim", 10])
   })
 
-  it.only("update helper", () => {
+  it("update helper", () => {
     const [query, params] = compiler.compile(
       sql`UPDATE people SET ${sql({ id: 1, name: "Tim" }, ["id"])}`,
     )
