@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.19.5
+
+### Patch Changes
+
+- [`5c914c6`](https://github.com/tim-smart/sqlfx/commit/5c914c682b2f7b749e612b07eb4ac88cadccb09f) Thanks [@tim-smart](https://github.com/tim-smart)! - add single update helper
+
 ## 0.19.4
 
 ### Patch Changes
