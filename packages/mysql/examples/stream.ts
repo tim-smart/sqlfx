@@ -28,7 +28,7 @@ const SqlLive = Sql.makeLayer({
 
 pipe(
   program,
-  Effect.provideLayer(SqlLive),
+  Effect.provide(SqlLive),
   Effect.tapErrorCause(Effect.logError),
   Effect.runFork,
 )

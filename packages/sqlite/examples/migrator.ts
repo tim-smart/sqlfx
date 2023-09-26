@@ -3,7 +3,7 @@ import * as Config from "@effect/io/Config"
 import * as Effect from "@effect/io/Effect"
 import * as Layer from "@effect/io/Layer"
 import * as Sql from "@sqlfx/sqlite/node"
-import * as Migrator from "@sqlfx/sqlite/Migrator"
+import * as Migrator from "@sqlfx/sqlite/Migrator/Node"
 
 const program = Effect.gen(function* (_) {
   const sql = yield* _(Sql.tag)
@@ -32,7 +32,7 @@ const MigratorLive = Layer.provide(
 
 pipe(
   program,
-  Effect.provideLayer(Layer.mergeAll(SqlLive, MigratorLive)),
+  Effect.provide(Layer.mergeAll(SqlLive, MigratorLive)),
   Effect.tapErrorCause(Effect.logError),
   Effect.runFork,
 )

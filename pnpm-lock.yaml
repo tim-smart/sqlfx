@@ -222,18 +222,12 @@ importers:
       '@types/better-sqlite3':
         specifier: ^7.6.5
         version: 7.6.5
-      '@types/react-native-sqlite-storage':
-        specifier: ^6.0.0
-        version: 6.0.0
       expo-sqlite:
         specifier: ^11.6.0
         version: 11.6.0(expo@49.0.11)
       react-native-quick-sqlite:
         specifier: ^8.0.4
         version: 8.0.4(react-native@0.72.5)(react@18.2.0)
-      react-native-sqlite-storage:
-        specifier: ^6.0.1
-        version: 6.0.1(react-native@0.72.5)
     publishDirectory: dist
 
   packages/sqlite-wasm-example:
@@ -3503,10 +3497,6 @@ packages:
 
   /@types/normalize-package-data@2.4.1:
     resolution: {integrity: sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==}
-    dev: true
-
-  /@types/react-native-sqlite-storage@6.0.0:
-    resolution: {integrity: sha512-bzZLc+DsfSQUcUtZUa5M1Ubi/ud88Pdd3k1nbUCQ1baHHzLg95S0DidCWscDHnnuGFB+18GBbcY7r97ivb0XpA==}
     dev: true
 
   /@types/semver@7.5.2:
@@ -9817,15 +9807,6 @@ packages:
       react-native: '*'
     dependencies:
       react: 18.2.0
-      react-native: 0.72.5(@babel/core@7.23.0)(@babel/preset-env@7.22.20)(react@18.2.0)
-    dev: true
-
-  /react-native-sqlite-storage@6.0.1(react-native@0.72.5):
-    resolution: {integrity: sha512-1tDFjrint6X6qSYKf3gDyz+XB+X79jfiL6xTugKHPRtF0WvqMtVgdLuNqZunIXjNEvNtNVEbXaeZ6MsguFu00A==}
-    requiresBuild: true
-    peerDependencies:
-      react-native: '>=0.14.0'
-    dependencies:
       react-native: 0.72.5(@babel/core@7.23.0)(@babel/preset-env@7.22.20)(react@18.2.0)
     dev: true
 

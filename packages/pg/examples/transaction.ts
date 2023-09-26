@@ -20,7 +20,7 @@ const program = Effect.gen(function* (_) {
 
 pipe(
   program,
-  Effect.provideLayer(PgLive),
+  Effect.provide(PgLive),
   Effect.tapErrorCause(Effect.logError),
   Effect.runFork,
 )

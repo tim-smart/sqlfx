@@ -23,7 +23,7 @@ const program = Effect.gen(function* (_) {
 
 pipe(
   program,
-  Effect.provideLayer(SqlLive),
+  Effect.provide(SqlLive),
   Effect.tapErrorCause(Effect.logError),
   Effect.runFork,
 )

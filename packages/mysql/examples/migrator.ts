@@ -38,7 +38,7 @@ const MigratorLive = Layer.provide(
 
 pipe(
   program,
-  Effect.provideLayer(Layer.mergeAll(SqlLive, MigratorLive)),
+  Effect.provide(Layer.mergeAll(SqlLive, MigratorLive)),
   Effect.tapErrorCause(Effect.logError),
   Effect.runFork,
 )
