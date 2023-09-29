@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
-import * as ConfigSecret from "@effect/io/ConfigSecret"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
+import * as ConfigSecret from "effect/ConfigSecret"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
 import * as Pg from "@sqlfx/pg"
 import type { SqlError } from "@sqlfx/sql/Error"
 import * as _ from "@sqlfx/sql/Migrator"

@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import type { Tag } from "@effect/data/Context"
-import type * as Effect from "@effect/io/Effect"
+import type { Tag } from "effect/Context"
+import type * as Effect from "effect/Effect"
 import type * as Client from "@sqlfx/sql/Client"
 import type { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"

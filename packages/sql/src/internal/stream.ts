@@ -1,9 +1,9 @@
-import * as Option from "@effect/data/Option"
-import * as Deferred from "@effect/io/Deferred"
-import * as Effect from "@effect/io/Effect"
-import * as Queue from "@effect/io/Queue"
-import * as Runtime from "@effect/io/Runtime"
-import * as Stream from "@effect/stream/Stream"
+import * as Option from "effect/Option"
+import * as Deferred from "effect/Deferred"
+import * as Effect from "effect/Effect"
+import * as Queue from "effect/Queue"
+import * as Runtime from "effect/Runtime"
+import * as Stream from "effect/Stream"
 
 export const asyncPauseResume = <R, E, A>(
   register: (emit: {

@@ -1,11 +1,11 @@
 /**
  * @since 1.0.0
  */
-import { identity } from "@effect/data/Function"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
-import * as Pool from "@effect/io/Pool"
-import type { Scope } from "@effect/io/Scope"
+import { identity } from "effect/Function"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Pool from "effect/Pool"
+import type { Scope } from "effect/Scope"
 import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
@@ -128,6 +128,7 @@ export const make = (
     return Object.assign(
       Client.make({
         acquirer: Effect.scoped(pool.get()),
+        compiler,
         transactionAcquirer: pool.get(),
       }),
       {

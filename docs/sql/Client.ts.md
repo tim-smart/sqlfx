@@ -305,13 +305,14 @@ Added in v1.0.0
 
 ```ts
 export interface MakeOptions {
-  acquirer: Connection.Acquirer
-  transactionAcquirer: Connection.Acquirer
-  beginTransaction?: string
-  rollback?: string
-  commit?: string
-  savepoint?: (name: string) => string
-  rollbackSavepoint?: (name: string) => string
+  readonly acquirer: Connection.Acquirer
+  readonly compiler: Compiler
+  readonly transactionAcquirer: Connection.Acquirer
+  readonly beginTransaction?: string
+  readonly rollback?: string
+  readonly commit?: string
+  readonly savepoint?: (name: string) => string
+  readonly rollbackSavepoint?: (name: string) => string
 }
 ```
 

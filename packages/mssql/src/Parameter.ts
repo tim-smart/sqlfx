@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import { identity } from "@effect/data/Function"
+import { identity } from "effect/Function"
 import type * as Tedious from "tedious"
 
 /**

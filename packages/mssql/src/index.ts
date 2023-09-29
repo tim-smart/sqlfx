@@ -1,14 +1,14 @@
 /**
  * @since 1.0.0
  */
-import type { Tag } from "@effect/data/Context"
-import type { DurationInput } from "@effect/data/Duration"
-import type * as Config from "@effect/io/Config"
-import type { ConfigError } from "@effect/io/ConfigError"
-import type * as ConfigSecret from "@effect/io/ConfigSecret"
-import type * as Effect from "@effect/io/Effect"
-import type * as Layer from "@effect/io/Layer"
-import type { Scope } from "@effect/io/Scope"
+import type { Tag } from "effect/Context"
+import type { DurationInput } from "effect/Duration"
+import type * as Config from "effect/Config"
+import type { ConfigError } from "effect/ConfigError"
+import type * as ConfigSecret from "effect/ConfigSecret"
+import type * as Effect from "effect/Effect"
+import type * as Layer from "effect/Layer"
+import type { Scope } from "effect/Scope"
 import * as internal from "@sqlfx/mssql/internal/client"
 import type { Parameter } from "@sqlfx/mssql/Parameter"
 import type { Procedure, ProcedureWithValues } from "@sqlfx/mssql/Procedure"

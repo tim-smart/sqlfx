@@ -1,16 +1,16 @@
 /** @internal */
 
-import * as Context from "@effect/data/Context"
-import { Tag } from "@effect/data/Context"
-import { pipe } from "@effect/data/Function"
-import * as MutableMap from "@effect/data/MutableHashMap"
-import * as Option from "@effect/data/Option"
-import * as ROA from "@effect/data/ReadonlyArray"
-import * as Effect from "@effect/io/Effect"
-import * as Exit from "@effect/io/Exit"
-import * as FiberRef from "@effect/io/FiberRef"
-import * as request from "@effect/io/Request"
-import * as RequestResolver from "@effect/io/RequestResolver"
+import * as Context from "effect/Context"
+import { Tag } from "effect/Context"
+import { pipe } from "effect/Function"
+import * as MutableMap from "effect/MutableHashMap"
+import * as Option from "effect/Option"
+import * as ROA from "effect/ReadonlyArray"
+import * as Effect from "effect/Effect"
+import * as Exit from "effect/Exit"
+import * as FiberRef from "effect/FiberRef"
+import * as request from "effect/Request"
+import * as RequestResolver from "effect/RequestResolver"
 import * as Schema from "@effect/schema/Schema"
 import type { Client, Request, Resolver } from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
@@ -28,6 +28,7 @@ export function make({
   acquirer,
   beginTransaction = "BEGIN",
   commit = "COMMIT",
+  compiler,
   rollback = "ROLLBACK",
   rollbackSavepoint = _ => `ROLLBACK TO SAVEPOINT ${_}`,
   savepoint = _ => `SAVEPOINT ${_}`,
@@ -540,24 +541,27 @@ export function make({
     }
   }
 
-  const client: Client = Object.assign(Statement.make(getConnection), {
-    safe: undefined as any,
-    unsafe: Statement.unsafe(getConnection),
-    and: Statement.and,
-    or: Statement.or,
-    join: Statement.join,
-    csv: Statement.csv,
-    withTransaction,
-    schema,
-    singleSchema,
-    singleSchemaOption,
-    resolver,
-    singleResolverOption,
-    singleResolver,
-    voidResolver,
-    idResolver,
-    idResolverMany,
-  })
+  const client: Client = Object.assign(
+    Statement.make(getConnection, compiler),
+    {
+      safe: undefined as any,
+      unsafe: Statement.unsafe(getConnection, compiler),
+      and: Statement.and,
+      or: Statement.or,
+      join: Statement.join,
+      csv: Statement.csv,
+      withTransaction,
+      schema,
+      singleSchema,
+      singleSchemaOption,
+      resolver,
+      singleResolverOption,
+      singleResolver,
+      voidResolver,
+      idResolver,
+      idResolverMany,
+    },
+  )
   ;(client as any).safe = client
 
   return client

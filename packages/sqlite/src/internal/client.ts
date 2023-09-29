@@ -1,4 +1,4 @@
-import { Tag } from "@effect/data/Context"
+import { Tag } from "effect/Context"
 import * as Statement from "@sqlfx/sql/Statement"
 import type { SqliteClient } from "@sqlfx/sqlite/Client"
 

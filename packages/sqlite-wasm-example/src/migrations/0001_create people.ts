@@ -1,4 +1,4 @@
-import * as Effect from "@effect/io/Effect"
+import * as Effect from "effect/Effect"
 import * as Sql from "@sqlfx/sqlite/wasm"
 
 export default Effect.flatMap(

@@ -1,7 +1,7 @@
-import { pipe } from "@effect/data/Function"
-import * as Config from "@effect/io/Config"
-import * as Effect from "@effect/io/Effect"
-import * as Stream from "@effect/stream/Stream"
+import { pipe } from "effect/Function"
+import * as Config from "effect/Config"
+import * as Effect from "effect/Effect"
+import * as Stream from "effect/Stream"
 import * as Pg from "@sqlfx/pg"
 
 const PgLive = Pg.makeLayer({

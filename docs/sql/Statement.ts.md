@@ -144,7 +144,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: (acquirer: Connection.Acquirer) => Constructor
+export declare const make: (acquirer: Connection.Acquirer, compiler: Compiler) => Constructor
 ```
 
 Added in v1.0.0
@@ -165,7 +165,8 @@ Added in v1.0.0
 
 ```ts
 export declare const unsafe: (
-  acquirer: Connection.Acquirer
+  acquirer: Connection.Acquirer,
+  compiler: Compiler
 ) => <A extends object = Row>(sql: string, params?: ReadonlyArray<Primitive> | undefined) => Statement<A>
 ```
 
@@ -435,7 +436,7 @@ export interface Statement<A> extends Fragment, Equal, Effect<never, SqlError, R
   readonly withoutTransform: Effect<never, SqlError, ReadonlyArray<A>>
   readonly stream: Stream.Stream<never, SqlError, A>
   readonly values: Effect<never, SqlError, ReadonlyArray<ReadonlyArray<Primitive>>>
-  readonly compile: Effect<never, SqlError, readonly [sql: string, params: ReadonlyArray<Primitive>]>
+  readonly compile: () => readonly [sql: string, params: ReadonlyArray<Primitive>]
 }
 ```
 

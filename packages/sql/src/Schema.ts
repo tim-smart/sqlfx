@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import * as Effect from "@effect/io/Effect"
+import * as Effect from "effect/Effect"
 import * as Schema from "@effect/schema/Schema"
 import { SchemaError } from "@sqlfx/sql/Error"
 

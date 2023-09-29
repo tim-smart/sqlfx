@@ -1,8 +1,8 @@
-import { pipe } from "@effect/data/Function"
-import * as Config from "@effect/io/Config"
-import * as ConfigSecret from "@effect/io/ConfigSecret"
-import * as Effect from "@effect/io/Effect"
-import * as Stream from "@effect/stream/Stream"
+import { pipe } from "effect/Function"
+import * as Config from "effect/Config"
+import * as ConfigSecret from "effect/ConfigSecret"
+import * as Effect from "effect/Effect"
+import * as Stream from "effect/Stream"
 import * as Sql from "@sqlfx/mysql"
 
 const program = Effect.gen(function* (_) {

@@ -13,9 +13,9 @@ A SQL toolkit for Effect-TS
 ## Basic example
 
 ```ts
-import { pipe } from "@effect/data/Function"
-import * as Config from "@effect/io/Config"
-import * as Effect from "@effect/io/Effect"
+import { pipe } from "effect/Function"
+import * as Config from "effect/Config"
+import * as Effect from "effect/Effect"
 import * as Pg from "@sqlfx/pg"
 
 const PgLive = Pg.makeLayer({
@@ -41,8 +41,8 @@ pipe(program, Effect.provideLayer(PgLive), Effect.runPromise)
 ## INSERT resolver
 
 ```ts
-import { pipe } from "@effect/data/Function"
-import * as Effect from "@effect/io/Effect"
+import { pipe } from "effect/Function"
+import * as Effect from "effect/Effect"
 import * as Schema from "@effect/schema/Schema"
 import * as Pg from "@sqlfx/pg"
 
@@ -80,7 +80,7 @@ export const makePersonService = Effect.gen(function* (_) {
 ## SELECT resolver
 
 ```ts
-import * as Effect from "@effect/io/Effect"
+import * as Effect from "effect/Effect"
 import * as Schema from "@effect/schema/Schema"
 import * as Pg from "@sqlfx/pg"
 
@@ -120,7 +120,7 @@ Here is an example migration:
 ```ts
 // src/migrations/0001_add_users.ts
 
-import * as Effect from "@effect/io/Effect"
+import * as Effect from "effect/Effect"
 import * as Pg from "@sqlfx/pg"
 
 export default Effect.flatMap(
@@ -141,13 +141,13 @@ To run your migrations:
 ```ts
 // src/main.ts
 
-import * as Effect from "@effect/io/Effect"
+import * as Effect from "effect/Effect"
 import * as Pg from "@sqlfx/pg"
 import * as Migrator from "@sqlfx/pg/Migrator"
-import * as Config from "@effect/io/Config"
+import * as Config from "effect/Config"
 import { fileURLToPath } from "node:url"
-import * as Layer from "@effect/io/Layer"
-import { pipe } from "@effect/data/Function"
+import * as Layer from "effect/Layer"
+import { pipe } from "effect/Function"
 
 const program = Effect.gen(function* (_) {
   // ...

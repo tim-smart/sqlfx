@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
 import type { SqlError } from "@sqlfx/sql/Error"
 import * as _ from "@sqlfx/sql/Migrator"
 import type { SqliteClient } from "@sqlfx/sqlite/node"

@@ -1,7 +1,7 @@
-import { pipe } from "@effect/data/Function"
-import * as Config from "@effect/io/Config"
-import * as ConfigSecret from "@effect/io/ConfigSecret"
-import * as Effect from "@effect/io/Effect"
+import { pipe } from "effect/Function"
+import * as Config from "effect/Config"
+import * as ConfigSecret from "effect/ConfigSecret"
+import * as Effect from "effect/Effect"
 import * as Sql from "@sqlfx/mysql"
 
 const SqlLive = Sql.makeLayer({

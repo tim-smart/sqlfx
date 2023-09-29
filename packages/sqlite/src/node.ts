@@ -1,15 +1,15 @@
 /**
  * @since 1.0.0
  */
-import * as Duration from "@effect/data/Duration"
-import { identity } from "@effect/data/Function"
-import * as Cache from "@effect/io/Cache"
-import * as Config from "@effect/io/Config"
-import type { ConfigError } from "@effect/io/ConfigError"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
-import * as Pool from "@effect/io/Pool"
-import type { Scope } from "@effect/io/Scope"
+import * as Duration from "effect/Duration"
+import { identity } from "effect/Function"
+import * as Cache from "effect/Cache"
+import * as Config from "effect/Config"
+import type { ConfigError } from "effect/ConfigError"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Pool from "effect/Pool"
+import type { Scope } from "effect/Scope"
 import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
@@ -170,6 +170,7 @@ export const make = (
     return Object.assign(
       Client.make({
         acquirer: Effect.scoped(pool.get()),
+        compiler,
         transactionAcquirer: pool.get(),
       }),
       {

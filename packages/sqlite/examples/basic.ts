@@ -1,6 +1,6 @@
-import { pipe } from "@effect/data/Function"
-import * as Config from "@effect/io/Config"
-import * as Effect from "@effect/io/Effect"
+import { pipe } from "effect/Function"
+import * as Config from "effect/Config"
+import * as Effect from "effect/Effect"
 import * as Sql from "@sqlfx/sqlite/node"
 
 const SqlLive = Sql.makeLayer({

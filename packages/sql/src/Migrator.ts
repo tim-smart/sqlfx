@@ -1,12 +1,12 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data"
-import { pipe } from "@effect/data/Function"
-import * as Option from "@effect/data/Option"
-import * as Effect from "@effect/io/Effect"
-import * as Order from "@effect/data/Order"
-import * as ReadonlyArray from "@effect/data/ReadonlyArray"
+import * as Data from "effect/Data"
+import { pipe } from "effect/Function"
+import * as Option from "effect/Option"
+import * as Effect from "effect/Effect"
+import * as Order from "effect/Order"
+import * as ReadonlyArray from "effect/ReadonlyArray"
 import type { Client } from "@sqlfx/sql/Client"
 import type { SqlError } from "@sqlfx/sql/Error"
 

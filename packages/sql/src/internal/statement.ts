@@ -1,11 +1,3 @@
-import * as Equal from "@effect/data/Equal"
-import { identity } from "@effect/data/Function"
-import * as Hash from "@effect/data/Hash"
-import { pipeArguments } from "@effect/data/Pipeable"
-import * as Effect from "@effect/io/Effect"
-import { ChannelTypeId } from "@effect/stream/Channel"
-import { SinkTypeId } from "@effect/stream/Sink"
-import * as Stream from "@effect/stream/Stream"
 import type { Connection, Row } from "@sqlfx/sql/Connection"
 import type { SqlError } from "@sqlfx/sql/Error"
 import type {
@@ -15,7 +7,6 @@ import type {
   Constructor,
   Custom,
   Fragment,
-  FragmentId as _FragmentId,
   Helper,
   Identifier,
   Literal,
@@ -24,11 +15,15 @@ import type {
   PrimitiveKind,
   RecordInsertHelper,
   RecordUpdateHelper,
+  RecordUpdateHelperSingle,
   Segment,
   Statement,
-  RecordUpdateHelperSingle,
+  FragmentId as _FragmentId,
 } from "@sqlfx/sql/Statement"
-import * as Inspectable from "@effect/data/Inspectable"
+import * as Effect from "effect/Effect"
+import { Effectable } from "effect/Effectable"
+import { identity } from "effect/Function"
+import * as Stream from "effect/Stream"
 
 /** @internal */
 export const FragmentId: _FragmentId = Symbol.for(
@@ -50,7 +45,10 @@ export function isCustom<A extends Custom<any, any, any, any>>(
 }
 
 /** @internal */
-export class StatementPrimitive<A> implements Statement<A> {
+export class StatementPrimitive<A>
+  extends Effectable<never, SqlError, ReadonlyArray<A>>
+  implements Statement<A>
+{
   get [FragmentId]() {
     return identity
   }
@@ -58,7 +56,10 @@ export class StatementPrimitive<A> implements Statement<A> {
   constructor(
     readonly segments: ReadonlyArray<Segment>,
     readonly acquirer: Connection.Acquirer,
-  ) {}
+    readonly compiler: Compiler,
+  ) {
+    super()
+  }
 
   get withoutTransform(): Effect.Effect<never, SqlError, ReadonlyArray<A>> {
     return Effect.scoped(
@@ -82,54 +83,19 @@ export class StatementPrimitive<A> implements Statement<A> {
     )
   }
 
-  get compile(): Effect.Effect<
-    never,
-    SqlError,
-    readonly [sql: string, params: ReadonlyArray<Primitive>]
-  > {
-    return Effect.scoped(
-      Effect.flatMap(this.acquirer, _ => _.compile(this as any)),
-    )
+  compile() {
+    return this.compiler.compile(this)
   }
-
-  // Make it a valid effect
-  public _tag = "Commit" // OP_COMMIT
-  public i2: any = undefined;
-  [Effect.EffectTypeId] = undefined as any;
-  [Stream.StreamTypeId] = undefined as any;
-  [SinkTypeId] = undefined as any;
-  [ChannelTypeId] = undefined as any
-
   commit(): Effect.Effect<never, SqlError, ReadonlyArray<A>> {
     return Effect.scoped(
       Effect.flatMap(this.acquirer, _ => _.execute(this as any) as any),
     )
-  }
-
-  [Equal.symbol](
-    this: StatementPrimitive<Row>,
-    that: StatementPrimitive<Row>,
-  ): boolean {
-    return this === that
-  }
-  [Hash.symbol](this: StatementPrimitive<Row>): number {
-    return Hash.random(this)
   }
   toJSON() {
     return {
       _id: "Statement",
       segments: this.segments,
     }
-  }
-  toString() {
-    return Inspectable.toString(this)
-  }
-  [Inspectable.NodeInspectSymbol]() {
-    return this.toJSON()
-  }
-
-  pipe() {
-    return pipeArguments(this, arguments)
   }
 }
 
@@ -218,10 +184,18 @@ const isPrimitive = (u: unknown): u is Primitive =>
   u instanceof Int8Array
 
 /** @internal */
-export const make = (acquirer: Connection.Acquirer): Constructor =>
+export const make = (
+  acquirer: Connection.Acquirer,
+  compiler: Compiler,
+): Constructor =>
   function sql(strings: unknown, ...args: Array<any>): any {
     if (Array.isArray(strings) && "raw" in strings) {
-      return statement(acquirer, strings as TemplateStringsArray, ...args)
+      return statement(
+        acquirer,
+        compiler,
+        strings as TemplateStringsArray,
+        ...args,
+      )
     } else if (Array.isArray(strings)) {
       if (
         strings.length > 0 &&
@@ -250,6 +224,7 @@ export const make = (acquirer: Connection.Acquirer): Constructor =>
 /** @internal */
 export function statement(
   acquirer: Connection.Acquirer,
+  compiler: Compiler,
   strings: TemplateStringsArray,
   ...args: Array<Argument>
 ): Statement<Row> {
@@ -272,17 +247,21 @@ export function statement(
     }
   }
 
-  return new StatementPrimitive<Row>(segments, acquirer)
+  return new StatementPrimitive<Row>(segments, acquirer, compiler)
 }
 
 /** @internal */
 export const unsafe =
-  (acquirer: Connection.Acquirer) =>
+  (acquirer: Connection.Acquirer, compiler: Compiler) =>
   <A extends object = Row>(
     sql: string,
     params?: ReadonlyArray<Primitive>,
   ): Statement<A> =>
-    new StatementPrimitive<A>([new LiteralImpl(sql, params)], acquirer)
+    new StatementPrimitive<A>(
+      [new LiteralImpl(sql, params)],
+      acquirer,
+      compiler,
+    )
 
 /** @internal */
 export const unsafeFragment = (

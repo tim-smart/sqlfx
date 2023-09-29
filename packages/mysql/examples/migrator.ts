@@ -1,8 +1,8 @@
-import { pipe } from "@effect/data/Function"
-import * as Config from "@effect/io/Config"
-import * as ConfigSecret from "@effect/io/ConfigSecret"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
+import { pipe } from "effect/Function"
+import * as Config from "effect/Config"
+import * as ConfigSecret from "effect/ConfigSecret"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
 import * as Sql from "@sqlfx/mysql"
 import * as Migrator from "@sqlfx/mysql/Migrator"
 

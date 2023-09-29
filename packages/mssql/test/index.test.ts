@@ -1,4 +1,4 @@
-import * as Effect from "@effect/io/Effect"
+import * as Effect from "effect/Effect"
 import * as _ from "@sqlfx/mssql"
 import * as Statement from "@sqlfx/sql/Statement"
 import { describe, expect, it } from "vitest"

@@ -1,8 +1,8 @@
 /**
  * @since 1.0.0
  */
-import * as Data from "@effect/data/Data"
-import type { NonEmptyReadonlyArray } from "@effect/data/ReadonlyArray"
+import * as Data from "effect/Data"
+import type { NonEmptyReadonlyArray } from "effect/ReadonlyArray"
 import type { ParseErrors } from "@effect/schema/ParseResult"
 
 /**

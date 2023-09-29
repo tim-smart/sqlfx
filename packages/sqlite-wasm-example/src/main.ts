@@ -1,6 +1,6 @@
-import { pipe } from "@effect/data/Function"
-import * as Effect from "@effect/io/Effect"
-import * as Layer from "@effect/io/Layer"
+import { pipe } from "effect/Function"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
 import * as Migrator from "@sqlfx/sqlite/Migrator"
 import * as Sql from "@sqlfx/sqlite/wasm"
 

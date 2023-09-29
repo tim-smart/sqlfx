@@ -1,11 +1,11 @@
 /**
  * @since 1.0.0
  */
-import type { Context } from "@effect/data/Context"
-import type { Option } from "@effect/data/Option"
-import type * as Effect from "@effect/io/Effect"
-import type * as request from "@effect/io/Request"
-import type * as RequestResolver from "@effect/io/RequestResolver"
+import type { Context } from "effect/Context"
+import type { Option } from "effect/Option"
+import type * as Effect from "effect/Effect"
+import type * as request from "effect/Request"
+import type * as RequestResolver from "effect/RequestResolver"
 import type * as Schema from "@effect/schema/Schema"
 import type { Connection } from "@sqlfx/sql/Connection"
 import type {
@@ -15,6 +15,7 @@ import type {
 } from "@sqlfx/sql/Error"
 import * as internal from "@sqlfx/sql/internal/client"
 import type {
+  Compiler,
   Constructor,
   Fragment,
   Primitive,
@@ -249,13 +250,14 @@ export namespace Client {
    * @since 1.0.0
    */
   export interface MakeOptions {
-    acquirer: Connection.Acquirer
-    transactionAcquirer: Connection.Acquirer
-    beginTransaction?: string
-    rollback?: string
-    commit?: string
-    savepoint?: (name: string) => string
-    rollbackSavepoint?: (name: string) => string
+    readonly acquirer: Connection.Acquirer
+    readonly compiler: Compiler
+    readonly transactionAcquirer: Connection.Acquirer
+    readonly beginTransaction?: string
+    readonly rollback?: string
+    readonly commit?: string
+    readonly savepoint?: (name: string) => string
+    readonly rollbackSavepoint?: (name: string) => string
   }
 }
 

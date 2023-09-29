@@ -1,10 +1,10 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "@effect/data/Context"
-import type * as Effect from "@effect/io/Effect"
-import type { Scope } from "@effect/io/Scope"
-import type * as Stream from "@effect/stream/Stream"
+import { Tag } from "effect/Context"
+import type * as Effect from "effect/Effect"
+import type { Scope } from "effect/Scope"
+import type * as Stream from "effect/Stream"
 import type { SqlError } from "@sqlfx/sql/Error"
 import type { Primitive, Statement } from "@sqlfx/sql/Statement"
 

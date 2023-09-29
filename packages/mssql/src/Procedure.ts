@@ -1,9 +1,9 @@
 /**
  * @since 1.0.0
  */
-import { identity } from "@effect/data/Function"
-import type { Pipeable } from "@effect/data/Pipeable"
-import { pipeArguments } from "@effect/data/Pipeable"
+import { identity } from "effect/Function"
+import type { Pipeable } from "effect/Pipeable"
+import { pipeArguments } from "effect/Pipeable"
 import * as Parameter from "@sqlfx/mssql/Parameter"
 import type { Row } from "@sqlfx/sql/Connection"
 import type * as Tedious from "tedious"

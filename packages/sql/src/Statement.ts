@@ -1,10 +1,10 @@
 /**
  * @since 1.0.0
  */
-import type { Equal } from "@effect/data/Equal"
-import type { Pipeable } from "@effect/data/Pipeable"
-import type { Effect } from "@effect/io/Effect"
-import type * as Stream from "@effect/stream/Stream"
+import type { Equal } from "effect/Equal"
+import type { Pipeable } from "effect/Pipeable"
+import type { Effect } from "effect/Effect"
+import type * as Stream from "effect/Stream"
 import * as internal from "@sqlfx/sql/internal/statement"
 import type { Connection, Row } from "./Connection"
 import type { SqlError } from "./Error"
@@ -46,11 +46,10 @@ export interface Statement<A>
     SqlError,
     ReadonlyArray<ReadonlyArray<Primitive>>
   >
-  readonly compile: Effect<
-    never,
-    SqlError,
-    readonly [sql: string, params: ReadonlyArray<Primitive>]
-  >
+  readonly compile: () => readonly [
+    sql: string,
+    params: ReadonlyArray<Primitive>,
+  ]
 }
 
 /**
@@ -249,8 +248,10 @@ export interface Constructor {
  * @category constructor
  * @since 1.0.0
  */
-export const make: (acquirer: Connection.Acquirer) => Constructor =
-  internal.make
+export const make: (
+  acquirer: Connection.Acquirer,
+  compiler: Compiler,
+) => Constructor = internal.make
 
 /**
  * @category constructor
@@ -258,6 +259,7 @@ export const make: (acquirer: Connection.Acquirer) => Constructor =
  */
 export const unsafe: (
   acquirer: Connection.Acquirer,
+  compiler: Compiler,
 ) => <A extends object = Row>(
   sql: string,
   params?: ReadonlyArray<Primitive> | undefined,
