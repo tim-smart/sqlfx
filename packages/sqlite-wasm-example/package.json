@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@sqlfx/sqlite": "workspace:*",
-    "effect": "2.0.0-next.37"
+    "effect": "2.0.0-next.38"
   },
   "devDependencies": {
     "typescript": "^5.2.2",
