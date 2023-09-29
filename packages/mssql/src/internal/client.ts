@@ -307,6 +307,7 @@ export const make = (
     return Object.assign(
       Client.make({
         acquirer: pool.get(),
+        compiler,
         transactionAcquirer: pool.get(),
       }),
       {

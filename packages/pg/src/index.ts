@@ -196,6 +196,7 @@ export const make = (
     return Object.assign(
       Client.make({
         acquirer: Effect.scoped(pool.get()),
+        compiler,
         transactionAcquirer: pool.get(),
       }),
       {
