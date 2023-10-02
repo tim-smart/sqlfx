@@ -1,10 +1,13 @@
 import * as Effect from "effect/Effect"
 import * as _ from "@sqlfx/pg"
+import * as Client from "@sqlfx/sql/Client"
 import { describe, expect, it } from "vitest"
 
 const sql = Effect.runSync(Effect.scoped(_.make({})))
 const compiler = _.makeCompiler()
 const compilerTransform = _.makeCompiler(_.transform.fromCamel)
+const transformsNested = Client.defaultTransforms(_.transform.toCamel)
+const transforms = Client.defaultTransforms(_.transform.toCamel, false)
 
 describe("pg", () => {
   it("insert helper", () => {
@@ -56,5 +59,43 @@ describe("pg", () => {
     )
     expect(query).toEqual(`SELECT ARRAY [$1,$2,$3]`)
     expect(params).toEqual([1, 2, 3])
+  })
+
+  it("transform nested", () => {
+    assert.deepEqual(
+      transformsNested.array([
+        {
+          a_key: 1,
+          nested: [{ b_key: 2 }],
+          arr_primitive: [1, "2", true],
+        },
+      ]) as any,
+      [
+        {
+          aKey: 1,
+          nested: [{ bKey: 2 }],
+          arrPrimitive: [1, "2", true],
+        },
+      ],
+    )
+  })
+
+  it("transform non nested", () => {
+    assert.deepEqual(
+      transforms.array([
+        {
+          a_key: 1,
+          nested: [{ b_key: 2 }],
+          arr_primitive: [1, "2", true],
+        },
+      ]) as any,
+      [
+        {
+          aKey: 1,
+          nested: [{ b_key: 2 }],
+          arrPrimitive: [1, "2", true],
+        },
+      ],
+    )
   })
 })

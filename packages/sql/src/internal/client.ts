@@ -568,12 +568,16 @@ export function make({
 }
 
 /** @internal */
-export function defaultTransforms(transformer: (str: string) => string) {
+export function defaultTransforms(
+  transformer: (str: string) => string,
+  nested = true,
+) {
   function transformValue(value: any) {
     if (Array.isArray(value)) {
       if (
+        nested === false ||
         value.length === 0 ||
-        (value.length !== 0 && value[0].constructor !== Object)
+        value[0].constructor !== Object
       ) {
         return value
       }
@@ -587,7 +591,7 @@ export function defaultTransforms(transformer: (str: string) => string) {
   function transformObject(obj: Record<string, any>): any {
     const newObj: Record<string, any> = {}
     for (const key in obj) {
-      newObj[transformer(key)] = transformValue(obj[key])
+      newObj[transformer(key)] = obj[key]
     }
     return newObj
   }
