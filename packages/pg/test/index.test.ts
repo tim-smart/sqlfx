@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest"
 
 const sql = Effect.runSync(Effect.scoped(_.make({})))
 const compiler = _.makeCompiler()
+const compilerTransform = _.makeCompiler(_.transform.fromCamel)
 
 describe("pg", () => {
   it("insert helper", () => {
@@ -39,6 +40,14 @@ describe("pg", () => {
     const [query, params] = compiler.compile(sql`SELECT ${sql.json({ a: 1 })}`)
     expect(query).toEqual(`SELECT $1`)
     expect((params[0] as any).type).toEqual(3802)
+  })
+
+  it("json transform", () => {
+    const [query, params] = compilerTransform.compile(
+      sql`SELECT ${sql.json({ aKey: 1 })}`,
+    )
+    expect(query).toEqual(`SELECT $1`)
+    assert.deepEqual((params[0] as any).value, { a_key: 1 })
   })
 
   it("array", () => {

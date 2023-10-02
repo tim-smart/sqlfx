@@ -50,9 +50,9 @@ export const make = (
     const parameterTypes = options.parameterTypes ?? defaultParameterTypes
     const compiler = makeCompiler(options.transformQueryNames)
 
-    const transformRows = Client.defaultRowTransform(
+    const transformRows = Client.defaultTransforms(
       options.transformResultNames!,
-    )
+    ).array
 
     // eslint-disable-next-line prefer-const
     let pool: Pool.Pool<SqlError, MssqlConnection>

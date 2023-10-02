@@ -53,9 +53,9 @@ export const make = (
 ): Effect.Effect<Scope, never, SqliteClient> =>
   Effect.gen(function* (_) {
     const compiler = makeCompiler(options.transformQueryNames)
-    const transformRows = Client.defaultRowTransform(
+    const transformRows = Client.defaultTransforms(
       options.transformResultNames!,
-    )
+    ).array
 
     const handleError = (error: any) => SqlError(error.message, error)
 

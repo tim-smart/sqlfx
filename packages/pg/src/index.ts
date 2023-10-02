@@ -71,6 +71,7 @@ export interface PgClientConfig {
 
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
+  readonly transformJson?: boolean
 }
 
 const escape = Statement.defaultEscape('"')
@@ -83,11 +84,14 @@ export const make = (
   options: PgClientConfig,
 ): Effect.Effect<Scope, never, PgClient> =>
   Effect.gen(function* (_) {
-    const compiler = makeCompiler(options.transformQueryNames)
-
-    const transformRows = Client.defaultRowTransform(
-      options.transformResultNames!,
+    const compiler = makeCompiler(
+      options.transformQueryNames,
+      options.transformJson,
     )
+
+    const transformRows = Client.defaultTransforms(
+      options.transformResultNames!,
+    ).array
 
     const opts: postgres.Options<{}> = {
       max: 1,
@@ -224,8 +228,15 @@ export const makeLayer: (
  */
 export const makeCompiler = (
   transform?: (_: string) => string,
+  transformJson = true,
 ): Statement.Compiler => {
   const pg = postgres({ max: 0 })
+
+  const transformValue =
+    transformJson && transform
+      ? Client.defaultTransforms(transform).value
+      : undefined
+
   return Statement.makeCompiler<PgCustom>(
     _ => `$${_}`,
     transform ? _ => escape(transform(_)) : escape,
@@ -236,7 +247,16 @@ export const makeCompiler = (
     (type, placeholder) => {
       switch (type.kind) {
         case "PgJson": {
-          return [placeholder(), [pg.json(type.i0 as any) as any]]
+          return [
+            placeholder(),
+            [
+              pg.json(
+                transformValue !== undefined
+                  ? transformValue(type.i0)
+                  : type.i0,
+              ) as any,
+            ],
+          ]
         }
         case "PgArray": {
           return [`ARRAY [${type.i0.map(placeholder).join(",")}]`, type.i0]

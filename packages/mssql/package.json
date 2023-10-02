@@ -56,11 +56,11 @@
     "tedious": "^16.4.1"
   },
   "devDependencies": {
-    "@effect/schema": "^0.39.1",
+    "@effect/schema": "^0.39.2",
     "@types/tedious": "^4.0.12",
-    "effect": "2.0.0-next.38"
+    "effect": "2.0.0-next.40"
   },
   "peerDependencies": {
-    "effect": "2.0.0-next.38"
+    "effect": "2.0.0-next.40"
   }
 }

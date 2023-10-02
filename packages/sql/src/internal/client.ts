@@ -568,9 +568,15 @@ export function make({
 }
 
 /** @internal */
-export function defaultRowTransform(transformer: (str: string) => string) {
+export function defaultTransforms(transformer: (str: string) => string) {
   function transformValue(value: any) {
     if (Array.isArray(value)) {
+      if (
+        value.length === 0 ||
+        (value.length !== 0 && value[0].constructor !== Object)
+      ) {
+        return value
+      }
       return transformArray(value)
     } else if (value?.constructor === Object) {
       return transformObject(value)
@@ -601,5 +607,9 @@ export function defaultRowTransform(transformer: (str: string) => string) {
     return newRows
   }
 
-  return transformArray
+  return {
+    value: transformValue,
+    object: transformObject,
+    array: transformArray,
+  } as const
 }

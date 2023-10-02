@@ -82,9 +82,9 @@ export const make = (
   Effect.gen(function* (_) {
     const compiler = makeCompiler(options.transformQueryNames)
 
-    const transformRows = Client.defaultRowTransform(
+    const transformRows = Client.defaultTransforms(
       options.transformResultNames!,
-    )
+    ).array
 
     const makeConnection = pipe(
       Effect.acquireRelease(

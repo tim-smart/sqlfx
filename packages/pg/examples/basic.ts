@@ -3,6 +3,7 @@ import * as Config from "effect/Config"
 import * as Effect from "effect/Effect"
 import * as Stream from "effect/Stream"
 import * as Pg from "@sqlfx/pg"
+import { Console } from "effect"
 
 const PgLive = Pg.makeLayer({
   database: Config.succeed("effect_pg_dev"),
@@ -37,6 +38,11 @@ const program = Effect.gen(function* (_) {
     sql`SELECT * FROM people`.stream,
     Stream.tap(Effect.logInfo),
     Stream.runDrain,
+  )
+
+  yield* _(
+    sql`SELECT json_agg(id) as agg_ids FROM people`,
+    Effect.tap(Console.log),
   )
 })
 

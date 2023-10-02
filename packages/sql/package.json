@@ -47,11 +47,11 @@
     }
   },
   "devDependencies": {
-    "@effect/schema": "^0.39.1",
-    "effect": "2.0.0-next.38"
+    "@effect/schema": "^0.39.2",
+    "effect": "2.0.0-next.40"
   },
   "peerDependencies": {
     "@effect/schema": "^0.39.1",
-    "effect": "2.0.0-next.38"
+    "effect": "2.0.0-next.40"
   }
 }
