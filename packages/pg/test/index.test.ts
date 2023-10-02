@@ -97,5 +97,28 @@ describe("pg", () => {
         },
       ],
     )
+
+    assert.deepEqual(
+      transforms.array([
+        {
+          json_field: {
+            test_value: [1, true, null, "text"],
+            test_nested: {
+              test_value: [1, true, null, "text"],
+            },
+          },
+        },
+      ]) as any,
+      [
+        {
+          jsonField: {
+            test_value: [1, true, null, "text"],
+            test_nested: {
+              test_value: [1, true, null, "text"],
+            },
+          },
+        },
+      ],
+    )
   })
 })

@@ -574,11 +574,7 @@ export function defaultTransforms(
 ) {
   function transformValue(value: any) {
     if (Array.isArray(value)) {
-      if (
-        nested === false ||
-        value.length === 0 ||
-        value[0].constructor !== Object
-      ) {
+      if (value.length === 0 || value[0].constructor !== Object) {
         return value
       }
       return transformArray(value)
@@ -591,22 +587,37 @@ export function defaultTransforms(
   function transformObject(obj: Record<string, any>): any {
     const newObj: Record<string, any> = {}
     for (const key in obj) {
-      newObj[transformer(key)] = obj[key]
+      newObj[transformer(key)] = transformValue(obj[key])
     }
     return newObj
   }
 
-  function transformArray<A extends object>(
+  function transformArrayNested<A extends object>(
     rows: ReadonlyArray<A>,
   ): ReadonlyArray<A> {
-    const newRows: Array<A> = []
+    const newRows: Array<A> = new Array(rows.length)
     for (let i = 0, len = rows.length; i < len; i++) {
       const row = rows[i]
       const obj: any = {}
       for (const key in row) {
         obj[transformer(key)] = transformValue(row[key])
       }
-      newRows.push(obj)
+      newRows[i] = obj
+    }
+    return newRows
+  }
+
+  function transformArray<A extends object>(
+    rows: ReadonlyArray<A>,
+  ): ReadonlyArray<A> {
+    const newRows: Array<A> = new Array(rows.length)
+    for (let i = 0, len = rows.length; i < len; i++) {
+      const row = rows[i]
+      const obj: any = {}
+      for (const key in row) {
+        obj[transformer(key)] = row[key]
+      }
+      newRows[i] = obj
     }
     return newRows
   }
@@ -614,6 +625,6 @@ export function defaultTransforms(
   return {
     value: transformValue,
     object: transformObject,
-    array: transformArray,
+    array: nested ? transformArrayNested : transformArray,
   } as const
 }
