@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.21.3
+
+### Patch Changes
+
+- [`1e73852`](https://github.com/tim-smart/sqlfx/commit/1e73852ef6183a82e65b8918dbc2ec6765f9a9d4) Thanks [@tim-smart](https://github.com/tim-smart)! - fix transformJson: false
+
 ## 0.21.2
 
 ### Patch Changes

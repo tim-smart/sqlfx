@@ -1,6 +1,6 @@
 {
   "name": "@sqlfx/mysql",
-  "version": "0.19.2",
+  "version": "0.19.3",
   "description": "",
   "main": "dist/sqlfx-mysql.cjs.js",
   "module": "dist/sqlfx-mysql.esm.js",

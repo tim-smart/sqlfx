@@ -1,5 +1,12 @@
 # @sqlfx/mysql
 
+## 0.19.3
+
+### Patch Changes
+
+- Updated dependencies [[`1e73852`](https://github.com/tim-smart/sqlfx/commit/1e73852ef6183a82e65b8918dbc2ec6765f9a9d4)]:
+  - @sqlfx/sql@0.21.3
+
 ## 0.19.2
 
 ### Patch Changes
