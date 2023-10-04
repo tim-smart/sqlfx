@@ -1,5 +1,14 @@
 # @sqlfx/mysql
 
+## 0.20.1
+
+### Patch Changes
+
+- [`cff45ef`](https://github.com/tim-smart/sqlfx/commit/cff45ef422499b51c0d1bf2ed1fd09f28117678b) Thanks [@tim-smart](https://github.com/tim-smart)! - fix missing internal modules
+
+- Updated dependencies [[`cff45ef`](https://github.com/tim-smart/sqlfx/commit/cff45ef422499b51c0d1bf2ed1fd09f28117678b)]:
+  - @sqlfx/sql@0.22.1
+
 ## 0.20.0
 
 ### Minor Changes
