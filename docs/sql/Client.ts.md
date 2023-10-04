@@ -22,7 +22,7 @@ Added in v1.0.0
 - [utils](#utils)
   - [Client (namespace)](#client-namespace)
     - [MakeOptions (interface)](#makeoptions-interface)
-  - [defaultTransforms](#defaultTransforms)
+  - [defaultTransforms](#defaulttransforms)
 
 ---
 
@@ -62,10 +62,7 @@ export interface Client extends Constructor {
   /**
    * Create unsafe SQL query
    */
-  readonly unsafe: <A extends object>(
-    sql: string,
-    params?: ReadonlyArray<Primitive> | undefined,
-  ) => Statement<A>
+  readonly unsafe: <A extends object>(sql: string, params?: ReadonlyArray<Primitive> | undefined) => Statement<A>
 
   /**
    * Create an `AND` chain for a where clause
@@ -90,7 +87,7 @@ export interface Client extends Constructor {
   readonly join: (
     literal: string,
     addParens?: boolean,
-    fallback?: string,
+    fallback?: string
   ) => (clauses: ReadonlyArray<string | Fragment>) => Fragment
 
   /**
@@ -98,9 +95,7 @@ export interface Client extends Constructor {
    *
    * Note: This will not include query run inside request resolvers.
    */
-  withTransaction<R, E, A>(
-    self: Effect.Effect<R, E, A>,
-  ): Effect.Effect<R, E | SqlError, A>
+  withTransaction<R, E, A>(self: Effect.Effect<R, E, A>): Effect.Effect<R, E | SqlError, A>
 
   /**
    * Run a sql query with a request schema and a result schema.
@@ -111,7 +106,7 @@ export interface Client extends Constructor {
   schema<II, IA, AI, A, R, E>(
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>
   ): (_: IA) => Effect.Effect<R, E | SchemaError, ReadonlyArray<A>>
 
   /**
@@ -125,7 +120,7 @@ export interface Client extends Constructor {
   singleSchema<II, IA, AI, A, R, E>(
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>
   ): (_: IA) => Effect.Effect<R, E | SchemaError, A>
 
   /**
@@ -139,7 +134,7 @@ export interface Client extends Constructor {
   singleSchemaOption<II, IA, AI, A, R, E>(
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
-    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>
   ): (_: IA) => Effect.Effect<R, E | SchemaError, Option<A>>
 
   /**
@@ -158,10 +153,8 @@ export interface Client extends Constructor {
     options: {
       readonly request: Schema.Schema<II, IA>
       readonly result: Schema.Schema<AI, A>
-      readonly run: (
-        requests: ReadonlyArray<II>,
-      ) => Effect.Effect<never, E, ReadonlyArray<AI>>
-    },
+      readonly run: (requests: ReadonlyArray<II>) => Effect.Effect<never, E, ReadonlyArray<AI>>
+    }
   ): Resolver<T, IA, A, E | ResultLengthMismatch>
 
   /**
@@ -181,7 +174,7 @@ export interface Client extends Constructor {
       readonly request: Schema.Schema<II, IA>
       readonly result: Schema.Schema<AI, A>
       readonly run: (request: II) => Effect.Effect<never, E, ReadonlyArray<AI>>
-    },
+    }
   ): Resolver<T, IA, Option<A>, E>
 
   /**
@@ -201,7 +194,7 @@ export interface Client extends Constructor {
       readonly request: Schema.Schema<II, IA>
       readonly result: Schema.Schema<AI, A>
       readonly run: (request: II) => Effect.Effect<never, E, ReadonlyArray<AI>>
-    },
+    }
   ): Resolver<T, IA, A, E>
 
   /**
@@ -218,10 +211,8 @@ export interface Client extends Constructor {
     tag: T,
     options: {
       readonly request: Schema.Schema<II, IA>
-      readonly run: (
-        requests: ReadonlyArray<II>,
-      ) => Effect.Effect<never, E, ReadonlyArray<unknown>>
-    },
+      readonly run: (requests: ReadonlyArray<II>) => Effect.Effect<never, E, ReadonlyArray<unknown>>
+    }
   ): Resolver<T, IA, void, E>
 
   /**
@@ -239,10 +230,8 @@ export interface Client extends Constructor {
       readonly id: Schema.Schema<II, IA>
       readonly result: Schema.Schema<AI, A>
       readonly resultId: (_: AI) => IA
-      readonly run: (
-        requests: ReadonlyArray<II>,
-      ) => Effect.Effect<never, E, ReadonlyArray<AI>>
-    },
+      readonly run: (requests: ReadonlyArray<II>) => Effect.Effect<never, E, ReadonlyArray<AI>>
+    }
   ): Resolver<T, IA, Option<A>, E>
 
   /**
@@ -261,10 +250,8 @@ export interface Client extends Constructor {
       readonly requestId: (_: IA) => K
       readonly result: Schema.Schema<AI, A>
       readonly resultId: (_: AI) => K
-      readonly run: (
-        requests: ReadonlyArray<II>,
-      ) => Effect.Effect<never, E, ReadonlyArray<AI>>
-    },
+      readonly run: (requests: ReadonlyArray<II>) => Effect.Effect<never, E, ReadonlyArray<AI>>
+    }
   ): Resolver<T, IA, ReadonlyArray<A>, E>
 }
 ```
@@ -278,8 +265,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Request<T extends string, I, E, A>
-  extends request.Request<SchemaError | E, A> {
+export interface Request<T extends string, I, E, A> extends request.Request<SchemaError | E, A> {
   readonly _tag: T
   readonly i0: I
 }
@@ -293,12 +279,12 @@ Added in v1.0.0
 
 ```ts
 export interface Resolver<T extends string, I, A, E> {
-  readonly Request: request.Request.Constructor<Request<T, I, E, A>, "_tag">
+  readonly Request: request.Request.Constructor<Request<T, I, E, A>, '_tag'>
   readonly Resolver: RequestResolver.RequestResolver<Request<T, I, E, A>>
   readonly execute: (_: I) => Effect.Effect<never, SchemaError | E, A>
   readonly makeExecute: (
     Resolver: RequestResolver.RequestResolver<any, never>,
-    context?: Context<any>,
+    context?: Context<any>
   ) => (i0: I) => Effect.Effect<never, SchemaError | E, A>
   readonly populateCache: (id: I, _: A) => Effect.Effect<never, never, void>
   readonly invalidateCache: (id: I) => Effect.Effect<never, never, void>
@@ -339,7 +325,12 @@ Added in v1.0.0
 ```ts
 export declare const defaultTransforms: (
   transformer: (str: string) => string,
-) => <A extends object>(rows: readonly A[]) => readonly A[]
+  nested?: boolean
+) => {
+  readonly value: (value: any) => any
+  readonly object: (obj: Record<string, any>) => any
+  readonly array: <A extends object>(rows: readonly A[]) => readonly A[]
+}
 ```
 
 Added in v1.0.0

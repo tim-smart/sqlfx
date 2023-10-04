@@ -8,14 +8,3 @@ build/
 dist/
 .direnv/
 *.db
-
-
-# files
-/dist
-/Client
-/Error
-/Migrator
-/expo
-/node
-/react-native
-/wasm

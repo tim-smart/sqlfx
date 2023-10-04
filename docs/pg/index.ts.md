@@ -53,6 +53,7 @@ export interface PgClientConfig {
 
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
+  readonly transformJson?: boolean
 }
 ```
 
@@ -73,7 +74,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeCompiler: (transform?: ((_: string) => string) | undefined) => Statement.Compiler
+export declare const makeCompiler: (
+  transform?: ((_: string) => string) | undefined,
+  transformJson?: boolean
+) => Statement.Compiler
 ```
 
 Added in v1.0.0

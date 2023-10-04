@@ -13,9 +13,9 @@ dist/
 # files
 /dist
 /Client
+/Connection
 /Error
 /Migrator
-/expo
-/node
-/react-native
-/wasm
+/Schema
+/Statement
+/Transform

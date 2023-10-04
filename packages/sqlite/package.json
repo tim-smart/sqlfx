@@ -16,41 +16,25 @@
     "url": "https://github.com/tim-smart/sqlfx/issues"
   },
   "homepage": "https://github.com/tim-smart/sqlfx",
+  "preconstruct": {
+    "entrypoints": [
+      "*.ts",
+      "Migrator/*.ts"
+    ],
+    "distFilenameStrategy": "full",
+    "exports": {
+      "importConditionDefaultExport": "default"
+    }
+  },
   "scripts": {
     "example": "ts-node --project tsconfig.examples.json",
-    "version": "changeset version && pnpm install --no-frozen-lockfile && pnpm run docs-update",
-    "release": "pnpm run build && changeset publish",
-    "clean": "rimraf build dist",
-    "build": "pnpm build-all && pnpm build-pack",
-    "build-cjs": "babel build/esm --config-file ../../.babel.cjs.json --out-dir build/cjs --out-file-extension .js --source-maps",
-    "build-mjs": "babel build/esm --config-file ../../.babel.mjs.json --out-dir build/mjs --out-file-extension .mjs --source-maps",
-    "build-post": "build-utils pack-v1",
-    "build-pack": "concurrently \"pnpm build-cjs\" \"pnpm build-mjs\" && pnpm build-post",
-    "build-all": "tsc -b tsconfig.json",
-    "build-watch": "tsc -b tsconfig.json --watch",
-    "circular": "madge --ts-config ./tsconfig.madge.json --circular --no-color --no-spinner --warning build/esm",
-    "docs": "docgen",
     "lint": "eslint --ext .ts,.tsx src/**/* test/**/*",
+    "docs": "docgen",
     "tc": "tsc --noEmit",
     "test": "vitest",
     "coverage": "vitest run --coverage"
   },
   "keywords": [],
-  "exports": {
-    ".": {
-      "require": "./build/cjs/index.js",
-      "import": "./build/esm/index.js"
-    },
-    "./*": {
-      "require": "./build/cjs/*.js",
-      "import": "./build/esm/*.js"
-    }
-  },
-  "config": {
-    "side": [],
-    "modules": [],
-    "global": []
-  },
   "dependencies": {
     "@sqlfx/sql": "workspace:^",
     "better-sqlite3": "^8.7.0"
@@ -60,14 +44,14 @@
     "@sqlite.org/sqlite-wasm": "3.43.1-build1",
     "@types/better-sqlite3": "^7.6.5",
     "better-sqlite3": "^8.6.0",
-    "effect": "2.0.0-next.40",
+    "effect": "2.0.0-next.44",
     "expo-sqlite": "^11.6.0",
     "react-native-quick-sqlite": "^8.0.5"
   },
   "peerDependencies": {
     "@sqlite.org/sqlite-wasm": "3.43.1-build1",
     "better-sqlite3": "^8.6.0",
-    "effect": "2.0.0-next.40",
+    "effect": "2.0.0-next.44",
     "expo-sqlite": "^11.6.0",
     "react-native-quick-sqlite": "^8.0.4"
   },
@@ -83,6 +67,74 @@
     },
     "react-native-quick-sqlite": {
       "optional": true
+    }
+  },
+  "files": [
+    "src",
+    "dist",
+    "Client",
+    "Error",
+    "Migrator",
+    "expo",
+    "node",
+    "react-native",
+    "wasm"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/declarations/src/index.d.ts",
+      "module": "./dist/sqlfx-sqlite.esm.js",
+      "import": "./dist/sqlfx-sqlite.cjs.mjs",
+      "default": "./dist/sqlfx-sqlite.cjs.js"
+    },
+    "./package.json": "./package.json",
+    "./Client": {
+      "types": "./dist/declarations/src/Client.d.ts",
+      "module": "./Client/dist/sqlfx-sqlite-Client.esm.js",
+      "import": "./Client/dist/sqlfx-sqlite-Client.cjs.mjs",
+      "default": "./Client/dist/sqlfx-sqlite-Client.cjs.js"
+    },
+    "./Error": {
+      "types": "./dist/declarations/src/Error.d.ts",
+      "module": "./Error/dist/sqlfx-sqlite-Error.esm.js",
+      "import": "./Error/dist/sqlfx-sqlite-Error.cjs.mjs",
+      "default": "./Error/dist/sqlfx-sqlite-Error.cjs.js"
+    },
+    "./Migrator": {
+      "types": "./dist/declarations/src/Migrator.d.ts",
+      "module": "./Migrator/dist/sqlfx-sqlite-Migrator.esm.js",
+      "import": "./Migrator/dist/sqlfx-sqlite-Migrator.cjs.mjs",
+      "default": "./Migrator/dist/sqlfx-sqlite-Migrator.cjs.js"
+    },
+    "./Migrator/Node": {
+      "types": "./dist/declarations/src/Migrator/Node.d.ts",
+      "module": "./Migrator/Node/dist/sqlfx-sqlite-Migrator-Node.esm.js",
+      "import": "./Migrator/Node/dist/sqlfx-sqlite-Migrator-Node.cjs.mjs",
+      "default": "./Migrator/Node/dist/sqlfx-sqlite-Migrator-Node.cjs.js"
+    },
+    "./expo": {
+      "types": "./dist/declarations/src/expo.d.ts",
+      "module": "./expo/dist/sqlfx-sqlite-expo.esm.js",
+      "import": "./expo/dist/sqlfx-sqlite-expo.cjs.mjs",
+      "default": "./expo/dist/sqlfx-sqlite-expo.cjs.js"
+    },
+    "./node": {
+      "types": "./dist/declarations/src/node.d.ts",
+      "module": "./node/dist/sqlfx-sqlite-node.esm.js",
+      "import": "./node/dist/sqlfx-sqlite-node.cjs.mjs",
+      "default": "./node/dist/sqlfx-sqlite-node.cjs.js"
+    },
+    "./react-native": {
+      "types": "./dist/declarations/src/react-native.d.ts",
+      "module": "./react-native/dist/sqlfx-sqlite-react-native.esm.js",
+      "import": "./react-native/dist/sqlfx-sqlite-react-native.cjs.mjs",
+      "default": "./react-native/dist/sqlfx-sqlite-react-native.cjs.js"
+    },
+    "./wasm": {
+      "types": "./dist/declarations/src/wasm.d.ts",
+      "module": "./wasm/dist/sqlfx-sqlite-wasm.esm.js",
+      "import": "./wasm/dist/sqlfx-sqlite-wasm.cjs.mjs",
+      "default": "./wasm/dist/sqlfx-sqlite-wasm.cjs.js"
     }
   }
 }

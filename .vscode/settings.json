@@ -16,7 +16,11 @@
   "[typescript]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
-  "eslint.validate": ["markdown", "javascript", "typescript"],
+  "eslint.validate": [
+    "markdown",
+    "javascript",
+    "typescript"
+  ],
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
@@ -37,5 +41,33 @@
   "files.watcherExclude": {
     "**/target": true
   },
-  "files.insertFinalNewline": true
+  "files.insertFinalNewline": true,
+  "files.exclude": {
+    "packages/sqlite/dist": true,
+    "packages/sqlite/Client": true,
+    "packages/sqlite/Error": true,
+    "packages/sqlite/Migrator": true,
+    "packages/sqlite/expo": true,
+    "packages/sqlite/node": true,
+    "packages/sqlite/react-native": true,
+    "packages/sqlite/wasm": true,
+    "packages/sql/dist": true,
+    "packages/sql/Client": true,
+    "packages/sql/Connection": true,
+    "packages/sql/Error": true,
+    "packages/sql/Migrator": true,
+    "packages/sql/Schema": true,
+    "packages/sql/Statement": true,
+    "packages/sql/Transform": true,
+    "packages/pg/dist": true,
+    "packages/pg/Error": true,
+    "packages/pg/Migrator": true,
+    "packages/mysql/dist": true,
+    "packages/mysql/Error": true,
+    "packages/mysql/Migrator": true,
+    "packages/mssql/dist": true,
+    "packages/mssql/Error": true,
+    "packages/mssql/Parameter": true,
+    "packages/mssql/Procedure": true
+  }
 }

@@ -2,9 +2,10 @@
   "name": "@sqlfx/mssql",
   "version": "0.19.2",
   "description": "",
+  "main": "dist/sqlfx-mssql.cjs.js",
+  "module": "dist/sqlfx-mssql.esm.js",
   "publishConfig": {
-    "access": "public",
-    "directory": "dist"
+    "access": "public"
   },
   "repository": {
     "type": "git",
@@ -16,41 +17,24 @@
     "url": "https://github.com/tim-smart/sqlfx/issues"
   },
   "homepage": "https://github.com/tim-smart/sqlfx",
+  "preconstruct": {
+    "entrypoints": [
+      "*.ts"
+    ],
+    "distFilenameStrategy": "full",
+    "exports": {
+      "importConditionDefaultExport": "default"
+    }
+  },
   "scripts": {
     "example": "ts-node --project tsconfig.examples.json",
-    "version": "changeset version && pnpm install --no-frozen-lockfile && pnpm run docs-update",
-    "release": "pnpm run build && changeset publish",
-    "clean": "rimraf build dist",
-    "build": "pnpm build-all && pnpm build-pack",
-    "build-cjs": "babel build/esm --config-file ../../.babel.cjs.json --out-dir build/cjs --out-file-extension .js --source-maps",
-    "build-mjs": "babel build/esm --config-file ../../.babel.mjs.json --out-dir build/mjs --out-file-extension .mjs --source-maps",
-    "build-post": "build-utils pack-v1",
-    "build-pack": "concurrently \"pnpm build-cjs\" \"pnpm build-mjs\" && pnpm build-post",
-    "build-all": "tsc -b tsconfig.json",
-    "build-watch": "tsc -b tsconfig.json --watch",
-    "circular": "madge --ts-config ./tsconfig.madge.json --circular --no-color --no-spinner --warning build/esm",
-    "docs": "docgen",
     "lint": "eslint --ext .ts,.tsx src/**/* test/**/*",
+    "docs": "docgen",
     "tc": "tsc --noEmit",
     "test": "vitest",
     "coverage": "vitest run --coverage"
   },
   "keywords": [],
-  "exports": {
-    ".": {
-      "require": "./build/cjs/index.js",
-      "import": "./build/esm/index.js"
-    },
-    "./*": {
-      "require": "./build/cjs/*.js",
-      "import": "./build/esm/*.js"
-    }
-  },
-  "config": {
-    "side": [],
-    "modules": [],
-    "global": []
-  },
   "dependencies": {
     "@sqlfx/sql": "workspace:^",
     "tedious": "^16.4.1"
@@ -58,9 +42,43 @@
   "devDependencies": {
     "@effect/schema": "^0.39.2",
     "@types/tedious": "^4.0.12",
-    "effect": "2.0.0-next.40"
+    "effect": "2.0.0-next.44"
   },
   "peerDependencies": {
-    "effect": "2.0.0-next.40"
+    "effect": "2.0.0-next.44"
+  },
+  "files": [
+    "src",
+    "dist",
+    "Error",
+    "Parameter",
+    "Procedure"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/declarations/src/index.d.ts",
+      "module": "./dist/sqlfx-mssql.esm.js",
+      "import": "./dist/sqlfx-mssql.cjs.mjs",
+      "default": "./dist/sqlfx-mssql.cjs.js"
+    },
+    "./package.json": "./package.json",
+    "./Error": {
+      "types": "./dist/declarations/src/Error.d.ts",
+      "module": "./Error/dist/sqlfx-mssql-Error.esm.js",
+      "import": "./Error/dist/sqlfx-mssql-Error.cjs.mjs",
+      "default": "./Error/dist/sqlfx-mssql-Error.cjs.js"
+    },
+    "./Parameter": {
+      "types": "./dist/declarations/src/Parameter.d.ts",
+      "module": "./Parameter/dist/sqlfx-mssql-Parameter.esm.js",
+      "import": "./Parameter/dist/sqlfx-mssql-Parameter.cjs.mjs",
+      "default": "./Parameter/dist/sqlfx-mssql-Parameter.cjs.js"
+    },
+    "./Procedure": {
+      "types": "./dist/declarations/src/Procedure.d.ts",
+      "module": "./Procedure/dist/sqlfx-mssql-Procedure.esm.js",
+      "import": "./Procedure/dist/sqlfx-mssql-Procedure.cjs.mjs",
+      "default": "./Procedure/dist/sqlfx-mssql-Procedure.cjs.js"
+    }
   }
 }
