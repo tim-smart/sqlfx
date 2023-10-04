@@ -7,8 +7,8 @@ import * as Option from "effect/Option"
 import * as Effect from "effect/Effect"
 import * as Order from "effect/Order"
 import * as ReadonlyArray from "effect/ReadonlyArray"
-import type { Client } from "@sqlfx/sql/Client"
-import type { SqlError } from "@sqlfx/sql/Error"
+import type { Client } from "./Client"
+import type { SqlError } from "./Error"
 
 /**
  * @category model

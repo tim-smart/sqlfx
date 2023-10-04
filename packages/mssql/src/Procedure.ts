@@ -4,7 +4,7 @@
 import { identity } from "effect/Function"
 import type { Pipeable } from "effect/Pipeable"
 import { pipeArguments } from "effect/Pipeable"
-import * as Parameter from "@sqlfx/mssql/Parameter"
+import * as Parameter from "./Parameter"
 import type { Row } from "@sqlfx/sql/Connection"
 import type * as Tedious from "tedious"
 

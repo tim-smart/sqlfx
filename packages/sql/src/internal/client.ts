@@ -12,12 +12,12 @@ import * as FiberRef from "effect/FiberRef"
 import * as request from "effect/Request"
 import * as RequestResolver from "effect/RequestResolver"
 import * as Schema from "@effect/schema/Schema"
-import type { Client, Request, Resolver } from "@sqlfx/sql/Client"
-import type { Connection } from "@sqlfx/sql/Connection"
-import { ResultLengthMismatch } from "@sqlfx/sql/Error"
-import type { SchemaError, SqlError } from "@sqlfx/sql/Error"
-import * as SqlSchema from "@sqlfx/sql/Schema"
-import * as Statement from "@sqlfx/sql/Statement"
+import type { Client, Request, Resolver } from "../Client"
+import type { Connection } from "../Connection"
+import { ResultLengthMismatch } from "../Error"
+import type { SchemaError, SqlError } from "../Error"
+import * as SqlSchema from "../Schema"
+import * as Statement from "../Statement"
 
 /** @internal */
 export const TransactionConn =

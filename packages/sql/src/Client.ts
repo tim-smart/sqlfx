@@ -7,20 +7,16 @@ import type * as Effect from "effect/Effect"
 import type * as request from "effect/Request"
 import type * as RequestResolver from "effect/RequestResolver"
 import type * as Schema from "@effect/schema/Schema"
-import type { Connection } from "@sqlfx/sql/Connection"
-import type {
-  ResultLengthMismatch,
-  SchemaError,
-  SqlError,
-} from "@sqlfx/sql/Error"
-import * as internal from "@sqlfx/sql/internal/client"
+import type { Connection } from "./Connection"
+import type { ResultLengthMismatch, SchemaError, SqlError } from "./Error"
+import * as internal from "./internal/client"
 import type {
   Compiler,
   Constructor,
   Fragment,
   Primitive,
   Statement,
-} from "@sqlfx/sql/Statement"
+} from "./Statement"
 
 /**
  * @category model

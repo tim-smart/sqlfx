@@ -14,15 +14,10 @@ import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
-import { tag, type SqliteClient, makeCompiler } from "@sqlfx/sqlite/Client"
+import { tag, type SqliteClient, makeCompiler } from "./Client"
 import Sqlite from "better-sqlite3"
 
 export {
-  /**
-   * @category models
-   * @since 1.0.0
-   */
-  SqliteClient,
   /**
    * @category constructor
    * @since 1.0.0
@@ -39,7 +34,15 @@ export {
    * @since 1.0.0
    */
   transform,
-} from "@sqlfx/sqlite/Client"
+} from "./Client"
+
+export type {
+  /**
+   * @category models
+   * @since 1.0.0
+   */
+  SqliteClient,
+} from "./Client"
 
 /**
  * @category models

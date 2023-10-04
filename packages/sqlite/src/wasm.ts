@@ -10,17 +10,16 @@ import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
-import { tag, type SqliteClient } from "@sqlfx/sqlite/Client"
-import * as internal from "@sqlfx/sqlite/internal/client"
+import { tag, type SqliteClient, makeCompiler } from "./Client"
 import type { DB, OpenMode, RowMode } from "@sqlite.org/sqlite-wasm"
 import sqliteInit from "@sqlite.org/sqlite-wasm"
 
 export {
   /**
-   * @category models
+   * @category constructor
    * @since 1.0.0
    */
-  SqliteClient,
+  makeCompiler,
   /**
    * @category tags
    * @since 1.0.0
@@ -32,7 +31,15 @@ export {
    * @since 1.0.0
    */
   transform,
-} from "@sqlfx/sqlite/Client"
+} from "./Client"
+
+export type {
+  /**
+   * @category models
+   * @since 1.0.0
+   */
+  SqliteClient,
+} from "./Client"
 
 /**
  * @category models
@@ -166,11 +173,3 @@ export const make = (
  */
 export const makeLayer = (config: SqliteWasmClientConfig) =>
   Layer.scoped(tag, make(config))
-
-/**
- * @category constructor
- * @since 1.0.0
- */
-export const makeCompiler: (
-  transform?: ((_: string) => string) | undefined,
-) => Statement.Compiler = internal.makeCompiler

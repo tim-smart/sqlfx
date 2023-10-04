@@ -5,8 +5,8 @@ import { Tag } from "effect/Context"
 import type * as Effect from "effect/Effect"
 import type { Scope } from "effect/Scope"
 import type * as Stream from "effect/Stream"
-import type { SqlError } from "@sqlfx/sql/Error"
-import type { Primitive, Statement } from "@sqlfx/sql/Statement"
+import type { SqlError } from "./Error"
+import type { Primitive, Statement } from "./Statement"
 
 /**
  * @category model

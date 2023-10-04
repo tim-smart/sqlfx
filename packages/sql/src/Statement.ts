@@ -5,7 +5,7 @@ import type { Equal } from "effect/Equal"
 import type { Pipeable } from "effect/Pipeable"
 import type { Effect } from "effect/Effect"
 import type * as Stream from "effect/Stream"
-import * as internal from "@sqlfx/sql/internal/statement"
+import * as internal from "./internal/statement"
 import type { Connection, Row } from "./Connection"
 import type { SqlError } from "./Error"
 

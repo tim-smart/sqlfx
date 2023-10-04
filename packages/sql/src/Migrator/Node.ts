@@ -4,7 +4,7 @@
 import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
 import * as Effect from "effect/Effect"
-import type { Loader, ResolvedMigration } from "@sqlfx/sql/Migrator"
+import type { Loader, ResolvedMigration } from "../Migrator"
 
 /**
  * @since 1.0.0

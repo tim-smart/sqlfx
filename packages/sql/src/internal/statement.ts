@@ -1,5 +1,5 @@
-import type { Connection, Row } from "@sqlfx/sql/Connection"
-import type { SqlError } from "@sqlfx/sql/Error"
+import type { Connection, Row } from "../Connection"
+import type { SqlError } from "../Error"
 import type {
   Argument,
   ArrayHelper,
@@ -19,7 +19,7 @@ import type {
   Segment,
   Statement,
   FragmentId as _FragmentId,
-} from "@sqlfx/sql/Statement"
+} from "../Statement"
 import * as Effect from "effect/Effect"
 import { Effectable } from "effect/Effectable"
 import { identity } from "effect/Function"

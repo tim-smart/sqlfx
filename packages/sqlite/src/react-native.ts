@@ -12,17 +12,12 @@ import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
-import { makeCompiler, tag, type SqliteClient } from "@sqlfx/sqlite/Client"
+import { makeCompiler, tag, type SqliteClient } from "./Client"
 import * as Sqlite from "react-native-quick-sqlite"
 
 export {
   /**
-   * @category models
-   * @since 1.0.0
-   */
-  SqliteClient,
-  /**
-   * @category constructors
+   * @category constructor
    * @since 1.0.0
    */
   makeCompiler,
@@ -37,7 +32,15 @@ export {
    * @since 1.0.0
    */
   transform,
-} from "@sqlfx/sqlite/Client"
+} from "./Client"
+
+export type {
+  /**
+   * @category models
+   * @since 1.0.0
+   */
+  SqliteClient,
+} from "./Client"
 
 /**
  * @category models

@@ -10,8 +10,9 @@ import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
-import { tag, type SqliteClient } from "@sqlfx/sqlite/Client"
-import * as internal from "@sqlfx/sqlite/internal/client"
+import type { SqliteClient } from "./Client"
+import { tag } from "./Client"
+import * as internal from "./internal/client"
 import * as Sqlite from "expo-sqlite"
 
 export {
@@ -26,12 +27,15 @@ export {
    * @since 1.0.0
    */
   transform,
+} from "./Client"
+
+export type {
   /**
    * @category models
    * @since 1.0.0
    */
   SqliteClient,
-} from "@sqlfx/sqlite/Client"
+} from "./Client"
 
 /**
  * @category models

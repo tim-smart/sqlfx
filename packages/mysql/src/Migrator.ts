@@ -4,7 +4,7 @@
 import * as ConfigSecret from "effect/ConfigSecret"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
-import * as Sql from "@sqlfx/mysql"
+import * as Sql from "."
 import type { SqlError } from "@sqlfx/sql/Error"
 import * as _ from "@sqlfx/sql/Migrator"
 import { fromDisk } from "@sqlfx/sql/Migrator/Node"
