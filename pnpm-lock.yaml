@@ -117,7 +117,7 @@ importers:
     dependencies:
       '@sqlfx/sql':
         specifier: workspace:^
-        version: link:../sql/dist
+        version: link:../sql
       tedious:
         specifier: ^16.4.1
         version: 16.4.1
@@ -136,7 +136,7 @@ importers:
     dependencies:
       '@sqlfx/sql':
         specifier: workspace:^
-        version: link:../sql/dist
+        version: link:../sql
       mariadb:
         specifier: ^3.2.1
         version: 3.2.1
@@ -152,7 +152,7 @@ importers:
     dependencies:
       '@sqlfx/sql':
         specifier: workspace:^
-        version: link:../sql/dist
+        version: link:../sql
       postgres:
         specifier: ^3.3.5
         version: 3.3.5
@@ -172,13 +172,12 @@ importers:
       effect:
         specifier: 2.0.0-next.44
         version: 2.0.0-next.44
-    publishDirectory: dist
 
   packages/sqlite:
     dependencies:
       '@sqlfx/sql':
         specifier: workspace:^
-        version: link:../sql/dist
+        version: link:../sql
       better-sqlite3:
         specifier: ^8.7.0
         version: 8.7.0
@@ -201,7 +200,6 @@ importers:
       react-native-quick-sqlite:
         specifier: ^8.0.5
         version: 8.0.5(react-native@0.72.5)(react@18.2.0)
-    publishDirectory: dist
 
 packages:
 

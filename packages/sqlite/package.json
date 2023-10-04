@@ -3,8 +3,7 @@
   "version": "0.22.0",
   "description": "",
   "publishConfig": {
-    "access": "public",
-    "directory": "dist"
+    "access": "public"
   },
   "repository": {
     "type": "git",
