@@ -1,6 +1,6 @@
 {
   "name": "@sqlfx/pg",
-  "version": "0.20.3",
+  "version": "0.21.0",
   "description": "",
   "main": "dist/sqlfx-pg.cjs.js",
   "module": "dist/sqlfx-pg.esm.js",
