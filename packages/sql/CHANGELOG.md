@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.22.0
+
+### Minor Changes
+
+- [`a807d8a`](https://github.com/tim-smart/sqlfx/commit/a807d8a099bd9624fee4af597abfd97b95ea0eb0) Thanks [@tim-smart](https://github.com/tim-smart)! - add preconstruct
+
 ## 0.21.3
 
 ### Patch Changes
