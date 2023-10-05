@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.23.1
+
+### Patch Changes
+
+- [`541114e`](https://github.com/tim-smart/sqlfx/commit/541114ec0b82f246c16598332eb2cfca88379730) Thanks [@tim-smart](https://github.com/tim-smart)! - fix use of internal apis cross-package
+
 ## 0.23.0
 
 ### Minor Changes
