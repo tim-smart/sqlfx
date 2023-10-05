@@ -40,11 +40,11 @@
     "mariadb": "^3.2.1"
   },
   "devDependencies": {
-    "@effect/schema": "^0.39.2",
-    "effect": "2.0.0-next.44"
+    "@effect/schema": "^0.40.0",
+    "effect": "2.0.0-next.45"
   },
   "peerDependencies": {
-    "effect": "2.0.0-next.44"
+    "effect": "2.0.0-next.45"
   },
   "files": [
     "src",
