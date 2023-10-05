@@ -17,7 +17,6 @@ import type { ProcedureWithValues } from "../Procedure"
 import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
-import * as sqlClient from "@sqlfx/sql/internal/client"
 import type { Primitive as _Primitive } from "@sqlfx/sql/Statement"
 import * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
@@ -37,7 +36,7 @@ interface MssqlConnection extends Connection {
   readonly rollback: (name?: string) => Effect.Effect<never, SqlError, void>
 }
 
-const TransactionConn = (sqlClient as any).TransactionConn as Tag<
+const TransactionConn = Client.TransactionConnection as unknown as Tag<
   readonly [conn: MssqlConnection, counter: number],
   readonly [conn: MssqlConnection, counter: number]
 >

@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import type { Context } from "effect/Context"
+import type { Context, Tag } from "effect/Context"
 import type { Option } from "effect/Option"
 import type * as Effect from "effect/Effect"
 import type * as request from "effect/Request"
@@ -308,3 +308,11 @@ export const defaultTransforms: (
   readonly object: (obj: Record<string, any>) => any
   readonly array: <A extends object>(rows: ReadonlyArray<A>) => ReadonlyArray<A>
 } = internal.defaultTransforms
+
+/**
+ * @since 1.0.0
+ */
+export const TransactionConnection: Tag<
+  readonly [conn: Connection, counter: number],
+  readonly [conn: Connection, counter: number]
+> = internal.TransactionConn

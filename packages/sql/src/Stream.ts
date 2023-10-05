@@ -1,3 +1,6 @@
+/**
+ * @since 1.0.0
+ */
 import * as Option from "effect/Option"
 import * as Deferred from "effect/Deferred"
 import * as Effect from "effect/Effect"
@@ -5,6 +8,9 @@ import * as Queue from "effect/Queue"
 import * as Runtime from "effect/Runtime"
 import * as Stream from "effect/Stream"
 
+/**
+ * @since 1.0.0
+ */
 export const asyncPauseResume = <R, E, A>(
   register: (emit: {
     readonly single: (item: A) => void

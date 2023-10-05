@@ -67,7 +67,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const SqliteClient: any
+export declare const SqliteClient: SqliteClient
 ```
 
 Added in v1.0.0

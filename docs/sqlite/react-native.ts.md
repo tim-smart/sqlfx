@@ -14,9 +14,8 @@ Added in v1.0.0
 
 - [constructor](#constructor)
   - [make](#make)
-  - [makeLayer](#makelayer)
-- [constructors](#constructors)
   - [makeCompiler](#makecompiler)
+  - [makeLayer](#makelayer)
 - [fiber refs](#fiber-refs)
   - [asyncQuery](#asyncquery)
   - [withAsyncQuery](#withasyncquery)
@@ -42,24 +41,22 @@ export declare const make: (options: SqliteRNClientConfig) => Effect.Effect<Scop
 
 Added in v1.0.0
 
-## makeLayer
-
-**Signature**
-
-```ts
-export declare const makeLayer: (config: SqliteRNClientConfig) => Layer.Layer<never, never, SqliteClient>
-```
-
-Added in v1.0.0
-
-# constructors
-
 ## makeCompiler
 
 **Signature**
 
 ```ts
 export declare const makeCompiler: (transform?: ((_: string) => string) | undefined) => Statement.Compiler
+```
+
+Added in v1.0.0
+
+## makeLayer
+
+**Signature**
+
+```ts
+export declare const makeLayer: (config: SqliteRNClientConfig) => Layer.Layer<never, never, SqliteClient>
 ```
 
 Added in v1.0.0
@@ -93,7 +90,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const SqliteClient: any
+export declare const SqliteClient: SqliteClient
 ```
 
 Added in v1.0.0

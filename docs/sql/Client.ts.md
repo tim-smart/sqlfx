@@ -22,6 +22,7 @@ Added in v1.0.0
 - [utils](#utils)
   - [Client (namespace)](#client-namespace)
     - [MakeOptions (interface)](#makeoptions-interface)
+  - [TransactionConnection](#transactionconnection)
   - [defaultTransforms](#defaulttransforms)
 
 ---
@@ -314,6 +315,19 @@ export interface MakeOptions {
   readonly savepoint?: (name: string) => string
   readonly rollbackSavepoint?: (name: string) => string
 }
+```
+
+Added in v1.0.0
+
+## TransactionConnection
+
+**Signature**
+
+```ts
+export declare const TransactionConnection: Tag<
+  readonly [conn: Connection, counter: number],
+  readonly [conn: Connection, counter: number]
+>
 ```
 
 Added in v1.0.0
