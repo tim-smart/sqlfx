@@ -21,7 +21,7 @@ import type {
   FragmentId as _FragmentId,
 } from "../Statement"
 import * as Effect from "effect/Effect"
-import { Effectable } from "effect/Effectable"
+import * as Effectable from "effect/Effectable"
 import { identity } from "effect/Function"
 import * as Stream from "effect/Stream"
 
@@ -46,7 +46,7 @@ export function isCustom<A extends Custom<any, any, any, any>>(
 
 /** @internal */
 export class StatementPrimitive<A>
-  extends Effectable<never, SqlError, ReadonlyArray<A>>
+  extends Effectable.Class<never, SqlError, ReadonlyArray<A>>
   implements Statement<A>
 {
   get [FragmentId]() {
@@ -92,9 +92,12 @@ export class StatementPrimitive<A>
     )
   }
   toJSON() {
+    const [sql, params] = this.compile()
     return {
       _id: "Statement",
       segments: this.segments,
+      sql,
+      params,
     }
   }
 }

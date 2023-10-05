@@ -32,7 +32,7 @@
     "docs": "ultra -r docs && pnpm docs-cp",
     "docs-cp": "node scripts/docs-cp.js",
     "lint": "ultra -r lint",
-    "tc": "ultra -r tc",
+    "tc": "ultra -r tsc -b",
     "version": "changeset version"
   },
   "devDependencies": {
