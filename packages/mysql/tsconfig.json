@@ -1,6 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": {},
+  "compilerOptions": {
+    "outDir": "build"
+  },
   "include": ["./src/**/*", "test/**/*", "examples/**/*"],
   "references": [{ "path": "../sql" }]
 }

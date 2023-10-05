@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "outDir": "build",
     "moduleDetection": "force",
     "composite": true,
     "downlevelIteration": true,
