@@ -107,8 +107,8 @@ importers:
         specifier: ^3.10.5
         version: 3.10.5
       vite:
-        specifier: ^4.4.10
-        version: 4.4.10(@types/node@20.8.2)
+        specifier: ^4.4.11
+        version: 4.4.11(@types/node@20.8.2)
       vitest:
         specifier: 0.34.6
         version: 0.34.6
@@ -123,14 +123,14 @@ importers:
         version: 16.4.1
     devDependencies:
       '@effect/schema':
-        specifier: ^0.40.0
-        version: 0.40.0(effect@2.0.0-next.45)
+        specifier: ^0.41.0
+        version: 0.41.0(effect@2.0.0-next.46)(fast-check@3.13.1)
       '@types/tedious':
         specifier: ^4.0.12
         version: 4.0.12
       effect:
-        specifier: 2.0.0-next.45
-        version: 2.0.0-next.45
+        specifier: 2.0.0-next.46
+        version: 2.0.0-next.46
 
   packages/mysql:
     dependencies:
@@ -142,11 +142,11 @@ importers:
         version: 3.2.1
     devDependencies:
       '@effect/schema':
-        specifier: ^0.40.0
-        version: 0.40.0(effect@2.0.0-next.45)
+        specifier: ^0.41.0
+        version: 0.41.0(effect@2.0.0-next.46)(fast-check@3.13.1)
       effect:
-        specifier: 2.0.0-next.45
-        version: 2.0.0-next.45
+        specifier: 2.0.0-next.46
+        version: 2.0.0-next.46
 
   packages/pg:
     dependencies:
@@ -158,20 +158,20 @@ importers:
         version: 3.3.5
     devDependencies:
       '@effect/schema':
-        specifier: ^0.40.0
-        version: 0.40.0(effect@2.0.0-next.45)
+        specifier: ^0.41.0
+        version: 0.41.0(effect@2.0.0-next.46)(fast-check@3.13.1)
       effect:
-        specifier: 2.0.0-next.45
-        version: 2.0.0-next.45
+        specifier: 2.0.0-next.46
+        version: 2.0.0-next.46
 
   packages/sql:
     devDependencies:
       '@effect/schema':
-        specifier: ^0.40.0
-        version: 0.40.0(effect@2.0.0-next.45)
+        specifier: ^0.41.0
+        version: 0.41.0(effect@2.0.0-next.46)(fast-check@3.13.1)
       effect:
-        specifier: 2.0.0-next.45
-        version: 2.0.0-next.45
+        specifier: 2.0.0-next.46
+        version: 2.0.0-next.46
 
   packages/sqlite:
     dependencies:
@@ -183,8 +183,8 @@ importers:
         version: 8.7.0
     devDependencies:
       '@effect/schema':
-        specifier: ^0.40.0
-        version: 0.40.0(effect@2.0.0-next.45)
+        specifier: ^0.41.0
+        version: 0.41.0(effect@2.0.0-next.46)(fast-check@3.13.1)
       '@sqlite.org/sqlite-wasm':
         specifier: 3.43.1-build1
         version: 3.43.1-build1
@@ -192,8 +192,8 @@ importers:
         specifier: ^7.6.5
         version: 7.6.5
       effect:
-        specifier: 2.0.0-next.45
-        version: 2.0.0-next.45
+        specifier: 2.0.0-next.46
+        version: 2.0.0-next.46
       expo-sqlite:
         specifier: ^11.6.0
         version: 11.6.0(expo@49.0.13)
@@ -2109,12 +2109,13 @@ packages:
     resolution: {integrity: sha512-e8vfKbjnbYiyneBincEFS0tzXluopGK77OkVFbPRtUbNDS5tJfb+jiwOQEiqASDsadcZmd+9J9+Q6v/z7GuN2g==}
     dev: true
 
-  /@effect/schema@0.40.0(effect@2.0.0-next.45):
-    resolution: {integrity: sha512-0ZXO1Tv3EkjlEnMjtbVaihObmbbENwpvWICo8kC8p9dGuPLvS3EXAPY3IBMM5ag4WscsBrgTLvOHbt4+UuvBSA==}
+  /@effect/schema@0.41.0(effect@2.0.0-next.46)(fast-check@3.13.1):
+    resolution: {integrity: sha512-zOSsQDl2MUND6glul7v5ybXsnxYX6eFwZOin79R/7BpqIBvBnD2CY3a0DtZScsPToh7zdOWZnHMOXSdvsqMJtA==}
     peerDependencies:
-      effect: ^2.0.0-next.45
+      effect: 2.0.0-next.46
+      fast-check: ^3.13.1
     dependencies:
-      effect: 2.0.0-next.45
+      effect: 2.0.0-next.46
       fast-check: 3.13.1
     dev: true
 
@@ -5343,8 +5344,8 @@ packages:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
     dev: true
 
-  /effect@2.0.0-next.45:
-    resolution: {integrity: sha512-cSapc9midRXsOJUx8o9lIzTPJW2NSviQ1jjHlSZM8UJbteLLqcb02ung+4pLjGyouP2AMQlgo02F7b2MvTWxcQ==}
+  /effect@2.0.0-next.46:
+    resolution: {integrity: sha512-il80bMS05oRGkBvJFX2swLflo1HL5jnnyPemr+ix+9A7Wwhm1ngZmWGgTgp1q5mRkv3voCv3DzJff7DGlrTNTg==}
     dev: true
 
   /electron-to-chromium@1.4.542:
@@ -11515,7 +11516,7 @@ packages:
       mlly: 1.4.2
       pathe: 1.1.1
       picocolors: 1.0.0
-      vite: 4.4.10(@types/node@20.8.2)
+      vite: 4.4.11(@types/node@20.8.2)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -11527,8 +11528,8 @@ packages:
       - terser
     dev: true
 
-  /vite@4.4.10(@types/node@20.8.2):
-    resolution: {integrity: sha512-TzIjiqx9BEXF8yzYdF2NTf1kFFbjMjUSV0LFZ3HyHoI3SGSPLnnFUKiIQtL3gl2AjHvMrprOvQ3amzaHgQlAxw==}
+  /vite@4.4.11(@types/node@20.8.2):
+    resolution: {integrity: sha512-ksNZJlkcU9b0lBwAGZGGaZHCMqHsc8OpgtoYhsQ4/I2v5cnpmmmqe5pM4nv/4Hn6G/2GhTdj0DhZh2e+Er1q5A==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -11615,7 +11616,7 @@ packages:
       strip-literal: 1.3.0
       tinybench: 2.5.1
       tinypool: 0.7.0
-      vite: 4.4.10(@types/node@20.8.2)
+      vite: 4.4.11(@types/node@20.8.2)
       vite-node: 0.34.6(@types/node@20.8.2)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
