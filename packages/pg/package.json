@@ -27,7 +27,7 @@
     }
   },
   "scripts": {
-    "example": "ts-node --project tsconfig.examples.json",
+    "example": "ts-node",
     "lint": "eslint --ext .ts,.tsx src/**/* test/**/*",
     "docs": "docgen",
     "tc": "tsc --noEmit",

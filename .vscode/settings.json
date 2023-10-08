@@ -58,6 +58,7 @@
     "packages/sql/Migrator": true,
     "packages/sql/Schema": true,
     "packages/sql/Statement": true,
+    "packages/sql/Stream": true,
     "packages/sql/Transform": true,
     "packages/pg/dist": true,
     "packages/pg/Error": true,

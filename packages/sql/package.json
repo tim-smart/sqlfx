@@ -51,6 +51,7 @@
     "Migrator",
     "Schema",
     "Statement",
+    "Stream",
     "Transform"
   ],
   "exports": {
@@ -102,6 +103,12 @@
       "module": "./Statement/dist/sqlfx-sql-Statement.esm.js",
       "import": "./Statement/dist/sqlfx-sql-Statement.cjs.mjs",
       "default": "./Statement/dist/sqlfx-sql-Statement.cjs.js"
+    },
+    "./Stream": {
+      "types": "./dist/declarations/src/Stream.d.ts",
+      "module": "./Stream/dist/sqlfx-sql-Stream.esm.js",
+      "import": "./Stream/dist/sqlfx-sql-Stream.cjs.mjs",
+      "default": "./Stream/dist/sqlfx-sql-Stream.cjs.js"
     },
     "./Transform": {
       "types": "./dist/declarations/src/Transform.d.ts",
