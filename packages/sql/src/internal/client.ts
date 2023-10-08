@@ -87,6 +87,15 @@ export function make({
       pipe(encodeRequest(_), Effect.flatMap(run), Effect.flatMap(decodeResult))
   }
 
+  function voidSchema<II, IA, R, E>(
+    requestSchema: Schema.Schema<II, IA>,
+    run: (_: II) => Effect.Effect<R, E, any>,
+  ) {
+    const encodeRequest = SqlSchema.encode(requestSchema, "request")
+    return (_: IA): Effect.Effect<R, SchemaError | E, void> =>
+      Effect.asUnit(Effect.flatMap(encodeRequest(_), run))
+  }
+
   function singleSchema<II, IA, AI, A, R, E>(
     requestSchema: Schema.Schema<II, IA>,
     resultSchema: Schema.Schema<AI, A>,
@@ -554,6 +563,7 @@ export function make({
       schema,
       singleSchema,
       singleSchemaOption,
+      voidSchema,
       resolver,
       singleResolverOption,
       singleResolver,

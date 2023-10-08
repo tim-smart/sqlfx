@@ -231,17 +231,20 @@ export interface Constructor {
 
   (value: ReadonlyArray<Primitive | Record<string, Primitive>>): ArrayHelper
 
-  (value: ReadonlyArray<Record<string, Primitive>>): RecordInsertHelper
-  (
+  readonly insert: {
+    (value: ReadonlyArray<Record<string, Primitive>>): RecordInsertHelper
+    (value: Record<string, Primitive>): RecordInsertHelper
+  }
+
+  readonly update: <A extends Record<string, Primitive>>(
+    value: A,
+    omit?: ReadonlyArray<keyof A>,
+  ) => RecordUpdateHelperSingle
+
+  readonly updateValues: (
     value: ReadonlyArray<Record<string, Primitive>>,
     alias: string,
-  ): RecordUpdateHelper
-
-  (value: Record<string, Primitive>): RecordInsertHelper
-  <A extends Record<string, Primitive>>(
-    value: A,
-    omit: ReadonlyArray<keyof A>,
-  ): RecordUpdateHelperSingle
+  ) => RecordUpdateHelper
 }
 
 /**

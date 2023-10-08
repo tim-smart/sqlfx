@@ -9,7 +9,7 @@ const compiler = _.makeCompiler()
 describe("mssql", () => {
   it("insert helper", () => {
     const [query, params] = compiler.compile(
-      sql`INSERT INTO ${sql("people")} ${sql({ name: "Tim", age: 10 })}`,
+      sql`INSERT INTO ${sql("people")} ${sql.insert({ name: "Tim", age: 10 })}`,
     )
     expect(query).toEqual(
       `INSERT INTO [people] ([name],[age]) OUTPUT INSERTED.* VALUES (@a,@b)`,
@@ -19,7 +19,7 @@ describe("mssql", () => {
 
   it("update helper", () => {
     const [query, params] = compiler.compile(
-      sql`UPDATE people SET name = data.name FROM ${sql(
+      sql`UPDATE people SET name = data.name FROM ${sql.updateValues(
         [{ name: "Tim" }, { name: "John" }],
         "data",
       )}`,

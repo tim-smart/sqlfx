@@ -9,7 +9,7 @@ const program = Effect.gen(function* (_) {
   const sql = yield* _(Sql.tag)
 
   const [{ id }] = yield* _(
-    sql`INSERT INTO people ${sql({ name: "John" })} RETURNING *`,
+    sql`INSERT INTO people ${sql.insert({ name: "John" })} RETURNING *`,
   )
 
   const person = yield* _(sql`SELECT * FROM people WHERE id = ${id}`)
@@ -18,8 +18,8 @@ const program = Effect.gen(function* (_) {
 
 const SqlLive = Sql.makeLayer({
   filename: Config.succeed("examples/db.sqlite"),
-  transformQueryNames: Config.succeed(Sql.transform.fromCamel),
-  transformResultNames: Config.succeed(Sql.transform.toCamel),
+  transformQueryNames: Config.succeed(Sql.transform.camelToSnake),
+  transformResultNames: Config.succeed(Sql.transform.snakeToCamel),
 })
 
 const MigratorLive = Layer.provide(

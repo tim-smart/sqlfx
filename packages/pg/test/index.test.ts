@@ -5,14 +5,14 @@ import { describe, expect, it } from "vitest"
 
 const sql = Effect.runSync(Effect.scoped(_.make({})))
 const compiler = _.makeCompiler()
-const compilerTransform = _.makeCompiler(_.transform.fromCamel)
-const transformsNested = Client.defaultTransforms(_.transform.toCamel)
-const transforms = Client.defaultTransforms(_.transform.toCamel, false)
+const compilerTransform = _.makeCompiler(_.transform.camelToSnake)
+const transformsNested = Client.defaultTransforms(_.transform.snakeToCamel)
+const transforms = Client.defaultTransforms(_.transform.snakeToCamel, false)
 
 describe("pg", () => {
   it("insert helper", () => {
     const [query, params] = compiler.compile(
-      sql`INSERT INTO people ${sql({ name: "Tim", age: 10 })}`,
+      sql`INSERT INTO people ${sql.insert({ name: "Tim", age: 10 })}`,
     )
     expect(query).toEqual(`INSERT INTO people ("name","age") VALUES ($1,$2)`)
     expect(params).toEqual(["Tim", 10])
@@ -20,7 +20,7 @@ describe("pg", () => {
 
   it("update helper", () => {
     const [query, params] = compiler.compile(
-      sql`UPDATE people SET name = data.name FROM ${sql(
+      sql`UPDATE people SET name = data.name FROM ${sql.updateValues(
         [{ name: "Tim" }, { name: "John" }],
         "data",
       )}`,

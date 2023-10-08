@@ -8,8 +8,8 @@ const SqlLive = Sql.makeLayer({
   database: Config.succeed("effect_dev"),
   username: Config.succeed("effect"),
   password: Config.succeed(ConfigSecret.fromString("password")),
-  transformQueryNames: Config.succeed(Sql.transform.fromCamel),
-  transformResultNames: Config.succeed(Sql.transform.toCamel),
+  transformQueryNames: Config.succeed(Sql.transform.camelToSnake),
+  transformResultNames: Config.succeed(Sql.transform.snakeToCamel),
 })
 
 const program = Effect.gen(function* (_) {

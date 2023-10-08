@@ -19,7 +19,7 @@ const program = Effect.gen(function* (_) {
     request: InsertPersonSchema,
     result: Person,
     run: requests =>
-      sql`INSERT INTO people ${sql(requests)} RETURNING people.*`,
+      sql`INSERT INTO people ${sql.insert(requests)} RETURNING people.*`,
   })
 
   const GetById = sql.idResolver("GetPersonById", {
@@ -51,8 +51,8 @@ const program = Effect.gen(function* (_) {
 
 const PgLive = Pg.makeLayer({
   database: Config.succeed("effect_pg_dev"),
-  transformQueryNames: Config.succeed(Pg.transform.fromCamel),
-  transformResultNames: Config.succeed(Pg.transform.toCamel),
+  transformQueryNames: Config.succeed(Pg.transform.camelToSnake),
+  transformResultNames: Config.succeed(Pg.transform.snakeToCamel),
 })
 
 pipe(

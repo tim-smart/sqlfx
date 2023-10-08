@@ -7,8 +7,8 @@ import { Console } from "effect"
 
 const PgLive = Pg.makeLayer({
   database: Config.succeed("effect_pg_dev"),
-  transformQueryNames: Config.succeed(Pg.transform.fromCamel),
-  transformResultNames: Config.succeed(Pg.transform.toCamel),
+  transformQueryNames: Config.succeed(Pg.transform.camelToSnake),
+  transformResultNames: Config.succeed(Pg.transform.snakeToCamel),
 })
 
 const program = Effect.gen(function* (_) {

@@ -176,53 +176,42 @@ const isHelper = (u: unknown): u is Helper =>
   u instanceof RecordUpdateHelperSingleImpl ||
   u instanceof IdentifierImpl
 
-const isPrimitive = (u: unknown): u is Primitive =>
-  typeof u === "string" ||
-  typeof u === "number" ||
-  typeof u === "boolean" ||
-  u instanceof Date ||
-  u === null ||
-  u === undefined ||
-  u instanceof Uint8Array ||
-  u instanceof Int8Array
-
 /** @internal */
 export const make = (
   acquirer: Connection.Acquirer,
   compiler: Compiler,
 ): Constructor =>
-  function sql(strings: unknown, ...args: Array<any>): any {
-    if (Array.isArray(strings) && "raw" in strings) {
-      return statement(
-        acquirer,
-        compiler,
-        strings as TemplateStringsArray,
-        ...args,
-      )
-    } else if (Array.isArray(strings)) {
-      if (
-        strings.length > 0 &&
-        !isPrimitive(strings[0]) &&
-        typeof strings[0] === "object"
-      ) {
-        if (typeof args[0] === "string") {
-          return new RecordUpdateHelperImpl(strings, args[0])
-        }
-
-        return new RecordInsertHelperImpl(strings)
+  Object.assign(
+    function sql(strings: unknown, ...args: Array<any>): any {
+      if (Array.isArray(strings) && "raw" in strings) {
+        return statement(
+          acquirer,
+          compiler,
+          strings as TemplateStringsArray,
+          ...args,
+        )
+      } else if (Array.isArray(strings)) {
+        return new ArrayHelperImpl(strings)
+      } else if (typeof strings === "string") {
+        return new IdentifierImpl(strings)
       }
-      return new ArrayHelperImpl(strings)
-    } else if (typeof strings === "string") {
-      return new IdentifierImpl(strings)
-    } else if (typeof strings === "object") {
-      if (Array.isArray(args[0])) {
-        return new RecordUpdateHelperSingleImpl(strings as any, args[0])
-      }
-      return new RecordInsertHelperImpl([strings as any])
-    }
 
-    throw "absurd"
-  }
+      throw "absurd"
+    },
+    {
+      insert(value: any) {
+        return new RecordInsertHelperImpl(
+          Array.isArray(value) ? value : [value],
+        )
+      },
+      update(value: any, omit: any) {
+        return new RecordUpdateHelperSingleImpl(value, omit)
+      },
+      updateValues(value: any, alias: any) {
+        return new RecordUpdateHelperImpl(value, alias)
+      },
+    },
+  )
 
 /** @internal */
 export function statement(

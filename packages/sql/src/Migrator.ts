@@ -109,7 +109,9 @@ export const make =
       ) =>
         sql`
         INSERT INTO ${sql(table)}
-        ${sql(rows.map(([migration_id, name]) => ({ migration_id, name })))}
+        ${sql.insert(
+          rows.map(([migration_id, name]) => ({ migration_id, name })),
+        )}
       `
 
       const latestMigration = Effect.map(

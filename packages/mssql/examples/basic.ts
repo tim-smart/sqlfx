@@ -10,8 +10,8 @@ const SqlLive = Sql.makeLayer({
   server: Config.succeed("localhost"),
   username: Config.succeed("sa"),
   password: Config.succeed(ConfigSecret.fromString("$q1Fx_password")),
-  transformQueryNames: Config.succeed(Sql.transform.fromCamel),
-  transformResultNames: Config.succeed(Sql.transform.toCamel),
+  transformQueryNames: Config.succeed(Sql.transform.camelToSnake),
+  transformResultNames: Config.succeed(Sql.transform.snakeToCamel),
 })
 
 const peopleProcedure = pipe(
@@ -48,7 +48,7 @@ const program = Effect.gen(function* (_) {
 
   // Insert
   const [inserted] = yield* _(
-    sql`INSERT INTO ${sql("people")} ${sql({
+    sql`INSERT INTO ${sql("people")} ${sql.insert({
       name: "Tim",
       createdAt: new Date(),
     })}`,
@@ -67,7 +67,7 @@ const program = Effect.gen(function* (_) {
       UPDATE people
       SET name = data.name
       OUTPUT inserted.*
-      FROM ${sql([{ ...inserted, name: "New name" }], "data")}
+      FROM ${sql.updateValues([{ ...inserted, name: "New name" }], "data")}
       WHERE people.id = data.id
     `),
   )

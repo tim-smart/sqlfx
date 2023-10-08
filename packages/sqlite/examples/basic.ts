@@ -5,15 +5,15 @@ import * as Sql from "@sqlfx/sqlite/node"
 
 const SqlLive = Sql.makeLayer({
   filename: Config.succeed("examples/db.sqlite"),
-  transformQueryNames: Config.succeed(Sql.transform.fromCamel),
-  transformResultNames: Config.succeed(Sql.transform.toCamel),
+  transformQueryNames: Config.succeed(Sql.transform.camelToSnake),
+  transformResultNames: Config.succeed(Sql.transform.snakeToCamel),
 })
 
 const program = Effect.gen(function* (_) {
   const sql = yield* _(Sql.tag)
   yield* _(
     sql`
-      INSERT INTO people ${sql([
+      INSERT INTO people ${sql.insert([
         { name: "John" },
         { name: "Jane" },
         { name: "Fred" },
