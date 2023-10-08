@@ -39,18 +39,18 @@
     "better-sqlite3": "^8.7.0"
   },
   "devDependencies": {
-    "@effect/schema": "^0.41.0",
+    "@effect/schema": "^0.42.0",
     "@sqlite.org/sqlite-wasm": "3.43.1-build1",
     "@types/better-sqlite3": "^7.6.5",
     "better-sqlite3": "^8.6.0",
-    "effect": "2.0.0-next.46",
+    "effect": "2.0.0-next.47",
     "expo-sqlite": "^11.6.0",
     "react-native-quick-sqlite": "^8.0.5"
   },
   "peerDependencies": {
     "@sqlite.org/sqlite-wasm": "3.43.1-build1",
     "better-sqlite3": "^8.6.0",
-    "effect": "2.0.0-next.46",
+    "effect": "2.0.0-next.47",
     "expo-sqlite": "^11.6.0",
     "react-native-quick-sqlite": "^8.0.4"
   },
