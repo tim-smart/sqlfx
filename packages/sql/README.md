@@ -62,7 +62,7 @@ export const makePersonService = Effect.gen(function* (_) {
     requests =>
       sql`
         INSERT INTO people
-        ${sql(requests)}
+        ${sql.insert(requests)}
         RETURNING people.*
       `,
   ).execute
