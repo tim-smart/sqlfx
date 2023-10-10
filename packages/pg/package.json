@@ -40,12 +40,12 @@
     "postgres": "^3.3.5"
   },
   "devDependencies": {
-    "@effect/schema": "^0.42.0",
+    "@effect/schema": "^0.43.0",
     "@sqlfx/sql": "workspace:^",
-    "effect": "2.0.0-next.47"
+    "effect": "2.0.0-next.48"
   },
   "peerDependencies": {
-    "effect": "2.0.0-next.47"
+    "effect": "2.0.0-next.48"
   },
   "files": [
     "src",
