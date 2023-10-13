@@ -11,6 +11,7 @@ dist/
 
 
 # files
+/src/tsconfig.json
 /dist
 /Error
 /Migrator

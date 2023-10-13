@@ -91,7 +91,7 @@ export const make = (
 
     const transformRows = Client.defaultTransforms(
       options.transformResultNames!,
-      options.transformJson ?? false,
+      options.transformJson,
     ).array
 
     const opts: postgres.Options<{}> = {

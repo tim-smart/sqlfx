@@ -587,7 +587,7 @@ export function defaultTransforms(
       if (value.length === 0 || value[0].constructor !== Object) {
         return value
       }
-      return transformArray(value)
+      return array(value)
     } else if (value?.constructor === Object) {
       return transformObject(value)
     }
@@ -632,9 +632,11 @@ export function defaultTransforms(
     return newRows
   }
 
+  const array = nested ? transformArrayNested : transformArray
+
   return {
     value: transformValue,
     object: transformObject,
-    array: nested ? transformArrayNested : transformArray,
+    array,
   } as const
 }
