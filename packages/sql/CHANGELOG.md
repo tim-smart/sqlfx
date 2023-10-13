@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.26.2
+
+### Patch Changes
+
+- [`5aa2f0a`](https://github.com/tim-smart/sqlfx/commit/5aa2f0ad7540c4a5971b9350be1d70339a167a94) Thanks [@tim-smart](https://github.com/tim-smart)! - fix nested transforms in pg client
+
 ## 0.26.1
 
 ### Patch Changes
