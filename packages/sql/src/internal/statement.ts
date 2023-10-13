@@ -631,7 +631,7 @@ function extractPrimitive(
     const head = value.segments[0]
     if (head._tag === "Custom") {
       const compiled = onCustom(head, () => "")
-      return compiled[1][0]
+      return compiled[1][0] ?? null
     } else if (head._tag === "Parameter") {
       return head.value
     }
