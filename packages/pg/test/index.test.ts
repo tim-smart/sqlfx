@@ -121,4 +121,18 @@ describe("pg", () => {
       ],
     )
   })
+
+  it("insert fragments", () => {
+    const [query, params] = sql`INSERT INTO people ${sql.insert({
+      name: "Tim",
+      age: 10,
+      json: sql.json({ a: 1 }),
+    })}`.compile()
+    assert.strictEqual(
+      query,
+      'INSERT INTO people ("name","age","json") VALUES ($1,$2,$3)',
+    )
+    assert.lengthOf(params, 3)
+    expect((params[2] as any).type).toEqual(3802)
+  })
 })

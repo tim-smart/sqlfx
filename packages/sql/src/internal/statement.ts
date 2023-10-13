@@ -36,6 +36,11 @@ export function isFragment(u: unknown): u is Fragment {
 }
 
 /** @internal */
+export function isParameter(u: Segment): u is Parameter {
+  return u._tag === "Parameter"
+}
+
+/** @internal */
 export function isCustom<A extends Custom<any, any, any, any>>(
   kind: A["kind"],
 ) {
@@ -411,7 +416,9 @@ class CompilerImpl implements Compiler {
                 generatePlaceholder(placeholder, keys.length),
                 segment.value.length,
               ),
-              segment.value.map(record => keys.map(key => record[key])),
+              segment.value.map(record =>
+                keys.map(key => extractPrimitive(record[key], this.onCustom)),
+              ),
             )
             sql += s
             binds.push.apply(binds, b as any)
@@ -426,7 +433,12 @@ class CompilerImpl implements Compiler {
 
             for (let i = 0, len = segment.value.length; i < len; i++) {
               for (let j = 0, len = keys.length; j < len; j++) {
-                binds.push(segment.value[i]?.[keys[j]] ?? null)
+                binds.push(
+                  extractPrimitive(
+                    segment.value[i]?.[keys[j]] ?? null,
+                    this.onCustom,
+                  ),
+                )
               }
             }
           }
@@ -441,7 +453,9 @@ class CompilerImpl implements Compiler {
           if (this.onRecordUpdateSingle) {
             const [s, b] = this.onRecordUpdateSingle(
               keys.map(this.onIdentifier),
-              keys.map(key => segment.value[key]),
+              keys.map(key =>
+                extractPrimitive(segment.value[key], this.onCustom),
+              ),
             )
             sql += s
             binds.push.apply(binds, b as any)
@@ -453,7 +467,9 @@ class CompilerImpl implements Compiler {
               } else {
                 sql += `, ${column} = ${placeholder()}`
               }
-              binds.push(segment.value[keys[i]])
+              binds.push(
+                extractPrimitive(segment.value[keys[i]], this.onCustom),
+              )
             }
           }
           break
@@ -468,7 +484,9 @@ class CompilerImpl implements Compiler {
             ),
             segment.alias,
             generateColumns(keys, this.onIdentifier),
-            segment.value.map(record => keys.map(key => record?.[key])),
+            segment.value.map(record =>
+              keys.map(key => extractPrimitive(record?.[key], this.onCustom)),
+            ),
           )
           sql += s
           binds.push.apply(binds, b as any)
@@ -600,4 +618,24 @@ export const primitiveKind = (value: Primitive): PrimitiveKind => {
   }
 
   return "string"
+}
+
+function extractPrimitive(
+  value: Primitive | Fragment,
+  onCustom: (
+    type: Custom<string, unknown, unknown>,
+    placeholder: () => string,
+  ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
+): Primitive {
+  if (isFragment(value)) {
+    const head = value.segments[0]
+    if (head._tag === "Custom") {
+      const compiled = onCustom(head, () => "")
+      return compiled[1][0]
+    } else if (head._tag === "Parameter") {
+      return head.value
+    }
+    return null
+  }
+  return value
 }

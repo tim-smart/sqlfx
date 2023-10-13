@@ -111,6 +111,14 @@ export interface Client extends Constructor {
   ): (_: IA) => Effect.Effect<R, E | SchemaError, ReadonlyArray<A>>
 
   /**
+   * Run a sql query with a request schema that returns void.
+   */
+  voidSchema<II, IA, R, E>(
+    requestSchema: Schema.Schema<II, IA>,
+    run: (_: II) => Effect.Effect<R, E, any>
+  ): (_: IA) => Effect.Effect<R, E | SchemaError, void>
+
+  /**
    * Run a sql query with a request schema and a result schema.
    *
    * The request schema is used to validate the input of the query.

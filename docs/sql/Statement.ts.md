@@ -223,7 +223,7 @@ Added in v1.0.0
 ```ts
 export interface ArrayHelper {
   readonly _tag: 'ArrayHelper'
-  readonly value: ReadonlyArray<Primitive>
+  readonly value: ReadonlyArray<Primitive | Fragment>
 }
 ```
 
@@ -251,13 +251,22 @@ export interface Constructor {
 
   (value: string): Identifier
 
-  (value: ReadonlyArray<Primitive | Record<string, Primitive>>): ArrayHelper
+  (value: ReadonlyArray<Primitive | Record<string, Primitive | Fragment>>): ArrayHelper
 
-  (value: ReadonlyArray<Record<string, Primitive>>): RecordInsertHelper
-  (value: ReadonlyArray<Record<string, Primitive>>, alias: string): RecordUpdateHelper
+  readonly insert: {
+    (value: ReadonlyArray<Record<string, Primitive | Fragment>>): RecordInsertHelper
+    (value: Record<string, Primitive | Fragment>): RecordInsertHelper
+  }
 
-  (value: Record<string, Primitive>): RecordInsertHelper
-  <A extends Record<string, Primitive>>(value: A, omit: ReadonlyArray<keyof A>): RecordUpdateHelperSingle
+  readonly update: <A extends Record<string, Primitive | Fragment>>(
+    value: A,
+    omit?: ReadonlyArray<keyof A>
+  ) => RecordUpdateHelperSingle
+
+  readonly updateValues: (
+    value: ReadonlyArray<Record<string, Primitive | Fragment>>,
+    alias: string
+  ) => RecordUpdateHelper
 }
 ```
 
@@ -375,7 +384,7 @@ Added in v1.0.0
 ```ts
 export interface RecordInsertHelper {
   readonly _tag: 'RecordInsertHelper'
-  readonly value: ReadonlyArray<Record<string, Primitive>>
+  readonly value: ReadonlyArray<Record<string, Primitive | Fragment>>
 }
 ```
 
@@ -388,7 +397,7 @@ Added in v1.0.0
 ```ts
 export interface RecordUpdateHelper {
   readonly _tag: 'RecordUpdateHelper'
-  readonly value: ReadonlyArray<Record<string, Primitive>>
+  readonly value: ReadonlyArray<Record<string, Primitive | Fragment>>
   readonly alias: string
 }
 ```
@@ -402,7 +411,7 @@ Added in v1.0.0
 ```ts
 export interface RecordUpdateHelperSingle {
   readonly _tag: 'RecordUpdateHelperSingle'
-  readonly value: Record<string, Primitive>
+  readonly value: Record<string, Primitive | Fragment>
   readonly omit: ReadonlyArray<string>
 }
 ```

@@ -13,73 +13,73 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [transform](#transform)
-  - [fromCamel](#fromcamel)
-  - [fromKebab](#fromkebab)
-  - [fromPascal](#frompascal)
-  - [toCamel](#tocamel)
-  - [toKebab](#tokebab)
-  - [toPascal](#topascal)
+  - [camelToSnake](#cameltosnake)
+  - [kebabToSnake](#kebabtosnake)
+  - [pascalToSnake](#pascaltosnake)
+  - [snakeToCamel](#snaketocamel)
+  - [snakeToKebab](#snaketokebab)
+  - [snakeToPascal](#snaketopascal)
 
 ---
 
 # transform
 
-## fromCamel
+## camelToSnake
 
 **Signature**
 
 ```ts
-export declare const fromCamel: (x: string) => string
+export declare const camelToSnake: (x: string) => string
 ```
 
 Added in v1.0.0
 
-## fromKebab
+## kebabToSnake
 
 **Signature**
 
 ```ts
-export declare const fromKebab: (x: string) => string
+export declare const kebabToSnake: (x: string) => string
 ```
 
 Added in v1.0.0
 
-## fromPascal
+## pascalToSnake
 
 **Signature**
 
 ```ts
-export declare const fromPascal: (x: string) => string
+export declare const pascalToSnake: (x: string) => string
 ```
 
 Added in v1.0.0
 
-## toCamel
+## snakeToCamel
 
 **Signature**
 
 ```ts
-export declare const toCamel: (x: string) => string
+export declare const snakeToCamel: (x: string) => string
 ```
 
 Added in v1.0.0
 
-## toKebab
+## snakeToKebab
 
 **Signature**
 
 ```ts
-export declare const toKebab: (x: string) => string
+export declare const snakeToKebab: (x: string) => string
 ```
 
 Added in v1.0.0
 
-## toPascal
+## snakeToPascal
 
 **Signature**
 
 ```ts
-export declare const toPascal: (x: string) => string
+export declare const snakeToPascal: (x: string) => string
 ```
 
 Added in v1.0.0
