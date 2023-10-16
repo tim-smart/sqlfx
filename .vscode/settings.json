@@ -47,6 +47,7 @@
     "packages/sqlite/Client": true,
     "packages/sqlite/Error": true,
     "packages/sqlite/Migrator": true,
+    "packages/sqlite/bun": true,
     "packages/sqlite/expo": true,
     "packages/sqlite/node": true,
     "packages/sqlite/react-native": true,

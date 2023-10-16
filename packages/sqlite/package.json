@@ -75,6 +75,7 @@
     "Client",
     "Error",
     "Migrator",
+    "bun",
     "expo",
     "node",
     "react-native",
@@ -111,6 +112,12 @@
       "module": "./Migrator/Node/dist/sqlfx-sqlite-Migrator-Node.esm.js",
       "import": "./Migrator/Node/dist/sqlfx-sqlite-Migrator-Node.cjs.mjs",
       "default": "./Migrator/Node/dist/sqlfx-sqlite-Migrator-Node.cjs.js"
+    },
+    "./bun": {
+      "types": "./dist/declarations/src/bun.d.ts",
+      "module": "./bun/dist/sqlfx-sqlite-bun.esm.js",
+      "import": "./bun/dist/sqlfx-sqlite-bun.cjs.mjs",
+      "default": "./bun/dist/sqlfx-sqlite-bun.cjs.js"
     },
     "./expo": {
       "types": "./dist/declarations/src/expo.d.ts",

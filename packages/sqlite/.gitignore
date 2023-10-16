@@ -16,6 +16,7 @@ dist/
 /Client
 /Error
 /Migrator
+/bun
 /expo
 /node
 /react-native

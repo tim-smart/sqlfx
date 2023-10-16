@@ -1,0 +1,50 @@
+diff --git a/cli/dist/preconstruct-cli-cli.cjs.js b/cli/dist/preconstruct-cli-cli.cjs.js
+index b18c560863966454aab77816b147401f4ee875e1..9f76c06fe120de680428d393eef091f109a5a0bd 100644
+--- a/cli/dist/preconstruct-cli-cli.cjs.js
++++ b/cli/dist/preconstruct-cli-cli.cjs.js
+@@ -2855,7 +2855,7 @@ const makeExternalPredicate = externalArr => {
+ let getRollupConfig = (pkg, entrypoints, options, reportTransformedFile) => {
+   var _pkg$exportsFieldConf;
+ 
+-  let external = [];
++  let external = ["bun:sqlite"];
+ 
+   if (pkg.json.peerDependencies) {
+     external.push(...Object.keys(pkg.json.peerDependencies));
+@@ -2925,7 +2925,7 @@ let getRollupConfig = (pkg, entrypoints, options, reportTransformedFile) => {
+         }
+       }
+ 
+-    }, options.kind === "node-prod" && nodeDevProdEntry(), (options.kind === "node-prod" || isDefaultConditionsBuild) && flow(), resolveErrorsPlugin(pkg, warnings, options.kind === "umd"), (options.kind === "node-prod" || isDefaultConditionsBuild) && typescriptDeclarations(pkg), (options.kind === "node-prod" || options.kind === "conditions") && ((_pkg$exportsFieldConf = pkg.exportsFieldConfig()) === null || _pkg$exportsFieldConf === void 0 ? void 0 : _pkg$exportsFieldConf.importConditionDefaultExport) === "default" && mjsProxyPlugin(pkg), serverComponentsPlugin({
++    }, options.kind === "node-prod" && nodeDevProdEntry(), (options.kind === "node-prod" || isDefaultConditionsBuild) && flow(), (options.kind === "node-prod" || isDefaultConditionsBuild) && typescriptDeclarations(pkg), (options.kind === "node-prod" || options.kind === "conditions") && ((_pkg$exportsFieldConf = pkg.exportsFieldConfig()) === null || _pkg$exportsFieldConf === void 0 ? void 0 : _pkg$exportsFieldConf.importConditionDefaultExport) === "default" && mjsProxyPlugin(pkg), serverComponentsPlugin({
+       sourceMap: options.kind === "umd"
+     }), rollupPluginBabel({
+       cwd: pkg.project.directory,
+diff --git a/cli/dist/preconstruct-cli-cli.esm.js b/cli/dist/preconstruct-cli-cli.esm.js
+index f54aa61f8445c990c215ef9934845741ea6bf591..6ff70d33600a42fd40c22c68ce6ce59e9595244d 100644
+--- a/cli/dist/preconstruct-cli-cli.esm.js
++++ b/cli/dist/preconstruct-cli-cli.esm.js
+@@ -2805,7 +2805,7 @@ const makeExternalPredicate = externalArr => {
+ let getRollupConfig = (pkg, entrypoints, options, reportTransformedFile) => {
+   var _pkg$exportsFieldConf;
+ 
+-  let external = [];
++  let external = ["bun:sqlite"];
+ 
+   if (pkg.json.peerDependencies) {
+     external.push(...Object.keys(pkg.json.peerDependencies));
+@@ -2875,7 +2875,7 @@ let getRollupConfig = (pkg, entrypoints, options, reportTransformedFile) => {
+         }
+       }
+ 
+-    }, options.kind === "node-prod" && nodeDevProdEntry(), (options.kind === "node-prod" || isDefaultConditionsBuild) && flow(), resolveErrorsPlugin(pkg, warnings, options.kind === "umd"), (options.kind === "node-prod" || isDefaultConditionsBuild) && typescriptDeclarations(pkg), (options.kind === "node-prod" || options.kind === "conditions") && ((_pkg$exportsFieldConf = pkg.exportsFieldConfig()) === null || _pkg$exportsFieldConf === void 0 ? void 0 : _pkg$exportsFieldConf.importConditionDefaultExport) === "default" && mjsProxyPlugin(pkg), serverComponentsPlugin({
++    }, options.kind === "node-prod" && nodeDevProdEntry(), (options.kind === "node-prod" || isDefaultConditionsBuild) && flow(), (options.kind === "node-prod" || isDefaultConditionsBuild) && typescriptDeclarations(pkg), (options.kind === "node-prod" || options.kind === "conditions") && ((_pkg$exportsFieldConf = pkg.exportsFieldConfig()) === null || _pkg$exportsFieldConf === void 0 ? void 0 : _pkg$exportsFieldConf.importConditionDefaultExport) === "default" && mjsProxyPlugin(pkg), serverComponentsPlugin({
+       sourceMap: options.kind === "umd"
+     }), rollupPluginBabel({
+       cwd: pkg.project.directory,
+diff --git a/dist/declarations/src/cli.d.ts b/dist/declarations/src/cli.d.ts
+deleted file mode 100644
+index cb0ff5c3b541f646105198ee23ac0fc3d805023e..0000000000000000000000000000000000000000
+diff --git a/dist/declarations/src/worker.d.ts b/dist/declarations/src/worker.d.ts
+deleted file mode 100644
+index 9cd1f2dbb0325b78d77a6f2d93b066baf080fa6f..0000000000000000000000000000000000000000
