@@ -1,9 +1,7 @@
 /**
  * @since 1.0.0
  */
-import * as Duration from "effect/Duration"
 import { identity } from "effect/Function"
-import * as Cache from "effect/Cache"
 import * as Config from "effect/Config"
 import type { ConfigError } from "effect/ConfigError"
 import * as Effect from "effect/Effect"
@@ -15,7 +13,7 @@ import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
 import { tag, type SqliteClient, makeCompiler } from "./Client"
-import Sqlite from "better-sqlite3"
+import { Database } from "bun:sqlite"
 
 export {
   /**
@@ -48,11 +46,11 @@ export type {
  * @category models
  * @since 1.0.0
  */
-export interface SqliteNodeConfig {
+export interface SqliteBunConfig {
   readonly filename: string
   readonly readonly?: boolean
-  readonly prepareCacheSize?: number
-  readonly prepareCacheTTL?: Duration.DurationInput
+  readonly create?: boolean
+  readonly readwrite?: boolean
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
 }
@@ -62,7 +60,7 @@ export interface SqliteNodeConfig {
  * @since 1.0.0
  */
 export const make = (
-  options: SqliteNodeConfig,
+  options: SqliteBunConfig,
 ): Effect.Effect<Scope, never, SqliteClient> =>
   Effect.gen(function* (_) {
     const compiler = makeCompiler(options.transformQueryNames)
@@ -73,41 +71,23 @@ export const make = (
     const handleError = (error: any) => SqlError(error.message, { ...error })
 
     const makeConnection = Effect.gen(function* (_) {
-      const db = new Sqlite(options.filename, {
-        readonly: options.readonly ?? false,
+      const db = new Database(options.filename, {
+        readonly: options.readonly,
+        readwrite: options.readwrite ?? true,
+        create: options.create ?? true,
       })
       yield* _(Effect.addFinalizer(() => Effect.sync(() => db.close())))
 
-      db.pragma("journal_mode = WAL")
-
-      const prepareCache = yield* _(
-        Cache.make({
-          capacity: options.prepareCacheSize ?? 200,
-          timeToLive: options.prepareCacheTTL ?? Duration.minutes(10),
-          lookup: (sql: string) =>
-            Effect.try({
-              try: () => db.prepare(sql),
-              catch: handleError,
-            }),
-        }),
-      )
+      db.run("PRAGMA journal_mode = WAL;")
 
       const run = (
         sql: string,
         params: ReadonlyArray<Statement.Primitive> = [],
       ) =>
-        Effect.flatMap(prepareCache.get(sql), _ =>
-          Effect.try({
-            try: () => {
-              if (_.reader) {
-                return _.all(...params) as ReadonlyArray<any>
-              }
-              _.run(...params)
-              return []
-            },
-            catch: handleError,
-          }),
-        )
+        Effect.try({
+          try: () => db.query(sql).all(...(params as any)) as Array<any>,
+          catch: handleError,
+        })
 
       const runTransform = options.transformResultNames
         ? (sql: string, params?: ReadonlyArray<Statement.Primitive>) =>
@@ -116,25 +96,12 @@ export const make = (
 
       const runValues = (
         sql: string,
-        params: ReadonlyArray<Statement.Primitive>,
+        params: ReadonlyArray<Statement.Primitive> = [],
       ) =>
-        Effect.acquireUseRelease(
-          prepareCache.get(sql).pipe(Effect.map(_ => _.raw(true))),
-          statement =>
-            Effect.try({
-              try: () => {
-                if (statement.reader) {
-                  return statement.all(...params) as ReadonlyArray<
-                    ReadonlyArray<Statement.Primitive>
-                  >
-                }
-                statement.run(...params)
-                return []
-              },
-              catch: handleError,
-            }),
-          statement => Effect.sync(() => statement.raw(false)),
-        )
+        Effect.try({
+          try: () => db.query(sql).values(...(params as any)) as Array<any>,
+          catch: handleError,
+        })
 
       return identity<
         Connection & {
@@ -189,8 +156,8 @@ export const make = (
  * @since 1.0.0
  */
 export const makeLayer: (
-  config: Config.Config.Wrap<SqliteNodeConfig>,
+  config: Config.Config.Wrap<SqliteBunConfig>,
 ) => Layer.Layer<never, ConfigError, SqliteClient> = (
-  config: Config.Config.Wrap<SqliteNodeConfig>,
+  config: Config.Config.Wrap<SqliteBunConfig>,
 ) =>
   Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))

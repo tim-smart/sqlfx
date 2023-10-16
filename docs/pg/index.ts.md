@@ -47,7 +47,6 @@ export interface PgClientConfig {
   readonly idleTimeout?: Duration.DurationInput
   readonly connectTimeout?: Duration.DurationInput
 
-  readonly minConnections?: number
   readonly maxConnections?: number
   readonly connectionTTL?: Duration.DurationInput
 

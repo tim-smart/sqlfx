@@ -191,6 +191,9 @@ importers:
       '@types/better-sqlite3':
         specifier: ^7.6.5
         version: 7.6.5
+      bun-types:
+        specifier: ^1.0.6
+        version: 1.0.6
       effect:
         specifier: 2.0.0-next.48
         version: 2.0.0-next.48
@@ -4481,6 +4484,10 @@ packages:
 
   /builtins@1.0.3:
     resolution: {integrity: sha512-uYBjakWipfaO/bXI7E8rq6kpwHRZK5cNYrUv2OzZSI/FvmdMyXJ2tG9dKcjEC5YHmHpUAwsargWIZNWdxb/bnQ==}
+    dev: true
+
+  /bun-types@1.0.6:
+    resolution: {integrity: sha512-5QwynfXiRCRxPW3ZnC0Dv+sHHmctP4SHIuzsRKOWYO0HF/qUpsxQVexoviaxpmwDsF1hoVDDFdc4xUuafOzx1g==}
     dev: true
 
   /bundle-name@3.0.0:

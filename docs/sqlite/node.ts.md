@@ -1,6 +1,6 @@
 ---
 title: node.ts
-nav_order: 6
+nav_order: 7
 parent: "@sqlfx/sqlite"
 ---
 
@@ -81,6 +81,7 @@ export interface SqliteNodeConfig {
   readonly filename: string
   readonly readonly?: boolean
   readonly prepareCacheSize?: number
+  readonly prepareCacheTTL?: Duration.DurationInput
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
 }

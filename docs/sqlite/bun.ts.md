@@ -1,10 +1,10 @@
 ---
-title: react-native.ts
-nav_order: 8
+title: bun.ts
+nav_order: 1
 parent: "@sqlfx/sqlite"
 ---
 
-## react-native overview
+## bun overview
 
 Added in v1.0.0
 
@@ -16,12 +16,9 @@ Added in v1.0.0
   - [make](#make)
   - [makeCompiler](#makecompiler)
   - [makeLayer](#makelayer)
-- [fiber refs](#fiber-refs)
-  - [asyncQuery](#asyncquery)
-  - [withAsyncQuery](#withasyncquery)
 - [models](#models)
+  - [SqliteBunConfig (interface)](#sqlitebunconfig-interface)
   - [SqliteClient](#sqliteclient)
-  - [SqliteRNClientConfig (interface)](#sqliternclientconfig-interface)
 - [tags](#tags)
   - [tag](#tag)
 - [utils](#utils)
@@ -36,7 +33,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: (options: SqliteRNClientConfig) => Effect.Effect<Scope, never, SqliteClient>
+export declare const make: (options: SqliteBunConfig) => Effect.Effect<Scope, never, SqliteClient>
 ```
 
 Added in v1.0.0
@@ -56,34 +53,31 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeLayer: (config: SqliteRNClientConfig) => Layer.Layer<never, never, SqliteClient>
-```
-
-Added in v1.0.0
-
-# fiber refs
-
-## asyncQuery
-
-**Signature**
-
-```ts
-export declare const asyncQuery: FiberRef.FiberRef<boolean>
-```
-
-Added in v1.0.0
-
-## withAsyncQuery
-
-**Signature**
-
-```ts
-export declare const withAsyncQuery: <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, E, A>
+export declare const makeLayer: (
+  config: Config.Config.Wrap<SqliteBunConfig>
+) => Layer.Layer<never, ConfigError, SqliteClient>
 ```
 
 Added in v1.0.0
 
 # models
+
+## SqliteBunConfig (interface)
+
+**Signature**
+
+```ts
+export interface SqliteBunConfig {
+  readonly filename: string
+  readonly readonly?: boolean
+  readonly create?: boolean
+  readonly readwrite?: boolean
+  readonly transformResultNames?: (str: string) => string
+  readonly transformQueryNames?: (str: string) => string
+}
+```
+
+Added in v1.0.0
 
 ## SqliteClient
 
@@ -91,21 +85,6 @@ Added in v1.0.0
 
 ```ts
 export declare const SqliteClient: SqliteClient
-```
-
-Added in v1.0.0
-
-## SqliteRNClientConfig (interface)
-
-**Signature**
-
-```ts
-export interface SqliteRNClientConfig {
-  readonly filename: string
-  readonly location?: string
-  readonly transformResultNames?: (str: string) => string
-  readonly transformQueryNames?: (str: string) => string
-}
 ```
 
 Added in v1.0.0

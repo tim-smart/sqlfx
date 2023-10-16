@@ -1,7 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "build"
+    "outDir": "build",
+    "types": ["bun-types"]
   },
   "include": ["./src/**/*", "test/**/*", "examples/**/*"],
   "references": [{ "path": "../sql" }]
