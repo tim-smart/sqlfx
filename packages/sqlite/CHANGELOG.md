@@ -1,5 +1,11 @@
 # @sqlfx/sqlite
 
+## 0.26.3
+
+### Patch Changes
+
+- [`38b5182`](https://github.com/tim-smart/sqlfx/commit/38b51821baa96f6391938e8c586c629da975682d) Thanks [@tim-smart](https://github.com/tim-smart)! - add bun sqlite client
+
 ## 0.26.2
 
 ### Patch Changes

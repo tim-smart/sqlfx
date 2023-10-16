@@ -1,5 +1,11 @@
 # @sqlfx/pg
 
+## 0.26.0
+
+### Minor Changes
+
+- [#80](https://github.com/tim-smart/sqlfx/pull/80) [`4ff3f67`](https://github.com/tim-smart/sqlfx/commit/4ff3f67b8650f7d8517c4700a0db9f819a5a20d1) Thanks [@tim-smart](https://github.com/tim-smart)! - switch to postgres.js pool
+
 ## 0.25.2
 
 ### Patch Changes
