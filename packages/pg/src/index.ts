@@ -9,7 +9,6 @@ import type { ConfigError } from "effect/ConfigError"
 import * as ConfigSecret from "effect/ConfigSecret"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
-import * as Pool from "effect/Pool"
 import type { Scope } from "effect/Scope"
 import * as Stream from "effect/Stream"
 import * as Client from "@sqlfx/sql/Client"
@@ -65,7 +64,6 @@ export interface PgClientConfig {
   readonly idleTimeout?: Duration.DurationInput
   readonly connectTimeout?: Duration.DurationInput
 
-  readonly minConnections?: number
   readonly maxConnections?: number
   readonly connectionTTL?: Duration.DurationInput
 
@@ -95,8 +93,12 @@ export const make = (
     ).array
 
     const opts: postgres.Options<{}> = {
-      max: 1,
-      max_lifetime: 0,
+      max: options.maxConnections ?? 10,
+      max_lifetime: options.connectionTTL
+        ? Math.round(
+            Duration.toMillis(Duration.decode(options.connectionTTL)) / 1000,
+          )
+        : undefined,
       idle_timeout: options.idleTimeout
         ? Math.round(
             Duration.toMillis(Duration.decode(options.idleTimeout)) / 1000,
@@ -119,90 +121,94 @@ export const make = (
         : undefined,
     }
 
-    const makeConnection = pipe(
-      Effect.acquireRelease(
-        Effect.sync(() =>
-          options.url
-            ? postgres(ConfigSecret.value(options.url), opts)
-            : postgres(opts),
-        ),
-        pg => Effect.promise(() => pg.end()),
-      ),
-      Effect.map((pg): Connection => {
-        const run = (query: PendingQuery<any> | PendingValuesQuery<any>) =>
-          Effect.async<never, SqlError, ReadonlyArray<any>>(resume => {
-            query
-              .then(_ => resume(Effect.succeed(_)))
-              .catch(error =>
-                resume(
-                  Effect.fail(SqlError(error.message, { ...error.__proto__ })),
-                ),
-              )
-            return Effect.sync(() => query.cancel())
-          })
+    const client = options.url
+      ? postgres(ConfigSecret.value(options.url), opts)
+      : postgres(opts)
 
-        const runTransform = options.transformResultNames
-          ? (query: PendingQuery<any>) => Effect.map(run(query), transformRows)
-          : run
+    yield* _(Effect.addFinalizer(() => Effect.sync(() => client.end())))
 
-        return {
-          execute(statement) {
-            const [sql, params] = compiler.compile(statement)
-            return runTransform(pg.unsafe(sql, params as any))
-          },
-          executeWithoutTransform(statement) {
-            const [sql, params] = compiler.compile(statement)
-            return run(pg.unsafe(sql, params as any))
-          },
-          executeValues(statement) {
-            const [sql, params] = compiler.compile(statement)
-            return run(pg.unsafe(sql, params as any).values())
-          },
-          executeRaw(sql, params) {
-            return runTransform(pg.unsafe(sql, params as any))
-          },
-          executeStream(statement) {
-            const [sql, params] = compiler.compile(statement)
-            return Effect.sync(
-              () =>
-                pg.unsafe(sql, params as any).cursor(16) as AsyncIterable<
-                  Array<any>
-                >,
-            ).pipe(
-              Effect.map(_ =>
-                Stream.fromAsyncIterable(_, e =>
-                  SqlError((e as Error).message, { ...(e as any).__proto__ }),
-                ),
-              ),
-              Stream.unwrap,
-              Stream.flatMap(_ =>
-                Stream.fromIterable(
-                  options.transformResultNames ? transformRows(_) : _,
-                ),
-              ),
-            )
-          },
-          compile(statement) {
-            return Effect.sync(() => compiler.compile(statement))
-          },
-        }
-      }),
-    )
+    const handleError = (u: unknown) => {
+      const error = u as any
+      return SqlError(error.message, { ...error.__proto__ })
+    }
 
-    const pool = yield* _(
-      Pool.makeWithTTL({
-        acquire: makeConnection,
-        min: options.minConnections ?? 1,
-        max: options.maxConnections ?? 10,
-        timeToLive: options.connectionTTL ?? Duration.minutes(45),
-      }),
-    )
+    class ConnectionImpl implements Connection {
+      constructor(
+        private readonly pg: postgres.Sql<{}>,
+        private readonly options: PgClientConfig,
+      ) {}
+
+      private run(query: PendingQuery<any> | PendingValuesQuery<any>) {
+        return Effect.async<never, SqlError, ReadonlyArray<any>>(resume => {
+          query
+            .then(_ => resume(Effect.succeed(_)))
+            .catch(error => resume(Effect.fail(handleError(error))))
+          return Effect.sync(() => query.cancel())
+        })
+      }
+
+      private runTransform(query: PendingQuery<any>) {
+        return this.options.transformResultNames
+          ? Effect.map(this.run(query), transformRows)
+          : this.run(query)
+      }
+
+      execute(statement: Statement.Statement<unknown>) {
+        const [sql, params] = compiler.compile(statement)
+        return this.runTransform(this.pg.unsafe(sql, params as any))
+      }
+      executeWithoutTransform(statement: Statement.Statement<unknown>) {
+        const [sql, params] = compiler.compile(statement)
+        return this.run(this.pg.unsafe(sql, params as any))
+      }
+      executeValues(statement: Statement.Statement<unknown>) {
+        const [sql, params] = compiler.compile(statement)
+        return this.run(this.pg.unsafe(sql, params as any).values())
+      }
+      executeRaw(sql: string, params?: ReadonlyArray<Primitive>) {
+        return this.runTransform(this.pg.unsafe(sql, params as any))
+      }
+      executeStream(statement: Statement.Statement<unknown>) {
+        const [sql, params] = compiler.compile(statement)
+        return pipe(
+          Effect.sync(
+            () =>
+              this.pg.unsafe(sql, params as any).cursor(16) as AsyncIterable<
+                Array<any>
+              >,
+          ),
+          Effect.map(_ =>
+            Stream.fromAsyncIterable(_, e =>
+              SqlError((e as Error).message, { ...(e as any).__proto__ }),
+            ),
+          ),
+          Stream.unwrap,
+          Stream.flatMap(_ =>
+            Stream.fromIterable(
+              options.transformResultNames ? transformRows(_) : _,
+            ),
+          ),
+        )
+      }
+      compile(statement: Statement.Statement<unknown>) {
+        return Effect.sync(() => compiler.compile(statement))
+      }
+    }
 
     return Object.assign(
       Client.make({
-        acquirer: Effect.scoped(pool.get()),
+        acquirer: Effect.succeed(new ConnectionImpl(client, options)),
+        transactionAcquirer: Effect.map(
+          Effect.acquireRelease(
+            Effect.tryPromise({
+              try: () => (client as any).reserve() as Promise<postgres.Sql<{}>>,
+              catch: error => handleError(error),
+            }),
+            pg => Effect.sync(() => (pg as any).release()),
+          ),
+          _ => new ConnectionImpl(_, options),
+        ),
         compiler,
-        transactionAcquirer: pool.get(),
       }),
       {
         config: options,
