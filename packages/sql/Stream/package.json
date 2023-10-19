@@ -1,4 +1,0 @@
-{
-  "main": "dist/sqlfx-sql-Stream.cjs.js",
-  "module": "dist/sqlfx-sql-Stream.esm.js"
-}
