@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.28.0
+
+### Minor Changes
+
+- [`14d06a2`](https://github.com/tim-smart/sqlfx/commit/14d06a26ec405884aa23c26e4c4ad2fbff0ba6bd) Thanks [@tim-smart](https://github.com/tim-smart)! - update effect
+
 ## 0.27.0
 
 ### Minor Changes
