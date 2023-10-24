@@ -1,5 +1,11 @@
 # @sqlfx/pg
 
+## 0.28.1
+
+### Patch Changes
+
+- [#124](https://github.com/tim-smart/sqlfx/pull/124) [`4a62593`](https://github.com/tim-smart/sqlfx/commit/4a625937fca474887909a103e04fa3d82638d1dc) Thanks [@tiborkr](https://github.com/tiborkr)! - add fetchTypes to pg options
+
 ## 0.28.0
 
 ### Minor Changes
