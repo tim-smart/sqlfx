@@ -126,14 +126,14 @@ importers:
         version: 16.5.0
     devDependencies:
       '@effect/schema':
-        specifier: ^0.46.0
-        version: 0.46.0(effect@2.0.0-next.51)(fast-check@3.13.2)
+        specifier: ^0.46.1
+        version: 0.46.1(effect@2.0.0-next.52)(fast-check@3.13.2)
       '@types/tedious':
         specifier: ^4.0.13
         version: 4.0.13
       effect:
-        specifier: 2.0.0-next.51
-        version: 2.0.0-next.51
+        specifier: 2.0.0-next.52
+        version: 2.0.0-next.52
 
   packages/mysql:
     dependencies:
@@ -145,11 +145,11 @@ importers:
         version: 3.2.2
     devDependencies:
       '@effect/schema':
-        specifier: ^0.46.0
-        version: 0.46.0(effect@2.0.0-next.51)(fast-check@3.13.2)
+        specifier: ^0.46.1
+        version: 0.46.1(effect@2.0.0-next.52)(fast-check@3.13.2)
       effect:
-        specifier: 2.0.0-next.51
-        version: 2.0.0-next.51
+        specifier: 2.0.0-next.52
+        version: 2.0.0-next.52
 
   packages/pg:
     dependencies:
@@ -161,20 +161,20 @@ importers:
         version: 3.4.1
     devDependencies:
       '@effect/schema':
-        specifier: ^0.46.0
-        version: 0.46.0(effect@2.0.0-next.51)(fast-check@3.13.2)
+        specifier: ^0.46.1
+        version: 0.46.1(effect@2.0.0-next.52)(fast-check@3.13.2)
       effect:
-        specifier: 2.0.0-next.51
-        version: 2.0.0-next.51
+        specifier: 2.0.0-next.52
+        version: 2.0.0-next.52
 
   packages/sql:
     devDependencies:
       '@effect/schema':
-        specifier: ^0.46.0
-        version: 0.46.0(effect@2.0.0-next.51)(fast-check@3.13.2)
+        specifier: ^0.46.1
+        version: 0.46.1(effect@2.0.0-next.52)(fast-check@3.13.2)
       effect:
-        specifier: 2.0.0-next.51
-        version: 2.0.0-next.51
+        specifier: 2.0.0-next.52
+        version: 2.0.0-next.52
 
   packages/sqlite:
     dependencies:
@@ -183,8 +183,8 @@ importers:
         version: link:../sql
     devDependencies:
       '@effect/schema':
-        specifier: ^0.46.0
-        version: 0.46.0(effect@2.0.0-next.51)(fast-check@3.13.2)
+        specifier: ^0.46.1
+        version: 0.46.1(effect@2.0.0-next.52)(fast-check@3.13.2)
       '@sqlite.org/sqlite-wasm':
         specifier: 3.43.2-build1
         version: 3.43.2-build1
@@ -198,8 +198,8 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7
       effect:
-        specifier: 2.0.0-next.51
-        version: 2.0.0-next.51
+        specifier: 2.0.0-next.52
+        version: 2.0.0-next.52
       expo-sqlite:
         specifier: ^11.6.0
         version: 11.6.0(expo@49.0.16)
@@ -2114,13 +2114,13 @@ packages:
     resolution: {integrity: sha512-e8vfKbjnbYiyneBincEFS0tzXluopGK77OkVFbPRtUbNDS5tJfb+jiwOQEiqASDsadcZmd+9J9+Q6v/z7GuN2g==}
     dev: true
 
-  /@effect/schema@0.46.0(effect@2.0.0-next.51)(fast-check@3.13.2):
-    resolution: {integrity: sha512-CrdKErEVy9Hp/p4q94yfmT7oK2hIht2LQzwWKMJQtRxh7IDvjw8ZO5rqqRiqdRLJ52iL+ryCr9JUnO+hJrA8DQ==}
+  /@effect/schema@0.46.1(effect@2.0.0-next.52)(fast-check@3.13.2):
+    resolution: {integrity: sha512-+uaJy6vn2wd5cuYzeCZ68EMPcwNran5/JPL0+MUlRL8x23Bp15YCiT9oqOPH+Bo9+JPVuS7BOPQD3tj/MNLzWQ==}
     peerDependencies:
-      effect: 2.0.0-next.51
+      effect: 2.0.0-next.52
       fast-check: ^3.13.2
     dependencies:
-      effect: 2.0.0-next.51
+      effect: 2.0.0-next.52
       fast-check: 3.13.2
     dev: true
 
@@ -4435,8 +4435,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001550
-      electron-to-chromium: 1.4.559
+      caniuse-lite: 1.0.30001554
+      electron-to-chromium: 1.4.567
       node-releases: 2.0.13
       update-browserslist-db: 1.0.13(browserslist@4.22.1)
     dev: true
@@ -4602,8 +4602,8 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /caniuse-lite@1.0.30001550:
-    resolution: {integrity: sha512-p82WjBYIypO0ukTsd/FG3Xxs+4tFeaY9pfT4amQL8KWtYH7H9nYwReGAbMTJ0hsmRO8IfDtsS6p3ZWj8+1c2RQ==}
+  /caniuse-lite@1.0.30001554:
+    resolution: {integrity: sha512-A2E3U//MBwbJVzebddm1YfNp7Nud5Ip+IPn4BozBmn4KqVX7AvluoIDFWjsv5OkGnKUXQVmMSoMKLa3ScCblcQ==}
     dev: true
 
   /chai@4.3.10:
@@ -5423,12 +5423,12 @@ packages:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
     dev: true
 
-  /effect@2.0.0-next.51:
-    resolution: {integrity: sha512-FUqLrZI8GK+6f6bTKD9qlW1iG0DKKDXG1vzsDfl5LhTe1dCur/UD1nj/HI/OjC0/8zwy+K/ZxTBYxj999/CUEg==}
+  /effect@2.0.0-next.52:
+    resolution: {integrity: sha512-6VmmfS6xyOZsJRT0hcEsMx03HxXSeG/VmcniDvVw0nzBudlu+4qUvj8GBGYVFVgJfKcISSRey0tzfO9HXIzApg==}
     dev: true
 
-  /electron-to-chromium@1.4.559:
-    resolution: {integrity: sha512-iS7KhLYCSJbdo3rUSkhDTVuFNCV34RKs2UaB9Ecr7VlqzjjWW//0nfsFF5dtDmyXlZQaDYYtID5fjtC/6lpRug==}
+  /electron-to-chromium@1.4.567:
+    resolution: {integrity: sha512-8KR114CAYQ4/r5EIEsOmOMqQ9j0MRbJZR3aXD/KFA8RuKzyoUB4XrUCg+l8RUGqTVQgKNIgTpjaG8YHRPAbX2w==}
     dev: true
 
   /emoji-regex@8.0.0:
@@ -10234,7 +10234,7 @@ packages:
     resolution: {integrity: sha512-oKWePCxqpd6FlLvGV1VU0x7bkPmmCNolxzjMf4NczoDnQcIWrAF+cPtZn5i6n+RfD2d9i0tzpKnG6Yk168yIyw==}
     hasBin: true
     dependencies:
-      is-core-module: 2.13.0
+      is-core-module: 2.13.1
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
     dev: true

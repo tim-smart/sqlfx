@@ -35,12 +35,12 @@
   },
   "keywords": [],
   "devDependencies": {
-    "@effect/schema": "^0.46.0",
-    "effect": "2.0.0-next.51"
+    "@effect/schema": "^0.46.1",
+    "effect": "2.0.0-next.52"
   },
   "peerDependencies": {
-    "@effect/schema": "^0.46.0",
-    "effect": "2.0.0-next.51"
+    "@effect/schema": "^0.46.1",
+    "effect": "2.0.0-next.52"
   },
   "files": [
     "src",
