@@ -1,5 +1,3 @@
-/** @internal */
-
 import * as Context from "effect/Context"
 import { Tag } from "effect/Context"
 import { pipe } from "effect/Function"
@@ -193,7 +191,7 @@ export function make({
     const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
     const encodeRequest = SqlSchema.encode(options.request, "request")
     const decodeResult = SqlSchema.parse(options.result, "result")
-    const Resolver = RequestResolver.fromFunctionEffect(
+    const Resolver = RequestResolver.fromEffect(
       (req: Request<T, IA, E, Option.Option<A>>) =>
         pipe(
           encodeRequest(req.i0),
@@ -234,14 +232,13 @@ export function make({
     const Request = request.tagged<Request<T, IA, E, A>>(tag)
     const encodeRequest = SqlSchema.encode(options.request, "request")
     const decodeResult = SqlSchema.parse(options.result, "result")
-    const Resolver = RequestResolver.fromFunctionEffect(
-      (req: Request<T, IA, E, A>) =>
-        pipe(
-          encodeRequest(req.i0),
-          Effect.flatMap(options.run),
-          Effect.flatMap(_ => Effect.orDie(ROA.head(_))),
-          Effect.flatMap(decodeResult),
-        ),
+    const Resolver = RequestResolver.fromEffect((req: Request<T, IA, E, A>) =>
+      pipe(
+        encodeRequest(req.i0),
+        Effect.flatMap(options.run),
+        Effect.flatMap(_ => Effect.orDie(ROA.head(_))),
+        Effect.flatMap(decodeResult),
+      ),
     )
 
     const makeExecute = makeExecuteRequest(Request)
