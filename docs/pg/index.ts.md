@@ -53,6 +53,7 @@ export interface PgClientConfig {
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
   readonly transformJson?: boolean
+  readonly fetchTypes?: boolean
 }
 ```
 
