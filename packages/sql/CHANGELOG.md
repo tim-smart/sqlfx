@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.30.2
+
+### Patch Changes
+
+- [`adb58fc`](https://github.com/tim-smart/sqlfx/commit/adb58fcb8cb9bd00ff7fe8f1512629c48630cd93) Thanks [@tim-smart](https://github.com/tim-smart)! - fix postgres.js version to 3.4.2
+
 ## 0.30.1
 
 ### Patch Changes
