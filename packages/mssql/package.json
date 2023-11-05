@@ -40,7 +40,7 @@
     "tedious": "^16.6.0"
   },
   "devDependencies": {
-    "@effect/schema": "^0.47.1",
+    "@effect/schema": "^0.47.2",
     "@types/tedious": "^4.0.13",
     "effect": "2.0.0-next.54"
   },

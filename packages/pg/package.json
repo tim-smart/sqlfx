@@ -37,10 +37,10 @@
   "keywords": [],
   "dependencies": {
     "@sqlfx/sql": "workspace:^",
-    "postgres": "^3.4.3"
+    "postgres": "3.4.2"
   },
   "devDependencies": {
-    "@effect/schema": "^0.47.1",
+    "@effect/schema": "^0.47.2",
     "@sqlfx/sql": "workspace:^",
     "effect": "2.0.0-next.54"
   },

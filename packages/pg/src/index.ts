@@ -120,7 +120,7 @@ export const make = (
       password: options.password
         ? ConfigSecret.value(options.password)
         : undefined,
-      fetch_types: options.fetchTypes
+      fetch_types: options.fetchTypes,
     }
 
     const client = options.url
@@ -203,10 +203,10 @@ export const make = (
         transactionAcquirer: Effect.map(
           Effect.acquireRelease(
             Effect.tryPromise({
-              try: () => (client as any).reserve() as Promise<postgres.Sql<{}>>,
+              try: () => client.reserve(),
               catch: error => handleError(error),
             }),
-            pg => Effect.sync(() => (pg as any).release()),
+            pg => Effect.sync(() => pg.release()),
           ),
           _ => new ConnectionImpl(_, options),
         ),
