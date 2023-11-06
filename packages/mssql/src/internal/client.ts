@@ -210,9 +210,6 @@ export const make = (
         call: procedure => {
           return runProcedure(procedure)
         },
-        compile(statement) {
-          return Effect.sync(() => compiler.compile(statement))
-        },
         begin: Effect.async<never, SqlError, void>(resume => {
           conn.beginTransaction(err => {
             if (err) {

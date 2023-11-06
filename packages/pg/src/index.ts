@@ -192,9 +192,6 @@ export const make = (
           ),
         )
       }
-      compile(statement: Statement.Statement<unknown>) {
-        return Effect.sync(() => compiler.compile(statement))
-      }
     }
 
     return Object.assign(

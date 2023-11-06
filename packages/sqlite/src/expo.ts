@@ -120,9 +120,6 @@ export const make = (
         executeStream(_statement) {
           return Effect.dieMessage("executeStream not implemented")
         },
-        compile(statement) {
-          return Effect.sync(() => compiler.compile(statement))
-        },
         export: Effect.dieMessage("export not implemented"),
       })
     })

@@ -4,14 +4,13 @@
 import * as Chunk from "effect/Chunk"
 import { Tag } from "effect/Context"
 import * as Duration from "effect/Duration"
-import { pipe } from "effect/Function"
 import * as Config from "effect/Config"
 import type { ConfigError } from "effect/ConfigError"
 import * as ConfigSecret from "effect/ConfigSecret"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
-import * as Pool from "effect/Pool"
 import type { Scope } from "effect/Scope"
+import { pipe } from "effect/Function"
 import * as Stream from "effect/Stream"
 import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
@@ -60,11 +59,10 @@ export interface MysqlClientConfig {
   readonly username?: string
   readonly password?: ConfigSecret.ConfigSecret
 
-  readonly connectTimeout?: Duration.DurationInput
-
-  readonly minConnections?: number
   readonly maxConnections?: number
   readonly connectionTTL?: Duration.DurationInput
+
+  readonly poolConfig?: Mysql.PoolConfig
 
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
@@ -86,110 +84,104 @@ export const make = (
       options.transformResultNames!,
     ).array
 
-    const makeConnection = pipe(
-      Effect.acquireRelease(
-        Effect.tryPromise({
-          try: () =>
-            options.url
-              ? Mysql.createConnection(ConfigSecret.value(options.url))
-              : Mysql.createConnection({
-                  host: options.host,
-                  port: options.port,
-                  database: options.database,
-                  user: options.username,
-                  password: options.password
-                    ? ConfigSecret.value(options.password)
-                    : undefined,
-                  connectTimeout: options.connectTimeout
-                    ? Duration.toMillis(Duration.decode(options.connectTimeout))
-                    : undefined,
-                }),
+    class ConnectionImpl implements Connection {
+      constructor(private readonly conn: Mysql.PoolConnection | Mysql.Pool) {}
+
+      private run(
+        sql: string,
+        values?: ReadonlyArray<any>,
+        transform = true,
+        rowsAsArray = false,
+        method: "execute" | "query" = "execute",
+      ) {
+        const result = Effect.tryPromise({
+          try: () => this.conn[method]({ sql, rowsAsArray }, values),
           catch: error => SqlError((error as any).message, error),
-        }),
-        conn => Effect.promise(() => conn.end()),
-      ),
-      Effect.map((conn): Connection => {
-        const run = (
-          sql: string,
-          values?: ReadonlyArray<any>,
-          transform = true,
-          rowsAsArray = false,
-          method: "execute" | "query" = "execute",
-        ) => {
-          const result = Effect.tryPromise({
-            try: () => conn[method]({ sql, rowsAsArray }, values),
-            catch: error => SqlError((error as any).message, error),
-          })
+        })
 
-          if (transform && !rowsAsArray && options.transformResultNames) {
-            return Effect.map(result, transformRows)
-          }
-
-          return result
+        if (transform && !rowsAsArray && options.transformResultNames) {
+          return Effect.map(result, transformRows)
         }
 
-        return {
-          execute(statement) {
-            const [sql, params] = compiler.compile(statement)
-            return run(sql, params)
-          },
-          executeWithoutTransform(statement) {
-            const [sql, params] = compiler.compile(statement)
-            return run(sql, params, false)
-          },
-          executeValues(statement) {
-            const [sql, params] = compiler.compile(statement)
-            return run(sql, params, true, true)
-          },
-          executeRaw(sql, params) {
-            return run(sql, params, true, false, "query")
-          },
-          compile(statement) {
-            return Effect.sync(() => compiler.compile(statement))
-          },
-          executeStream(statement) {
-            const [sql, params] = compiler.compile(statement)
+        return result
+      }
 
-            const stream = asyncPauseResume<never, SqlError, any>(emit => {
-              const query = conn.queryStream(sql, params)
-              query.on("error", error =>
-                emit.fail(SqlError(error.message, error)),
+      execute(statement: Statement.Statement<unknown>) {
+        const [sql, params] = compiler.compile(statement)
+        return this.run(sql, params)
+      }
+      executeWithoutTransform(statement: Statement.Statement<unknown>) {
+        const [sql, params] = compiler.compile(statement)
+        return this.run(sql, params, false)
+      }
+      executeValues(statement: Statement.Statement<unknown>) {
+        const [sql, params] = compiler.compile(statement)
+        return this.run(sql, params, true, true)
+      }
+      executeRaw(sql: string, params?: ReadonlyArray<Statement.Primitive>) {
+        return this.run(sql, params, true, false, "query")
+      }
+      executeStream(statement: Statement.Statement<unknown>) {
+        const [sql, params] = compiler.compile(statement)
+
+        const stream =
+          "queryStream" in this.conn
+            ? queryStream(this.conn, sql, params)
+            : pipe(
+                acquireConn,
+                Effect.map(conn => queryStream(conn, sql, params)),
+                Stream.unwrapScoped,
               )
-              query.on("data", emit.single)
-              query.on("end", () => emit.end())
-              return {
-                onInterrupt: Effect.sync(() => query.destroy()),
-                onPause: Effect.sync(() => query.pause()),
-                onResume: Effect.sync(() => query.resume()),
-              }
-            })
 
-            return options.transformResultNames
-              ? Stream.mapChunks(stream, _ =>
-                  Chunk.unsafeFromArray(
-                    transformRows(Chunk.toReadonlyArray(_) as Array<object>),
-                  ),
-                )
-              : stream
-          },
-        }
+        return options.transformResultNames
+          ? Stream.mapChunks(stream, _ =>
+              Chunk.unsafeFromArray(
+                transformRows(Chunk.toReadonlyArray(_) as Array<object>),
+              ),
+            )
+          : stream
+      }
+    }
+
+    const pool = options.url
+      ? Mysql.createPool(ConfigSecret.value(options.url))
+      : Mysql.createPool({
+          ...(options.poolConfig ?? {}),
+          host: options.host,
+          port: options.port,
+          database: options.database,
+          user: options.username,
+          password: options.password
+            ? ConfigSecret.value(options.password)
+            : undefined,
+          connectionLimit: options.maxConnections,
+          idleTimeout: options.connectionTTL
+            ? Duration.toMillis(options.connectionTTL)
+            : undefined,
+        })
+
+    yield* _(Effect.addFinalizer(() => Effect.promise(() => pool.end())))
+
+    const poolConnection = new ConnectionImpl(pool)
+
+    const acquireConn = Effect.acquireRelease(
+      Effect.tryPromise({
+        try: () => pool.getConnection(),
+        catch: error => SqlError((error as any).message, error),
       }),
+      conn => Effect.promise(() => conn.release()),
     )
 
-    const pool = yield* _(
-      Pool.makeWithTTL({
-        acquire: makeConnection,
-        min: options.minConnections ?? 1,
-        max: options.maxConnections ?? 10,
-        timeToLive: options.connectionTTL ?? Duration.minutes(45),
-      }),
+    const transactionAcquirer = Effect.map(
+      acquireConn,
+      conn => new ConnectionImpl(conn),
     )
 
     return Object.assign(
       Client.make({
-        acquirer: Effect.scoped(pool.get()),
+        acquirer: Effect.succeed(poolConnection),
+        transactionAcquirer,
         compiler,
-        transactionAcquirer: pool.get(),
       }),
       { config: options },
     )
@@ -217,3 +209,21 @@ export const makeCompiler = (transform?: (_: string) => string) =>
     () => ["", []],
     () => ["", []],
   )
+
+function queryStream(
+  conn: Mysql.PoolConnection,
+  sql: string,
+  params?: ReadonlyArray<any>,
+) {
+  return asyncPauseResume<never, SqlError, any>(emit => {
+    const query = conn.queryStream(sql, params)
+    query.on("error", error => emit.fail(SqlError(error.message, error)))
+    query.on("data", emit.single)
+    query.on("end", () => emit.end())
+    return {
+      onInterrupt: Effect.sync(() => query.destroy()),
+      onPause: Effect.sync(() => query.pause()),
+      onResume: Effect.sync(() => query.resume()),
+    }
+  })
+}
