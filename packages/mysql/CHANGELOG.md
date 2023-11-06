@@ -1,5 +1,11 @@
 # @sqlfx/mysql
 
+## 0.29.0
+
+### Minor Changes
+
+- [#131](https://github.com/tim-smart/sqlfx/pull/131) [`78aae71`](https://github.com/tim-smart/sqlfx/commit/78aae71844a3f21339e65fcf90750a1c8070fcf8) Thanks [@tim-smart](https://github.com/tim-smart)! - use mariadb pool instead of /Pool
+
 ## 0.28.2
 
 ### Patch Changes
