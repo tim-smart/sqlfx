@@ -33,14 +33,6 @@ export interface Connection {
     sql: string,
     params?: ReadonlyArray<Primitive> | undefined,
   ) => Effect.Effect<never, SqlError, ReadonlyArray<A>>
-
-  readonly compile: <A>(
-    statement: Statement<A>,
-  ) => Effect.Effect<
-    never,
-    SqlError,
-    readonly [sql: string, params: ReadonlyArray<Primitive>]
-  >
 }
 
 /**

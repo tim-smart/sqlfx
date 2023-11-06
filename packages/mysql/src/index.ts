@@ -141,9 +141,6 @@ export const make = (
             )
           : stream
       }
-      compile(statement: Statement.Statement<unknown>) {
-        return Effect.sync(() => compiler.compile(statement))
-      }
     }
 
     const pool = options.url

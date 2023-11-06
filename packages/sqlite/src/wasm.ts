@@ -142,9 +142,6 @@ export const make = (
         executeStream(_statement) {
           return Effect.dieMessage("executeStream not implemented")
         },
-        compile(statement) {
-          return Effect.sync(() => compiler.compile(statement))
-        },
         export: Effect.try({
           try: () => sqlite3.capi.sqlite3_js_db_export(db.pointer),
           catch: handleError,
