@@ -55,12 +55,19 @@ const program = Effect.gen(function* (_) {
   )
   console.log(inserted)
 
-  console.log(yield* _(sql`SELECT TOP 3 * FROM ${sql("people")}`))
-  console.log(yield* _(sql`SELECT TOP 3 * FROM ${sql("people")}`.values))
   console.log(
-    yield* _(sql`SELECT TOP 3 * FROM ${sql("people")}`.withoutTransform),
+    yield* _(
+      Effect.all(
+        [
+          sql`SELECT TOP 3 * FROM ${sql("people")}`,
+          sql`SELECT TOP 3 * FROM ${sql("people")}`.values,
+          sql`SELECT TOP 3 * FROM ${sql("people")}`.withoutTransform,
+          sql.call(peopleProcedure({ name: "Tim" })),
+        ],
+        { concurrency: "unbounded" },
+      ),
+    ),
   )
-  console.log(yield* _(sql.call(peopleProcedure({ name: "Tim" }))))
 
   console.log(
     yield* _(sql`

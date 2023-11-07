@@ -256,6 +256,7 @@ export const make = (
           conn.on("error", _ => resume(Effect.fail(_)))
         }),
         Effect.catchAll(() => Pool.invalidate(pool, connection)),
+        Effect.interruptible,
         Effect.forkScoped,
       )
 
