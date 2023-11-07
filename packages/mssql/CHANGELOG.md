@@ -1,5 +1,11 @@
 # @sqlfx/mssql
 
+## 0.28.3
+
+### Patch Changes
+
+- [#133](https://github.com/tim-smart/sqlfx/pull/133) [`c95d6ab`](https://github.com/tim-smart/sqlfx/commit/c95d6ab386a614e7d6ecebc75c23ba9b3567d762) Thanks [@tim-smart](https://github.com/tim-smart)! - fix mssql interruption
+
 ## 0.28.2
 
 ### Patch Changes
