@@ -262,7 +262,7 @@ export function make({
       readonly request: Schema.Schema<II, IA>
       readonly run: (
         requests: ReadonlyArray<II>,
-      ) => Effect.Effect<never, E, ReadonlyArray<unknown>>
+      ) => Effect.Effect<never, E, void | ReadonlyArray<unknown>>
     },
   ): Resolver<T, IA, void, E> {
     const Request = request.tagged<Request<T, IA, E, void>>(tag)

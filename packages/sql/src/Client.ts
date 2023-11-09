@@ -197,7 +197,7 @@ export interface Client extends Constructor {
       readonly request: Schema.Schema<II, IA>
       readonly run: (
         requests: ReadonlyArray<II>,
-      ) => Effect.Effect<never, E, ReadonlyArray<unknown>>
+      ) => Effect.Effect<never, E, void | ReadonlyArray<unknown>>
     },
   ): Resolver<T, IA, void, E>
 
