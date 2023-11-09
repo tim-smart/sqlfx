@@ -1,5 +1,13 @@
 # @sqlfx/sql
 
+## 0.30.3
+
+### Patch Changes
+
+- [`412aaae`](https://github.com/tim-smart/sqlfx/commit/412aaae8be83a9cb2a6122f7ae26f1feb62aac20) Thanks [@tim-smart](https://github.com/tim-smart)! - add reserve method for pulling out a connection from the pool
+
+- [#135](https://github.com/tim-smart/sqlfx/pull/135) [`987cda6`](https://github.com/tim-smart/sqlfx/commit/987cda6d28d65aba00c5ba8c9c3171ed72a89963) Thanks [@wmaurer](https://github.com/wmaurer)! - Change voidResolver run return type to include void
+
 ## 0.30.2
 
 ### Patch Changes
