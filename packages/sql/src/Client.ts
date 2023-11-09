@@ -17,6 +17,7 @@ import type {
   Primitive,
   Statement,
 } from "./Statement"
+import type { Scope } from "effect/Scope"
 
 /**
  * @category model
@@ -61,6 +62,8 @@ export interface Client extends Constructor {
     addParens?: boolean,
     fallback?: string,
   ) => (clauses: ReadonlyArray<string | Fragment>) => Fragment
+
+  readonly reserve: Effect.Effect<Scope, SqlError, Connection>
 
   /**
    * With the given effect, ensure all sql queries are run in a transaction.

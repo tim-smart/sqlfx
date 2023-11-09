@@ -91,6 +91,8 @@ export interface Client extends Constructor {
     fallback?: string
   ) => (clauses: ReadonlyArray<string | Fragment>) => Fragment
 
+  readonly reserve: Effect.Effect<Scope, SqlError, Connection>
+
   /**
    * With the given effect, ensure all sql queries are run in a transaction.
    *

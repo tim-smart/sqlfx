@@ -557,6 +557,7 @@ export function make({
       join: Statement.join,
       csv: Statement.csv,
       withTransaction,
+      reserve: transactionAcquirer,
       schema,
       singleSchema,
       singleSchemaOption,
