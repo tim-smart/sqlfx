@@ -1,6 +1,6 @@
 {
   "name": "@sqlfx/mssql",
-  "version": "0.28.3",
+  "version": "0.28.4",
   "description": "",
   "main": "dist/sqlfx-mssql.cjs.js",
   "module": "dist/sqlfx-mssql.esm.js",
