@@ -35,6 +35,6 @@
     "effect": "2.0.0-next.55"
   },
   "peerDependencies": {
-    "effect": "2.0.0-next.54"
+    "effect": "2.0.0-next.55"
   }
 }

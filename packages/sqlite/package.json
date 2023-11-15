@@ -49,7 +49,7 @@
   "peerDependencies": {
     "@sqlite.org/sqlite-wasm": "^3.43.2-build1",
     "better-sqlite3": "^9",
-    "effect": "2.0.0-next.54",
+    "effect": "2.0.0-next.55",
     "expo-sqlite": "^11",
     "react-native-quick-sqlite": "^8"
   },
