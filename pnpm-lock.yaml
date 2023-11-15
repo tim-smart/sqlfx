@@ -163,9 +163,6 @@ importers:
       '@effect/schema':
         specifier: ^0.48.0
         version: 0.48.0(effect@2.0.0-next.55)(fast-check@3.13.2)
-      '@types/node':
-        specifier: ^20.9.0
-        version: 20.9.0
       effect:
         specifier: 2.0.0-next.55
         version: 2.0.0-next.55
