@@ -3,8 +3,10 @@
   "version": "0.30.3",
   "description": "",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "directory": "dist"
   },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/tim-smart/sqlfx.git"
@@ -15,106 +17,28 @@
     "url": "https://github.com/tim-smart/sqlfx/issues"
   },
   "homepage": "https://github.com/tim-smart/sqlfx",
-  "preconstruct": {
-    "entrypoints": [
-      "*.ts",
-      "Migrator/*.ts"
-    ],
-    "distFilenameStrategy": "full",
-    "exports": {
-      "importConditionDefaultExport": "default"
+  "scripts": {
+    "build": "pnpm build-esm && pnpm build-cjs && pnpm build-annotate && build-utils pack-v2",
+    "build-esm": "tsc -b tsconfig.build.json",
+    "build-cjs": "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
+    "build-annotate": "babel build --plugins annotate-pure-calls --out-dir build --source-maps"
+  },
+  "effect": {
+    "generateExports": {
+      "include": [
+        "*.ts",
+        "Migrator/*.ts"
+      ]
     }
   },
-  "scripts": {
-    "example": "ts-node --project tsconfig.examples.json",
-    "lint": "eslint src/**/*.ts test/**/*.ts",
-    "docs": "docgen",
-    "tc": "tsc --noEmit",
-    "test": "vitest",
-    "coverage": "vitest run --coverage"
-  },
   "keywords": [],
+  "sideEffects": false,
   "devDependencies": {
-    "@effect/schema": "^0.47.2",
-    "effect": "2.0.0-next.54"
+    "@effect/schema": "^0.48.0",
+    "effect": "2.0.0-next.55"
   },
   "peerDependencies": {
     "@effect/schema": "^0.47.1",
     "effect": "2.0.0-next.54"
-  },
-  "files": [
-    "src",
-    "dist",
-    "Client",
-    "Connection",
-    "Error",
-    "Migrator",
-    "Schema",
-    "Statement",
-    "Stream",
-    "Transform"
-  ],
-  "exports": {
-    ".": {
-      "types": "./dist/declarations/src/index.d.ts",
-      "module": "./dist/sqlfx-sql.esm.js",
-      "import": "./dist/sqlfx-sql.cjs.mjs",
-      "default": "./dist/sqlfx-sql.cjs.js"
-    },
-    "./package.json": "./package.json",
-    "./Client": {
-      "types": "./dist/declarations/src/Client.d.ts",
-      "module": "./Client/dist/sqlfx-sql-Client.esm.js",
-      "import": "./Client/dist/sqlfx-sql-Client.cjs.mjs",
-      "default": "./Client/dist/sqlfx-sql-Client.cjs.js"
-    },
-    "./Connection": {
-      "types": "./dist/declarations/src/Connection.d.ts",
-      "module": "./Connection/dist/sqlfx-sql-Connection.esm.js",
-      "import": "./Connection/dist/sqlfx-sql-Connection.cjs.mjs",
-      "default": "./Connection/dist/sqlfx-sql-Connection.cjs.js"
-    },
-    "./Error": {
-      "types": "./dist/declarations/src/Error.d.ts",
-      "module": "./Error/dist/sqlfx-sql-Error.esm.js",
-      "import": "./Error/dist/sqlfx-sql-Error.cjs.mjs",
-      "default": "./Error/dist/sqlfx-sql-Error.cjs.js"
-    },
-    "./Migrator": {
-      "types": "./dist/declarations/src/Migrator.d.ts",
-      "module": "./Migrator/dist/sqlfx-sql-Migrator.esm.js",
-      "import": "./Migrator/dist/sqlfx-sql-Migrator.cjs.mjs",
-      "default": "./Migrator/dist/sqlfx-sql-Migrator.cjs.js"
-    },
-    "./Migrator/Node": {
-      "types": "./dist/declarations/src/Migrator/Node.d.ts",
-      "module": "./Migrator/Node/dist/sqlfx-sql-Migrator-Node.esm.js",
-      "import": "./Migrator/Node/dist/sqlfx-sql-Migrator-Node.cjs.mjs",
-      "default": "./Migrator/Node/dist/sqlfx-sql-Migrator-Node.cjs.js"
-    },
-    "./Schema": {
-      "types": "./dist/declarations/src/Schema.d.ts",
-      "module": "./Schema/dist/sqlfx-sql-Schema.esm.js",
-      "import": "./Schema/dist/sqlfx-sql-Schema.cjs.mjs",
-      "default": "./Schema/dist/sqlfx-sql-Schema.cjs.js"
-    },
-    "./Statement": {
-      "types": "./dist/declarations/src/Statement.d.ts",
-      "module": "./Statement/dist/sqlfx-sql-Statement.esm.js",
-      "import": "./Statement/dist/sqlfx-sql-Statement.cjs.mjs",
-      "default": "./Statement/dist/sqlfx-sql-Statement.cjs.js"
-    },
-    "./Stream": {
-      "types": "./dist/declarations/src/Stream.d.ts",
-      "module": "./Stream/dist/sqlfx-sql-Stream.esm.js",
-      "import": "./Stream/dist/sqlfx-sql-Stream.cjs.mjs",
-      "default": "./Stream/dist/sqlfx-sql-Stream.cjs.js"
-    },
-    "./Transform": {
-      "types": "./dist/declarations/src/Transform.d.ts",
-      "module": "./Transform/dist/sqlfx-sql-Transform.esm.js",
-      "import": "./Transform/dist/sqlfx-sql-Transform.cjs.mjs",
-      "default": "./Transform/dist/sqlfx-sql-Transform.cjs.js"
-    }
   }
 }

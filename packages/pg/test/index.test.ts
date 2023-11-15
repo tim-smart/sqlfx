@@ -1,7 +1,7 @@
 import * as Effect from "effect/Effect"
 import * as _ from "@sqlfx/pg"
 import * as Client from "@sqlfx/sql/Client"
-import { describe, expect, it } from "vitest"
+import { assert, describe, expect, it } from "vitest"
 
 const sql = Effect.runSync(Effect.scoped(_.make({})))
 const compiler = _.makeCompiler()

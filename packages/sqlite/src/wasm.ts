@@ -10,7 +10,7 @@ import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
-import { tag, type SqliteClient, makeCompiler } from "./Client"
+import { tag, type SqliteClient, makeCompiler } from "./Client.js"
 import type { DB, OpenMode, RowMode } from "@sqlite.org/sqlite-wasm"
 import sqliteInit from "@sqlite.org/sqlite-wasm"
 
@@ -31,7 +31,7 @@ export {
    * @since 1.0.0
    */
   transform,
-} from "./Client"
+} from "./Client.js"
 
 export type {
   /**
@@ -39,7 +39,7 @@ export type {
    * @since 1.0.0
    */
   SqliteClient,
-} from "./Client"
+} from "./Client.js"
 
 /**
  * @category models
@@ -153,13 +153,13 @@ export const make = (
 
     return Object.assign(
       Client.make({
-        acquirer: Effect.scoped(pool.get()),
+        acquirer: Effect.scoped(pool.get),
         compiler,
-        transactionAcquirer: pool.get(),
+        transactionAcquirer: pool.get,
       }),
       {
         config: options as any,
-        export: Effect.scoped(Effect.flatMap(pool.get(), _ => _.export)),
+        export: Effect.scoped(Effect.flatMap(pool.get, _ => _.export)),
       },
     )
   })

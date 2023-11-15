@@ -3,7 +3,7 @@
  */
 import * as Effect from "effect/Effect"
 import * as Schema from "@effect/schema/Schema"
-import { SchemaError } from "./Error"
+import { SchemaError } from "./Error.js"
 
 /**
  * @since 1.0.0

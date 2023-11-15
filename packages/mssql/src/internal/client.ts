@@ -11,9 +11,9 @@ import * as Exit from "effect/Exit"
 import * as Layer from "effect/Layer"
 import * as Pool from "effect/Pool"
 import type { Scope } from "effect/Scope"
-import type { MssqlClient, MssqlClientConfig } from ".."
-import type { Parameter } from "../Parameter"
-import type { ProcedureWithValues } from "../Procedure"
+import type { MssqlClient, MssqlClientConfig } from "../index.js"
+import type { Parameter } from "../Parameter.js"
+import type { ProcedureWithValues } from "../Procedure.js"
 import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
@@ -84,7 +84,7 @@ export const make = (
       yield* _(
         Effect.addFinalizer(() =>
           Effect.async<never, never, void>(resume => {
-            conn.once("end", () => resume(Effect.unit))
+            conn.on("end", () => resume(Effect.unit))
             conn.close()
           }),
         ),
@@ -303,9 +303,9 @@ export const make = (
 
     return Object.assign(
       Client.make({
-        acquirer: pool.get(),
+        acquirer: pool.get,
         compiler,
-        transactionAcquirer: pool.get(),
+        transactionAcquirer: pool.get,
       }),
       {
         config: options,
@@ -324,7 +324,7 @@ export const make = (
           A,
         >(
           procedure: ProcedureWithValues<I, O, A>,
-        ) => Effect.scoped(Effect.flatMap(pool.get(), _ => _.call(procedure))),
+        ) => Effect.scoped(Effect.flatMap(pool.get, _ => _.call(procedure))),
       },
     )
   })

@@ -5,8 +5,8 @@ import { Tag } from "effect/Context"
 import type * as Effect from "effect/Effect"
 import type { Scope } from "effect/Scope"
 import type * as Stream from "effect/Stream"
-import type { SqlError } from "./Error"
-import type { Primitive, Statement } from "./Statement"
+import type { SqlError } from "./Error.js"
+import type { Primitive, Statement } from "./Statement.js"
 
 /**
  * @category model

@@ -7,16 +7,16 @@ import type * as Effect from "effect/Effect"
 import type * as request from "effect/Request"
 import type * as RequestResolver from "effect/RequestResolver"
 import type * as Schema from "@effect/schema/Schema"
-import type { Connection } from "./Connection"
-import type { ResultLengthMismatch, SchemaError, SqlError } from "./Error"
-import * as internal from "./internal/client"
+import type { Connection } from "./Connection.js"
+import type { ResultLengthMismatch, SchemaError, SqlError } from "./Error.js"
+import * as internal from "./internal/client.js"
 import type {
   Compiler,
   Constructor,
   Fragment,
   Primitive,
   Statement,
-} from "./Statement"
+} from "./Statement.js"
 import type { Scope } from "effect/Scope"
 
 /**

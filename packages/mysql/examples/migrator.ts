@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 import { pipe } from "effect/Function"
 import * as Config from "effect/Config"
 import * as ConfigSecret from "effect/ConfigSecret"
@@ -5,6 +7,7 @@ import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Sql from "@sqlfx/mysql"
 import * as Migrator from "@sqlfx/mysql/Migrator"
+import { fileURLToPath } from "node:url"
 
 const program = Effect.gen(function* (_) {
   const sql = yield* _(Sql.tag)
@@ -31,7 +34,7 @@ const SqlLive = Sql.makeLayer({
 const MigratorLive = Layer.provide(
   SqlLive,
   Migrator.makeLayer({
-    loader: Migrator.fromDisk(`${__dirname}/migrations`),
+    loader: Migrator.fromDisk(`${fileURLToPath(new URL(".", import.meta.url))}/migrations`),
     schemaDirectory: "examples/migrations",
   }),
 )

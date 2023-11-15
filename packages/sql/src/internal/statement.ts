@@ -1,5 +1,5 @@
-import type { Connection, Row } from "../Connection"
-import type { SqlError } from "../Error"
+import type { Connection, Row } from "../Connection.js"
+import type { SqlError } from "../Error.js"
 import type {
   Argument,
   ArrayHelper,
@@ -19,7 +19,7 @@ import type {
   Segment,
   Statement,
   FragmentId as _FragmentId,
-} from "../Statement"
+} from "../Statement.js"
 import * as Effect from "effect/Effect"
 import * as Effectable from "effect/Effectable"
 import { identity } from "effect/Function"
