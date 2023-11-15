@@ -68,8 +68,8 @@ export function make({
               ? Effect.unit
               : Effect.orDie(conn.executeRaw(commit))
             : id > 0
-            ? Effect.orDie(conn.executeRaw(rollbackSavepoint(`sqlfx${id}`)))
-            : Effect.orDie(conn.executeRaw(rollback)),
+              ? Effect.orDie(conn.executeRaw(rollbackSavepoint(`sqlfx${id}`)))
+              : Effect.orDie(conn.executeRaw(rollback)),
       ),
     )
 

@@ -145,13 +145,13 @@ export const make =
             Effect.isEffect(_)
               ? Effect.succeed(_)
               : _.default
-              ? Effect.succeed(_.default?.default ?? _.default)
-              : Effect.fail(
-                  MigrationError({
-                    reason: "import-error",
-                    message: `Default export not found for migration "${id}_${name}"`,
-                  }),
-                ),
+                ? Effect.succeed(_.default?.default ?? _.default)
+                : Effect.fail(
+                    MigrationError({
+                      reason: "import-error",
+                      message: `Default export not found for migration "${id}_${name}"`,
+                    }),
+                  ),
           ),
           Effect.filterOrFail(
             (_): _ is Effect.Effect<never, never, unknown> =>
