@@ -8,3 +8,4 @@ tmp/
 build/
 dist/
 packages/*/docs
+*.db

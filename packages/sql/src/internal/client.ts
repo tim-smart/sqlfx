@@ -10,12 +10,12 @@ import * as FiberRef from "effect/FiberRef"
 import * as request from "effect/Request"
 import * as RequestResolver from "effect/RequestResolver"
 import * as Schema from "@effect/schema/Schema"
-import type { Client, Request, Resolver } from "../Client"
-import type { Connection } from "../Connection"
-import { ResultLengthMismatch } from "../Error"
-import type { SchemaError, SqlError } from "../Error"
-import * as SqlSchema from "../Schema"
-import * as Statement from "../Statement"
+import type { Client, Request, Resolver } from "../Client.js"
+import type { Connection } from "../Connection.js"
+import { ResultLengthMismatch } from "../Error.js"
+import type { SchemaError, SqlError } from "../Error.js"
+import * as SqlSchema from "../Schema.js"
+import * as Statement from "../Statement.js"
 
 /** @internal */
 export const TransactionConn =
@@ -68,8 +68,8 @@ export function make({
               ? Effect.unit
               : Effect.orDie(conn.executeRaw(commit))
             : id > 0
-            ? Effect.orDie(conn.executeRaw(rollbackSavepoint(`sqlfx${id}`)))
-            : Effect.orDie(conn.executeRaw(rollback)),
+              ? Effect.orDie(conn.executeRaw(rollbackSavepoint(`sqlfx${id}`)))
+              : Effect.orDie(conn.executeRaw(rollback)),
       ),
     )
 

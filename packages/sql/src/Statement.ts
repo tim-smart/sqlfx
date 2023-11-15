@@ -5,9 +5,9 @@ import type { Equal } from "effect/Equal"
 import type { Pipeable } from "effect/Pipeable"
 import type { Effect } from "effect/Effect"
 import type * as Stream from "effect/Stream"
-import * as internal from "./internal/statement"
-import type { Connection, Row } from "./Connection"
-import type { SqlError } from "./Error"
+import * as internal from "./internal/statement.js"
+import type { Connection, Row } from "./Connection.js"
+import type { SqlError } from "./Error.js"
 
 /**
  * @category type id

@@ -5,8 +5,8 @@ import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import type { SqlError } from "@sqlfx/sql/Error"
 import * as _ from "@sqlfx/sql/Migrator"
-import type { SqliteClient } from "./node"
-import * as internal from "./internal/client"
+import type { SqliteClient } from "./node.js"
+import * as internal from "./internal/client.js"
 
 const { fromBabelGlob, fromGlob } = _
 

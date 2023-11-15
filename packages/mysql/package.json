@@ -2,11 +2,11 @@
   "name": "@sqlfx/mysql",
   "version": "0.29.1",
   "description": "",
-  "main": "dist/sqlfx-mysql.cjs.js",
-  "module": "dist/sqlfx-mysql.esm.js",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "directory": "dist"
   },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/tim-smart/sqlfx.git"
@@ -17,60 +17,23 @@
     "url": "https://github.com/tim-smart/sqlfx/issues"
   },
   "homepage": "https://github.com/tim-smart/sqlfx",
-  "preconstruct": {
-    "entrypoints": [
-      "*.ts"
-    ],
-    "distFilenameStrategy": "full",
-    "exports": {
-      "importConditionDefaultExport": "default"
-    }
-  },
   "scripts": {
-    "example": "node -r ts-node/register",
-    "lint": "eslint src/**/*.ts test/**/*.ts",
-    "docs": "docgen",
-    "tc": "tsc --noEmit",
-    "test": "vitest",
-    "coverage": "vitest run --coverage"
+    "build": "pnpm build-esm && pnpm build-cjs && pnpm build-annotate && build-utils pack-v2",
+    "build-esm": "tsc -b tsconfig.build.json",
+    "build-cjs": "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
+    "build-annotate": "babel build --plugins annotate-pure-calls --out-dir build --source-maps"
   },
   "keywords": [],
+  "sideEffects": false,
   "dependencies": {
     "@sqlfx/sql": "workspace:^",
     "mariadb": "^3.2.2"
   },
   "devDependencies": {
-    "@effect/schema": "^0.47.2",
-    "effect": "2.0.0-next.54"
+    "@effect/schema": "^0.48.0",
+    "effect": "2.0.0-next.55"
   },
   "peerDependencies": {
     "effect": "2.0.0-next.54"
-  },
-  "files": [
-    "src",
-    "dist",
-    "Error",
-    "Migrator"
-  ],
-  "exports": {
-    ".": {
-      "types": "./dist/declarations/src/index.d.ts",
-      "module": "./dist/sqlfx-mysql.esm.js",
-      "import": "./dist/sqlfx-mysql.cjs.mjs",
-      "default": "./dist/sqlfx-mysql.cjs.js"
-    },
-    "./package.json": "./package.json",
-    "./Error": {
-      "types": "./dist/declarations/src/Error.d.ts",
-      "module": "./Error/dist/sqlfx-mysql-Error.esm.js",
-      "import": "./Error/dist/sqlfx-mysql-Error.cjs.mjs",
-      "default": "./Error/dist/sqlfx-mysql-Error.cjs.js"
-    },
-    "./Migrator": {
-      "types": "./dist/declarations/src/Migrator.d.ts",
-      "module": "./Migrator/dist/sqlfx-mysql-Migrator.esm.js",
-      "import": "./Migrator/dist/sqlfx-mysql-Migrator.cjs.mjs",
-      "default": "./Migrator/dist/sqlfx-mysql-Migrator.cjs.js"
-    }
   }
 }
