@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.31.1
+
+### Patch Changes
+
+- [`3d5d718`](https://github.com/tim-smart/sqlfx/commit/3d5d71834c6be3de0d16e4275fef4706944f3008) Thanks [@tim-smart](https://github.com/tim-smart)! - update peerDependencies
+
 ## 0.31.0
 
 ### Minor Changes
