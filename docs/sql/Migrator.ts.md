@@ -39,7 +39,7 @@ export declare const make: <R extends Client>({
   dumpSchema,
   ensureTable,
   getClient,
-  lockTable,
+  lockTable
 }: {
   getClient: Effect.Effect<R, SqlError, R>
   dumpSchema: (sql: R, path: string, migrationsTable: string) => Effect.Effect<never, MigrationError, void>
@@ -48,7 +48,7 @@ export declare const make: <R extends Client>({
 }) => ({
   loader,
   schemaDirectory,
-  table,
+  table
 }: MigratorOptions) => Effect.Effect<R, SqlError | MigrationError, readonly (readonly [id: number, name: string])[]>
 ```
 
@@ -61,7 +61,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const MigrationError: Data.Case.Constructor<MigrationError, '_tag'>
+export declare const MigrationError: Data.Case.Constructor<MigrationError, "_tag">
 ```
 
 Added in v1.0.0
@@ -72,8 +72,8 @@ Added in v1.0.0
 
 ```ts
 export interface MigrationError extends Data.Case {
-  readonly _tag: 'MigrationError'
-  readonly reason: 'bad-state' | 'import-error' | 'failed' | 'duplicates' | 'locked'
+  readonly _tag: "MigrationError"
+  readonly reason: "bad-state" | "import-error" | "failed" | "duplicates" | "locked"
   readonly message: string
 }
 ```

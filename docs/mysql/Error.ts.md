@@ -26,7 +26,7 @@ Re-exports all named exports from the "@sqlfx/sql/Error" module.
 **Signature**
 
 ```ts
-export * from '@sqlfx/sql/Error'
+export * from "@sqlfx/sql/Error"
 ```
 
 Added in v1.0.0

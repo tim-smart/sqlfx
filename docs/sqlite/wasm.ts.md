@@ -77,14 +77,14 @@ Added in v1.0.0
 ```ts
 export type SqliteWasmClientConfig =
   | {
-      readonly mode?: 'vfs'
+      readonly mode?: "vfs"
       readonly dbName?: string
       readonly openMode?: OpenMode
       readonly transformResultNames?: (str: string) => string
       readonly transformQueryNames?: (str: string) => string
     }
   | {
-      readonly mode: 'opfs'
+      readonly mode: "opfs"
       readonly dbName: string
       readonly openMode?: OpenMode
       readonly transformResultNames?: (str: string) => string
@@ -115,7 +115,7 @@ Column renaming helpers.
 **Signature**
 
 ```ts
-export declare const transform: typeof import('/Volumes/Code/sqlfx/packages/sql/src/Transform')
+export declare const transform: typeof import("/Volumes/Code/sqlfx/packages/sql/src/Transform")
 ```
 
 Added in v1.0.0

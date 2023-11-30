@@ -158,12 +158,12 @@ const PgLive = Pg.makeLayer({
 })
 
 const MigratorLive = Layer.provide(
-  PgLive,
   Migrator.makeLayer({
     directory: fileURLToPath(new URL("migrations", import.meta.url)),
     // Where to put the `_schema.sql` file
     schemaDirectory: "src/migrations",
   }),
+  PgLive,
 )
 
 const EnvLive = Layer.mergeAll(PgLive, MigratorLive)

@@ -26,13 +26,13 @@ const SqlLive = Sql.makeLayer({
 })
 
 const MigratorLive = Layer.provide(
-  SqlLive,
   Migrator.makeLayer({
     loader: Migrator.fromDisk(
       `${fileURLToPath(new URL(".", import.meta.url))}/migrations`,
     ),
     schemaDirectory: "examples/migrations",
   }),
+  SqlLive,
 )
 
 pipe(

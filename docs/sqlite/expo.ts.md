@@ -106,7 +106,7 @@ Column renaming helpers.
 **Signature**
 
 ```ts
-export declare const transform: typeof import('/Volumes/Code/sqlfx/packages/sql/src/Transform')
+export declare const transform: typeof import("/Volumes/Code/sqlfx/packages/sql/src/Transform")
 ```
 
 Added in v1.0.0

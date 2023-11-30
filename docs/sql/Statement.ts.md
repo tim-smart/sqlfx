@@ -119,8 +119,8 @@ Added in v1.0.0
 
 ```ts
 export declare const custom: <C extends Custom<any, any, any, any>>(
-  kind: C['kind']
-) => (i0: C['i0'], i1: C['i1'], i2: C['i2']) => Fragment
+  kind: C["kind"]
+) => (i0: C["i0"], i1: C["i1"], i2: C["i2"]) => Fragment
 ```
 
 Added in v1.0.0
@@ -189,7 +189,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isCustom: <A extends Custom<any, any, any, any>>(kind: A['kind']) => (u: unknown) => u is A
+export declare const isCustom: <A extends Custom<any, any, any, any>>(kind: A["kind"]) => (u: unknown) => u is A
 ```
 
 Added in v1.0.0
@@ -222,7 +222,7 @@ Added in v1.0.0
 
 ```ts
 export interface ArrayHelper {
-  readonly _tag: 'ArrayHelper'
+  readonly _tag: "ArrayHelper"
   readonly value: ReadonlyArray<Primitive | Fragment>
 }
 ```
@@ -278,7 +278,7 @@ Added in v1.0.0
 
 ```ts
 export interface Custom<T extends string = string, A = void, B = void, C = void> {
-  readonly _tag: 'Custom'
+  readonly _tag: "Custom"
   readonly kind: T
   readonly i0: A
   readonly i1: B
@@ -323,7 +323,7 @@ Added in v1.0.0
 
 ```ts
 export interface Identifier {
-  readonly _tag: 'Identifier'
+  readonly _tag: "Identifier"
   readonly value: string
 }
 ```
@@ -336,7 +336,7 @@ Added in v1.0.0
 
 ```ts
 export interface Literal {
-  readonly _tag: 'Literal'
+  readonly _tag: "Literal"
   readonly value: string
   readonly params?: ReadonlyArray<Primitive> | undefined
 }
@@ -350,7 +350,7 @@ Added in v1.0.0
 
 ```ts
 export interface Parameter {
-  readonly _tag: 'Parameter'
+  readonly _tag: "Parameter"
   readonly value: Primitive
 }
 ```
@@ -372,7 +372,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type PrimitiveKind = 'string' | 'number' | 'bigint' | 'boolean' | 'Date' | 'null' | 'Int8Array' | 'Uint8Array'
+export type PrimitiveKind = "string" | "number" | "bigint" | "boolean" | "Date" | "null" | "Int8Array" | "Uint8Array"
 ```
 
 Added in v1.0.0
@@ -383,7 +383,7 @@ Added in v1.0.0
 
 ```ts
 export interface RecordInsertHelper {
-  readonly _tag: 'RecordInsertHelper'
+  readonly _tag: "RecordInsertHelper"
   readonly value: ReadonlyArray<Record<string, Primitive | Fragment>>
 }
 ```
@@ -396,7 +396,7 @@ Added in v1.0.0
 
 ```ts
 export interface RecordUpdateHelper {
-  readonly _tag: 'RecordUpdateHelper'
+  readonly _tag: "RecordUpdateHelper"
   readonly value: ReadonlyArray<Record<string, Primitive | Fragment>>
   readonly alias: string
 }
@@ -410,7 +410,7 @@ Added in v1.0.0
 
 ```ts
 export interface RecordUpdateHelperSingle {
-  readonly _tag: 'RecordUpdateHelperSingle'
+  readonly _tag: "RecordUpdateHelperSingle"
   readonly value: Record<string, Primitive | Fragment>
   readonly omit: ReadonlyArray<string>
 }

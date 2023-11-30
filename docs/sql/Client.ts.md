@@ -41,7 +41,7 @@ export declare const make: ({
   rollback,
   rollbackSavepoint,
   savepoint,
-  transactionAcquirer,
+  transactionAcquirer
 }: Client.MakeOptions) => Client
 ```
 
@@ -290,7 +290,7 @@ Added in v1.0.0
 
 ```ts
 export interface Resolver<T extends string, I, A, E> {
-  readonly Request: request.Request.Constructor<Request<T, I, E, A>, '_tag'>
+  readonly Request: request.Request.Constructor<Request<T, I, E, A>, "_tag">
   readonly Resolver: RequestResolver.RequestResolver<Request<T, I, E, A>>
   readonly execute: (_: I) => Effect.Effect<never, SchemaError | E, A>
   readonly makeExecute: (

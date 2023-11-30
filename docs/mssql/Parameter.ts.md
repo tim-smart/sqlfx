@@ -47,7 +47,7 @@ Added in v1.0.0
 ```ts
 export interface Parameter<A> {
   readonly [ParameterId]: (_: never) => A
-  readonly _tag: 'Parameter'
+  readonly _tag: "Parameter"
   readonly name: string
   readonly type: Tedious.TediousType
   readonly options: Tedious.ParameterOptions

@@ -44,7 +44,7 @@ Added in v1.0.0
 
 ```ts
 export declare const SchemaError: (
-  type: SchemaError['type'],
+  type: SchemaError["type"],
   errors: readonly [ParseErrors, ...ParseErrors[]]
 ) => SchemaError
 ```
@@ -70,7 +70,7 @@ Added in v1.0.0
 ```ts
 export interface ResultLengthMismatch extends Data.Case {
   readonly [SqlFxErrorId]: SqlFxErrorId
-  readonly _tag: 'ResultLengthMismatch'
+  readonly _tag: "ResultLengthMismatch"
   readonly expected: number
   readonly actual: number
 }
@@ -85,8 +85,8 @@ Added in v1.0.0
 ```ts
 export interface SchemaError extends Data.Case {
   readonly [SqlFxErrorId]: SqlFxErrorId
-  readonly _tag: 'SchemaError'
-  readonly type: 'request' | 'result'
+  readonly _tag: "SchemaError"
+  readonly type: "request" | "result"
   readonly errors: NonEmptyReadonlyArray<ParseErrors>
 }
 ```
@@ -102,7 +102,7 @@ Added in v1.0.0
 ```ts
 export interface SqlError extends Data.Case {
   readonly [SqlFxErrorId]: SqlFxErrorId
-  readonly _tag: 'SqlError'
+  readonly _tag: "SqlError"
   readonly message: string
   readonly code?: string
   readonly error: unknown

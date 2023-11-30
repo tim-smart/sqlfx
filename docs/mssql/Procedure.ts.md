@@ -134,7 +134,7 @@ export interface Procedure<
   A = never
 > extends Pipeable {
   readonly [TypeId]: (_: never) => A
-  readonly _tag: 'Procedure'
+  readonly _tag: "Procedure"
   readonly name: string
   readonly params: I
   readonly outputParams: O
