@@ -34,11 +34,11 @@
   "keywords": [],
   "sideEffects": false,
   "devDependencies": {
-    "@effect/schema": "^0.51.0",
-    "effect": "2.0.0-next.57"
+    "@effect/schema": "^0.51.1",
+    "effect": "2.0.0-next.58"
   },
   "peerDependencies": {
-    "@effect/schema": "^0.51.0",
-    "effect": "2.0.0-next.57"
+    "@effect/schema": "^0.51.1",
+    "effect": "2.0.0-next.58"
   }
 }
