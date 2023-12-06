@@ -117,9 +117,7 @@ export const make = (
       path: options.path,
       database: options.database,
       username: options.username,
-      password: options.password
-        ? Secret.value(options.password)
-        : undefined,
+      password: options.password ? Secret.value(options.password) : undefined,
       fetch_types: options.fetchTypes,
     }
 
