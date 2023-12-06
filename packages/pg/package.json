@@ -30,10 +30,10 @@
     "postgres": "3.4.3"
   },
   "devDependencies": {
-    "@effect/schema": "^0.51.1",
-    "effect": "2.0.0-next.58"
+    "@effect/schema": "^0.52.0",
+    "effect": "2.0.0-next.59"
   },
   "peerDependencies": {
-    "effect": "2.0.0-next.58"
+    "effect": "2.0.0-next.59"
   }
 }

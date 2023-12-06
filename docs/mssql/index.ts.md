@@ -43,7 +43,7 @@ export interface MssqlClientConfig {
   readonly authType?: string
   readonly database?: string
   readonly username?: string
-  readonly password?: ConfigSecret.ConfigSecret
+  readonly password?: Secret.Secret
   readonly connectTimeout?: DurationInput
 
   readonly minConnections?: number

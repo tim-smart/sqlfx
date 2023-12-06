@@ -5,7 +5,7 @@ import { identity, pipe } from "effect/Function"
 import * as Option from "effect/Option"
 import * as Config from "effect/Config"
 import type { ConfigError } from "effect/ConfigError"
-import * as ConfigSecret from "effect/ConfigSecret"
+import * as Secret from "effect/Secret"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
 import * as Layer from "effect/Layer"
@@ -75,7 +75,7 @@ export const make = (
           options: {
             userName: options.username,
             password: options.password
-              ? ConfigSecret.value(options.password)
+              ? Secret.value(options.password)
               : undefined,
           },
         },

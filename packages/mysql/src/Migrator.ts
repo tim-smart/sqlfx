@@ -3,7 +3,7 @@
  */
 /// <reference types="node" />
 
-import * as ConfigSecret from "effect/ConfigSecret"
+import * as Secret from "effect/Secret"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Sql from "./index.js"
@@ -75,7 +75,7 @@ export const run: (
                 MYSQL_HOST: sql.config.host,
                 MYSQL_TCP_PORT: sql.config.port?.toString(),
                 MYSQL_PWD: sql.config.password
-                  ? ConfigSecret.value(sql.config.password)
+                  ? Secret.value(sql.config.password)
                   : undefined,
               },
             },

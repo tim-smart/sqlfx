@@ -5,7 +5,7 @@ import type { Tag } from "effect/Context"
 import type { DurationInput } from "effect/Duration"
 import type * as Config from "effect/Config"
 import type { ConfigError } from "effect/ConfigError"
-import type * as ConfigSecret from "effect/ConfigSecret"
+import type * as Secret from "effect/Secret"
 import type * as Effect from "effect/Effect"
 import type * as Layer from "effect/Layer"
 import type { Scope } from "effect/Scope"
@@ -75,7 +75,7 @@ export interface MssqlClientConfig {
   readonly authType?: string
   readonly database?: string
   readonly username?: string
-  readonly password?: ConfigSecret.ConfigSecret
+  readonly password?: Secret.Secret
   readonly connectTimeout?: DurationInput
 
   readonly minConnections?: number

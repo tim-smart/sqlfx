@@ -34,7 +34,7 @@ Added in v1.0.0
 
 ```ts
 export interface PgClientConfig {
-  readonly url?: ConfigSecret.ConfigSecret
+  readonly url?: Secret.Secret
 
   readonly host?: string
   readonly port?: number
@@ -42,7 +42,7 @@ export interface PgClientConfig {
   readonly ssl?: boolean
   readonly database?: string
   readonly username?: string
-  readonly password?: ConfigSecret.ConfigSecret
+  readonly password?: Secret.Secret
 
   readonly idleTimeout?: Duration.DurationInput
   readonly connectTimeout?: Duration.DurationInput

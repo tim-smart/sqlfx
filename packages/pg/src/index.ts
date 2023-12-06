@@ -6,7 +6,7 @@ import * as Duration from "effect/Duration"
 import { pipe } from "effect/Function"
 import * as Config from "effect/Config"
 import type { ConfigError } from "effect/ConfigError"
-import * as ConfigSecret from "effect/ConfigSecret"
+import * as Secret from "effect/Secret"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import type { Scope } from "effect/Scope"
@@ -51,7 +51,7 @@ export const tag = Tag<PgClient>()
  * @since 1.0.0
  */
 export interface PgClientConfig {
-  readonly url?: ConfigSecret.ConfigSecret
+  readonly url?: Secret.Secret
 
   readonly host?: string
   readonly port?: number
@@ -59,7 +59,7 @@ export interface PgClientConfig {
   readonly ssl?: boolean
   readonly database?: string
   readonly username?: string
-  readonly password?: ConfigSecret.ConfigSecret
+  readonly password?: Secret.Secret
 
   readonly idleTimeout?: Duration.DurationInput
   readonly connectTimeout?: Duration.DurationInput
@@ -118,13 +118,13 @@ export const make = (
       database: options.database,
       username: options.username,
       password: options.password
-        ? ConfigSecret.value(options.password)
+        ? Secret.value(options.password)
         : undefined,
       fetch_types: options.fetchTypes,
     }
 
     const client = options.url
-      ? postgres(ConfigSecret.value(options.url), opts)
+      ? postgres(Secret.value(options.url), opts)
       : postgres(opts)
 
     yield* _(Effect.addFinalizer(() => Effect.sync(() => client.end())))

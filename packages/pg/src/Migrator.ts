@@ -3,7 +3,7 @@
  */
 /// <reference types="node" />
 
-import * as ConfigSecret from "effect/ConfigSecret"
+import * as Secret from "effect/Secret"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Pg from "./index.js"
@@ -78,7 +78,7 @@ export const run: (
                 PGPORT: sql.config.port?.toString(),
                 PGUSER: sql.config.username,
                 PGPASSWORD: sql.config.password
-                  ? ConfigSecret.value(sql.config.password)
+                  ? Secret.value(sql.config.password)
                   : undefined,
                 PGDATABASE: sql.config.database,
                 PGSSLMODE: sql.config.ssl ? "require" : "prefer",
