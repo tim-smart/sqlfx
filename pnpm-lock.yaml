@@ -139,8 +139,8 @@ importers:
         specifier: workspace:^
         version: link:../sql/dist
       postgres:
-        specifier: 3.4.3
-        version: 3.4.3
+        specifier: 3.4.2
+        version: 3.4.2
     devDependencies:
       '@effect/schema':
         specifier: ^0.52.0
@@ -9719,8 +9719,8 @@ packages:
       source-map-js: 1.0.2
     dev: true
 
-  /postgres@3.4.3:
-    resolution: {integrity: sha512-iHJn4+M9vbTdHSdDzNkC0crHq+1CUdFhx+YqCE+SqWxPjm+Zu63jq7yZborOBF64c8pc58O5uMudyL1FQcHacA==}
+  /postgres@3.4.2:
+    resolution: {integrity: sha512-0UcCGvDBSaAzLeWwiq+QVmiGfOPTosFb+sxJUUtd+7Pi/ByFPuz6Gq05LbS0sM1ghMWC5atuks3pfl34g0qmFw==}
     engines: {node: '>=12'}
     dev: false
 
