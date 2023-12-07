@@ -1,5 +1,11 @@
 # @sqlfx/pg
 
+## 0.34.1
+
+### Patch Changes
+
+- [`a9dfab2`](https://github.com/tim-smart/sqlfx/commit/a9dfab2b2d35f18a9255b1c324e6ff41cb23744e) Thanks [@tim-smart](https://github.com/tim-smart)! - downgrade postgres.js
+
 ## 0.34.0
 
 ### Minor Changes
