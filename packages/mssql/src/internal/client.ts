@@ -334,8 +334,7 @@ export const makeLayer: (
   config: Config.Config.Wrap<MssqlClientConfig>,
 ) => Layer.Layer<never, ConfigError, MssqlClient> = (
   config: Config.Config.Wrap<MssqlClientConfig>,
-) =>
-  Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
+) => Layer.scoped(tag, Effect.flatMap(Config.unwrap(config), make))
 
 /** @internal */
 export const makeCompiler = (transform?: (_: string) => string) => {

@@ -156,5 +156,4 @@ export const makeLayer: (
   config: Config.Config.Wrap<SqliteBunConfig>,
 ) => Layer.Layer<never, ConfigError, SqliteClient> = (
   config: Config.Config.Wrap<SqliteBunConfig>,
-) =>
-  Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
+) => Layer.scoped(tag, Effect.flatMap(Config.unwrap(config), make))

@@ -223,8 +223,7 @@ export const makeLayer: (
   config: Config.Config.Wrap<PgClientConfig>,
 ) => Layer.Layer<never, ConfigError, PgClient> = (
   config: Config.Config.Wrap<PgClientConfig>,
-) =>
-  Layer.scoped(tag, Effect.flatMap(Effect.config(Config.unwrap(config)), make))
+) => Layer.scoped(tag, Effect.flatMap(Config.unwrap(config), make))
 
 /**
  * @category constructor
