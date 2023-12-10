@@ -1,5 +1,16 @@
 # @sqlfx/pg
 
+## 0.35.0
+
+### Minor Changes
+
+- [`ea24c26`](https://github.com/tim-smart/sqlfx/commit/ea24c264e96999eb99b50c23a73c4ea9636026aa) Thanks [@tim-smart](https://github.com/tim-smart)! - update effect
+
+### Patch Changes
+
+- Updated dependencies [[`ea24c26`](https://github.com/tim-smart/sqlfx/commit/ea24c264e96999eb99b50c23a73c4ea9636026aa)]:
+  - @sqlfx/sql@0.35.0
+
 ## 0.34.1
 
 ### Patch Changes
