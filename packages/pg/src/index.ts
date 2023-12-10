@@ -71,6 +71,8 @@ export interface PgClientConfig {
   readonly transformQueryNames?: (str: string) => string
   readonly transformJson?: boolean
   readonly fetchTypes?: boolean
+
+  readonly debug?: postgres.Options<{}>["debug"]
 }
 
 const escape = Statement.defaultEscape('"')
@@ -119,6 +121,7 @@ export const make = (
       username: options.username,
       password: options.password ? Secret.value(options.password) : undefined,
       fetch_types: options.fetchTypes,
+      debug: options.debug,
     }
 
     const client = options.url
