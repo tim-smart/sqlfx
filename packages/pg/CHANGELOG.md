@@ -1,5 +1,11 @@
 # @sqlfx/pg
 
+## 0.35.1
+
+### Patch Changes
+
+- [#145](https://github.com/tim-smart/sqlfx/pull/145) [`d619a2f`](https://github.com/tim-smart/sqlfx/commit/d619a2fe93bd35b65789107a4e33c052bfee32bd) Thanks [@arekmaz](https://github.com/arekmaz)! - add debug option to pg config
+
 ## 0.35.0
 
 ### Minor Changes
