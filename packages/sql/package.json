@@ -34,8 +34,8 @@
   "keywords": [],
   "sideEffects": false,
   "devDependencies": {
-    "@effect/schema": "^0.53.0",
-    "effect": "2.0.0-next.60"
+    "@effect/schema": "^0.54.0",
+    "effect": "2.0.0-next.61"
   },
   "peerDependencies": {
     "@effect/schema": "^0.53.0",
