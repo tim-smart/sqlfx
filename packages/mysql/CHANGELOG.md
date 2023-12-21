@@ -1,5 +1,16 @@
 # @sqlfx/mysql
 
+## 0.36.0
+
+### Minor Changes
+
+- [`d3a8874`](https://github.com/tim-smart/sqlfx/commit/d3a8874f52cf84171152d0de500786eb01876530) Thanks [@tim-smart](https://github.com/tim-smart)! - update effect
+
+### Patch Changes
+
+- Updated dependencies [[`d3a8874`](https://github.com/tim-smart/sqlfx/commit/d3a8874f52cf84171152d0de500786eb01876530)]:
+  - @sqlfx/sql@0.37.0
+
 ## 0.35.1
 
 ### Patch Changes
