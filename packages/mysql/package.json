@@ -27,13 +27,13 @@
   "sideEffects": false,
   "dependencies": {
     "@sqlfx/sql": "workspace:^",
-    "mariadb": "^3.2.2"
+    "mariadb": "^3.2.3"
   },
   "devDependencies": {
-    "@effect/schema": "^0.54.0",
-    "effect": "2.0.0-next.61"
+    "@effect/schema": "^0.56.0",
+    "effect": "2.0.0-next.62"
   },
   "peerDependencies": {
-    "effect": "2.0.0-next.61"
+    "effect": "2.0.0-next.62"
   }
 }
