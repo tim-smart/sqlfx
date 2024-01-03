@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.38.0
+
+### Minor Changes
+
+- [#154](https://github.com/tim-smart/sqlfx/pull/154) [`60e98ed`](https://github.com/tim-smart/sqlfx/commit/60e98ed03f0b6af52f769cfe077a9d2771431db9) Thanks [@fubhy](https://github.com/fubhy)! - Update `effect` version
+
 ## 0.37.0
 
 ### Minor Changes
