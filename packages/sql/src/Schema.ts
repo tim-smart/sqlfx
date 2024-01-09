@@ -14,8 +14,7 @@ export const parse = <I, A>(
 ): ((input: unknown) => Effect.Effect<never, SchemaError, A>) => {
   const parse = Schema.parse(schema)
 
-  return input =>
-    Effect.mapError(parse(input), _ => SchemaError(type, _.errors))
+  return input => Effect.mapError(parse(input), _ => SchemaError(type, _.error))
 }
 
 /**
@@ -28,5 +27,5 @@ export const encode = <I, A>(
   const encode = Schema.encode(schema)
 
   return input =>
-    Effect.mapError(encode(input), _ => SchemaError(type, _.errors))
+    Effect.mapError(encode(input), _ => SchemaError(type, _.error))
 }

@@ -2,7 +2,6 @@
  * @since 1.0.0
  */
 import * as Data from "effect/Data"
-import type { NonEmptyReadonlyArray } from "effect/ReadonlyArray"
 import type { ParseIssue } from "@effect/schema/ParseResult"
 
 /**
@@ -72,18 +71,15 @@ export interface SchemaError extends Data.Case {
   readonly [SqlFxErrorId]: SqlFxErrorId
   readonly _tag: "SchemaError"
   readonly type: "request" | "result"
-  readonly errors: NonEmptyReadonlyArray<ParseIssue>
+  readonly error: ParseIssue
 }
 /**
  * @category constructor
  * @since 1.0.0
  */
-export const SchemaError = (
-  type: SchemaError["type"],
-  errors: NonEmptyReadonlyArray<ParseIssue>,
-) =>
+export const SchemaError = (type: SchemaError["type"], error: ParseIssue) =>
   Data.tagged<SchemaError>("SchemaError")({
     [SqlFxErrorId]: SqlFxErrorId,
     type,
-    errors,
+    error,
   })
