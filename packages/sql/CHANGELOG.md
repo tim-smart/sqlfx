@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.39.1
+
+### Patch Changes
+
+- [#157](https://github.com/tim-smart/sqlfx/pull/157) [`b5c017e`](https://github.com/tim-smart/sqlfx/commit/b5c017ebac05c67c556fdc77897070eb112411cf) Thanks [@datner](https://github.com/datner)! - bump schema version on peer
+
 ## 0.39.0
 
 ### Minor Changes
