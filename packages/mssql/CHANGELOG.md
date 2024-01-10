@@ -1,5 +1,11 @@
 # @sqlfx/mssql
 
+## 0.37.2
+
+### Patch Changes
+
+- [#159](https://github.com/tim-smart/sqlfx/pull/159) [`629e988`](https://github.com/tim-smart/sqlfx/commit/629e9880fc0ba73fe73d8c7e79862f7fff90cb77) Thanks [@mattiamanzati](https://github.com/mattiamanzati)! - Added options to support connecting to named instances
+
 ## 0.37.1
 
 ### Patch Changes
