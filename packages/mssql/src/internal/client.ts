@@ -67,6 +67,8 @@ export const make = (
             : undefined,
           rowCollectionOnRequestCompletion: true,
           useColumnNames: false,
+          instanceName: options.instanceName,
+          encrypt: options.encrypt ?? false,
         },
         server: options.server,
         domain: options.domain,
