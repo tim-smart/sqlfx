@@ -54,6 +54,8 @@ export interface PgClientConfig {
   readonly transformQueryNames?: (str: string) => string
   readonly transformJson?: boolean
   readonly fetchTypes?: boolean
+
+  readonly debug?: postgres.Options<{}>["debug"]
 }
 ```
 

@@ -38,6 +38,8 @@ Added in v1.0.0
 export interface MssqlClientConfig {
   readonly domain?: string
   readonly server?: string
+  readonly instanceName?: string
+  readonly encrypt?: boolean
   readonly trustServer?: boolean
   readonly port?: number
   readonly authType?: string

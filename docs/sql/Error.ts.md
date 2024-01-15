@@ -43,10 +43,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const SchemaError: (
-  type: SchemaError["type"],
-  errors: readonly [ParseErrors, ...ParseErrors[]]
-) => SchemaError
+export declare const SchemaError: (type: SchemaError["type"], error: ParseIssue) => SchemaError
 ```
 
 Added in v1.0.0
@@ -87,7 +84,7 @@ export interface SchemaError extends Data.Case {
   readonly [SqlFxErrorId]: SqlFxErrorId
   readonly _tag: "SchemaError"
   readonly type: "request" | "result"
-  readonly errors: NonEmptyReadonlyArray<ParseErrors>
+  readonly error: ParseIssue
 }
 ```
 
