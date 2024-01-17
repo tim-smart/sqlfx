@@ -1,5 +1,11 @@
 # @sqlfx/sqlite
 
+## 0.41.1
+
+### Patch Changes
+
+- [`b853d21`](https://github.com/tim-smart/sqlfx/commit/b853d218016e8e6b46ecd8c12a72016ae2210b47) Thanks [@tim-smart](https://github.com/tim-smart)! - add sqlite loadExtension
+
 ## 0.41.0
 
 ### Minor Changes
