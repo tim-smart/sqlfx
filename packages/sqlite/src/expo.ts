@@ -91,11 +91,7 @@ export const make = (
             Effect.map(run(sql, params), transformRows)
         : run
 
-      return identity<
-        Connection & {
-          readonly export: Effect.Effect<never, SqlError, Uint8Array>
-        }
-      >({
+      return identity<Connection>({
         execute(statement) {
           const [sql, params] = compiler.compile(statement)
           return runTransform(sql, params)
@@ -120,7 +116,6 @@ export const make = (
         executeStream(_statement) {
           return Effect.dieMessage("executeStream not implemented")
         },
-        export: Effect.dieMessage("export not implemented"),
       })
     })
 
@@ -134,7 +129,8 @@ export const make = (
       }),
       {
         config: options as any,
-        export: Effect.scoped(Effect.flatMap(pool.get, _ => _.export)),
+        export: Effect.dieMessage("export not implemented"),
+        loadExtension: () => Effect.dieMessage("loadExtension not implemented"),
       },
     )
   })

@@ -159,6 +159,7 @@ export const make = (
       {
         config: options as any,
         export: Effect.scoped(Effect.flatMap(pool.get, _ => _.export)),
+        loadExtension: () => Effect.dieMessage("loadExtension not implemented"),
       },
     )
   })

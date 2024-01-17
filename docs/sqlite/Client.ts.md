@@ -45,6 +45,7 @@ Added in v1.0.0
 export interface SqliteClient extends Client.Client {
   readonly config: unknown
   readonly export: Effect.Effect<never, SqlError, Uint8Array>
+  readonly loadExtension: (path: string) => Effect.Effect<never, SqlError, void>
 }
 ```
 

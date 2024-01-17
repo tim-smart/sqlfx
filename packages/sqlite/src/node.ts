@@ -139,6 +139,9 @@ export const make = (
       return identity<
         Connection & {
           readonly export: Effect.Effect<never, SqlError, Uint8Array>
+          readonly loadExtension: (
+            path: string,
+          ) => Effect.Effect<never, SqlError, void>
         }
       >({
         execute(statement) {
@@ -163,6 +166,12 @@ export const make = (
           try: () => db.serialize(),
           catch: handleError,
         }),
+        loadExtension(path) {
+          return Effect.try({
+            try: () => db.loadExtension(path),
+            catch: handleError,
+          })
+        },
       })
     })
 
@@ -177,6 +186,8 @@ export const make = (
       {
         config: options,
         export: Effect.scoped(Effect.flatMap(pool.get, _ => _.export)),
+        loadExtension: (path: string) =>
+          Effect.scoped(Effect.flatMap(pool.get, _ => _.loadExtension(path))),
       },
     )
   })
