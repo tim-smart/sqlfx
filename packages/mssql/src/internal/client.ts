@@ -83,14 +83,7 @@ export const make = (
         },
       })
 
-      yield* _(
-        Effect.addFinalizer(() =>
-          Effect.async<never, never, void>(resume => {
-            conn.on("end", () => resume(Effect.unit))
-            conn.close()
-          }),
-        ),
-      )
+      yield* _(Effect.addFinalizer(() => Effect.sync(() => conn.close())))
 
       yield* _(
         Effect.async<never, SqlError, void>(resume => {
@@ -145,6 +138,7 @@ export const make = (
             }
           }
 
+          conn.cancel()
           conn.execSql(req)
         })
 
@@ -187,6 +181,7 @@ export const make = (
             result[name] = value
           })
 
+          conn.cancel()
           conn.callProcedure(req)
         })
 
