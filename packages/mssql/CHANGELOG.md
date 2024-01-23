@@ -1,5 +1,11 @@
 # @sqlfx/mssql
 
+## 0.40.1
+
+### Patch Changes
+
+- [`1aa535c`](https://github.com/tim-smart/sqlfx/commit/1aa535c88a64a9e0e95a79d035c07c79b9cc4053) Thanks [@tim-smart](https://github.com/tim-smart)! - cancel previous requests before running another
+
 ## 0.40.0
 
 ### Minor Changes
