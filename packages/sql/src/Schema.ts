@@ -8,7 +8,7 @@ import { SchemaError } from "./Error.js"
 /**
  * @since 1.0.0
  */
-export const parse = <R, I, A>(
+export const decodeUnknown = <R, I, A>(
   schema: Schema.Schema<R, I, A>,
   type: SchemaError["type"],
 ): ((input: unknown) => Effect.Effect<R, SchemaError, A>) => {
