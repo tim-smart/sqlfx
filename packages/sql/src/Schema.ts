@@ -8,11 +8,11 @@ import { SchemaError } from "./Error.js"
 /**
  * @since 1.0.0
  */
-export const parse = <I, A>(
-  schema: Schema.Schema<I, A>,
+export const parse = <R, I, A>(
+  schema: Schema.Schema<R, I, A>,
   type: SchemaError["type"],
-): ((input: unknown) => Effect.Effect<never, SchemaError, A>) => {
-  const parse = Schema.parse(schema)
+): ((input: unknown) => Effect.Effect<R, SchemaError, A>) => {
+  const parse = Schema.decodeUnknown(schema)
 
   return input => Effect.mapError(parse(input), _ => SchemaError(type, _.error))
 }
@@ -20,10 +20,10 @@ export const parse = <I, A>(
 /**
  * @since 1.0.0
  */
-export const encode = <I, A>(
-  schema: Schema.Schema<I, A>,
+export const encode = <R, I, A>(
+  schema: Schema.Schema<R, I, A>,
   type: SchemaError["type"],
-): ((input: A) => Effect.Effect<never, SchemaError, I>) => {
+): ((input: A) => Effect.Effect<R, SchemaError, I>) => {
   const encode = Schema.encode(schema)
 
   return input =>

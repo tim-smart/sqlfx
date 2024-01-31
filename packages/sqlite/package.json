@@ -37,12 +37,12 @@
     "@sqlfx/sql": "workspace:^"
   },
   "devDependencies": {
-    "@effect/schema": "^0.60.7",
+    "@effect/schema": "^0.61.5",
     "@sqlite.org/sqlite-wasm": "3.45.0-build1",
     "@types/better-sqlite3": "^7.6.8",
     "better-sqlite3": "^9.3.0",
     "bun-types": "^1.0.25",
-    "effect": "^2.2.0",
+    "effect": "^2.2.3",
     "expo-sqlite": "^13.2.1",
     "react-native-quick-sqlite": "^8.0.6"
   },

@@ -73,36 +73,38 @@ export function make({
       ),
     )
 
-  function schema<II, IA, AI, A, R, E>(
-    requestSchema: Schema.Schema<II, IA>,
-    resultSchema: Schema.Schema<AI, A>,
-    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
+  function schema<IR, II, IA, AR, AI, A, R, E>(
+    requestSchema: Schema.Schema<IR, II, IA>,
+    resultSchema: Schema.Schema<AR, AI, A>,
+    run: (_: II) => Effect.Effect<IR | AR | R, E, ReadonlyArray<AI>>,
   ) {
     const decodeResult = SqlSchema.parse(Schema.array(resultSchema), "result")
     const encodeRequest = SqlSchema.encode(requestSchema, "request")
 
-    return (_: IA): Effect.Effect<R, SchemaError | E, ReadonlyArray<A>> =>
+    return (
+      _: IA,
+    ): Effect.Effect<IR | AR | R, SchemaError | E, ReadonlyArray<A>> =>
       pipe(encodeRequest(_), Effect.flatMap(run), Effect.flatMap(decodeResult))
   }
 
-  function voidSchema<II, IA, R, E>(
-    requestSchema: Schema.Schema<II, IA>,
+  function voidSchema<IR, II, IA, R, E>(
+    requestSchema: Schema.Schema<IR, II, IA>,
     run: (_: II) => Effect.Effect<R, E, any>,
   ) {
     const encodeRequest = SqlSchema.encode(requestSchema, "request")
-    return (_: IA): Effect.Effect<R, SchemaError | E, void> =>
+    return (_: IA): Effect.Effect<IR | R, SchemaError | E, void> =>
       Effect.asUnit(Effect.flatMap(encodeRequest(_), run))
   }
 
-  function singleSchema<II, IA, AI, A, R, E>(
-    requestSchema: Schema.Schema<II, IA>,
-    resultSchema: Schema.Schema<AI, A>,
+  function singleSchema<IR, II, IA, AR, AI, A, R, E>(
+    requestSchema: Schema.Schema<IR, II, IA>,
+    resultSchema: Schema.Schema<AR, AI, A>,
     run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
   ) {
     const decodeResult = SqlSchema.parse(resultSchema, "result")
     const encodeRequest = SqlSchema.encode(requestSchema, "request")
 
-    return (_: IA): Effect.Effect<R, SchemaError | E, A> =>
+    return (_: IA): Effect.Effect<IR | AR | R, SchemaError | E, A> =>
       pipe(
         encodeRequest(_),
         Effect.flatMap(run),
@@ -111,15 +113,17 @@ export function make({
       )
   }
 
-  function singleSchemaOption<II, IA, AI, A, R, E>(
-    requestSchema: Schema.Schema<II, IA>,
-    resultSchema: Schema.Schema<AI, A>,
+  function singleSchemaOption<IR, II, IA, AR, AI, A, R, E>(
+    requestSchema: Schema.Schema<IR, II, IA>,
+    resultSchema: Schema.Schema<AR, AI, A>,
     run: (_: II) => Effect.Effect<R, E, ReadonlyArray<AI>>,
   ) {
     const decodeResult = SqlSchema.parse(resultSchema, "result")
     const encodeRequest = SqlSchema.encode(requestSchema, "request")
 
-    return (_: IA): Effect.Effect<R, SchemaError | E, Option.Option<A>> =>
+    return (
+      _: IA,
+    ): Effect.Effect<IR | AR | R, SchemaError | E, Option.Option<A>> =>
       pipe(
         encodeRequest(_),
         Effect.flatMap(run),
@@ -139,20 +143,15 @@ export function make({
         request.Request<SchemaError | E, A> & { i0: RA }
       >,
     ) =>
-    (
-      Resolver: RequestResolver.RequestResolver<any>,
+    <R = never>(
+      Resolver: RequestResolver.RequestResolver<any, R>,
       context = Context.empty() as Context.Context<any>,
     ) => {
-      const resolverWithSql = Effect.map(
-        Effect.serviceOption(TransactionConn),
-        _ =>
-          RequestResolver.provideContext(
-            Resolver,
-            Option.match(_, {
-              onNone: () => context,
-              onSome: tconn => Context.add(context, TransactionConn, tconn),
-            }),
-          ),
+      const resolverWithSql = Effect.contextWith<
+        R,
+        RequestResolver.RequestResolver<any, never>
+      >(_ =>
+        RequestResolver.provideContext(Resolver, Context.merge(_, context)),
       )
       return (i0: RA) =>
         Effect.flatMap(resolverWithSql, resolver =>
@@ -180,14 +179,14 @@ export function make({
         cache.invalidate(Request({ i0: id })),
       )
 
-  function singleResolverOption<T extends string, II, IA, AI, A, E>(
+  function singleResolverOption<T extends string, R, IR, II, IA, AR, AI, A, E>(
     tag: T,
     options: {
-      readonly request: Schema.Schema<II, IA>
-      readonly result: Schema.Schema<AI, A>
-      readonly run: (request: II) => Effect.Effect<never, E, ReadonlyArray<AI>>
+      readonly request: Schema.Schema<IR, II, IA>
+      readonly result: Schema.Schema<AR, AI, A>
+      readonly run: (request: II) => Effect.Effect<R, E, ReadonlyArray<AI>>
     },
-  ): Resolver<T, IA, Option.Option<A>, E> {
+  ): Resolver<T, R | IR | AR, IA, Option.Option<A>, E> {
     const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
     const encodeRequest = SqlSchema.encode(options.request, "request")
     const decodeResult = SqlSchema.parse(options.result, "result")
@@ -221,14 +220,14 @@ export function make({
     }
   }
 
-  function singleResolver<T extends string, II, IA, AI, A, E>(
+  function singleResolver<T extends string, R, IR, II, IA, AR, AI, A, E>(
     tag: T,
     options: {
-      readonly request: Schema.Schema<II, IA>
-      readonly result: Schema.Schema<AI, A>
-      readonly run: (request: II) => Effect.Effect<never, E, ReadonlyArray<AI>>
+      readonly request: Schema.Schema<IR, II, IA>
+      readonly result: Schema.Schema<AR, AI, A>
+      readonly run: (request: II) => Effect.Effect<R, E, ReadonlyArray<AI>>
     },
-  ): Resolver<T, IA, A, E> {
+  ): Resolver<T, R | IR | AR, IA, A, E> {
     const Request = request.tagged<Request<T, IA, E, A>>(tag)
     const encodeRequest = SqlSchema.encode(options.request, "request")
     const decodeResult = SqlSchema.parse(options.result, "result")
@@ -256,15 +255,15 @@ export function make({
     }
   }
 
-  function voidResolver<T extends string, II, IA, E>(
+  function voidResolver<T extends string, R, IR, II, IA, E>(
     tag: T,
     options: {
-      readonly request: Schema.Schema<II, IA>
+      readonly request: Schema.Schema<IR, II, IA>
       readonly run: (
         requests: ReadonlyArray<II>,
-      ) => Effect.Effect<never, E, void | ReadonlyArray<unknown>>
+      ) => Effect.Effect<R, E, void | ReadonlyArray<unknown>>
     },
-  ): Resolver<T, IA, void, E> {
+  ): Resolver<T, R | IR, IA, void, E> {
     const Request = request.tagged<Request<T, IA, E, void>>(tag)
     const encodeRequests = SqlSchema.encode(
       Schema.array(options.request),
@@ -304,16 +303,16 @@ export function make({
       invalidateCache,
     }
   }
-  function resolver<T extends string, II, IA, AI, A, E>(
+  function resolver<T extends string, R, IR, II, IA, AR, AI, A, E>(
     tag: T,
     options: {
-      readonly request: Schema.Schema<II, IA>
-      readonly result: Schema.Schema<AI, A>
+      readonly request: Schema.Schema<IR, II, IA>
+      readonly result: Schema.Schema<AR, AI, A>
       readonly run: (
         requests: ReadonlyArray<II>,
-      ) => Effect.Effect<never, E, ReadonlyArray<AI>>
+      ) => Effect.Effect<R, E, ReadonlyArray<AI>>
     },
-  ): Resolver<T, IA, A, E | ResultLengthMismatch> {
+  ): Resolver<T, R | IR | AR, IA, A, E | ResultLengthMismatch> {
     const Request =
       request.tagged<Request<T, IA, E | ResultLengthMismatch, A>>(tag)
     const encodeRequests = SqlSchema.encode(
@@ -365,18 +364,18 @@ export function make({
     }
   }
 
-  function idResolverMany<T extends string, II, IA, AI, A, E, K>(
+  function idResolverMany<T extends string, R, IR, II, IA, AR, AI, A, E, K>(
     tag: T,
     options: {
-      readonly request: Schema.Schema<II, IA>
-      readonly result: Schema.Schema<AI, A>
+      readonly request: Schema.Schema<IR, II, IA>
+      readonly result: Schema.Schema<AR, AI, A>
       readonly requestId: (_: IA) => K
       readonly resultId: (_: AI) => K
       readonly run: (
         requests: ReadonlyArray<II>,
-      ) => Effect.Effect<never, E, ReadonlyArray<AI>>
+      ) => Effect.Effect<R, E, ReadonlyArray<AI>>
     },
-  ): Resolver<T, IA, ReadonlyArray<A>, E> {
+  ): Resolver<T, R | IR | AR, IA, ReadonlyArray<A>, E> {
     const Request = request.tagged<Request<T, IA, E, ReadonlyArray<A>>>(tag)
     const encodeRequests = SqlSchema.encode(
       Schema.array(options.request),
@@ -464,17 +463,17 @@ export function make({
     }
   }
 
-  function idResolver<T extends string, II, IA, AI, A, E>(
+  function idResolver<T extends string, R, IR, II, IA, AR, AI, A, E>(
     tag: T,
     options: {
-      readonly id: Schema.Schema<II, IA>
-      readonly result: Schema.Schema<AI, A>
+      readonly id: Schema.Schema<IR, II, IA>
+      readonly result: Schema.Schema<AR, AI, A>
       readonly resultId: (_: AI) => IA
       readonly run: (
         requests: ReadonlyArray<II>,
-      ) => Effect.Effect<never, E, ReadonlyArray<AI>>
+      ) => Effect.Effect<R, E, ReadonlyArray<AI>>
     },
-  ): Resolver<T, IA, Option.Option<A>, E> {
+  ): Resolver<T, R | IR | AR, IA, Option.Option<A>, E> {
     const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
     const encodeRequests = SqlSchema.encode(Schema.array(options.id), "request")
     const decodeResult = SqlSchema.parse(options.result, "result")
