@@ -22,7 +22,7 @@ const program = Effect.gen(function* (_) {
       sql`INSERT INTO people ${sql.insert(requests)} RETURNING people.*`,
   })
 
-  const GetById = sql.idResolver("GetPersonById", {
+  const GetById = sql.resolverId("GetPersonById", {
     id: Schema.number,
     result: Person,
     resultId: _ => _.id,
