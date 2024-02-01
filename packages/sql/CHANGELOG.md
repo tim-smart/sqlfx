@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.43.1
+
+### Patch Changes
+
+- [#168](https://github.com/tim-smart/sqlfx/pull/168) [`cdf2208`](https://github.com/tim-smart/sqlfx/commit/cdf2208da2a1ac2bb58ea2cf1c766ae81562b889) Thanks [@datner](https://github.com/datner)! - update peer dependencies
+
 ## 0.43.0
 
 ### Minor Changes
