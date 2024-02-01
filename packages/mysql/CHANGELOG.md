@@ -1,5 +1,18 @@
 # @sqlfx/mysql
 
+## 0.42.0
+
+### Minor Changes
+
+- [#166](https://github.com/tim-smart/sqlfx/pull/166) [`ba80891`](https://github.com/tim-smart/sqlfx/commit/ba80891e11f56323056ce55aa410f042c1af15c9) Thanks [@datner](https://github.com/datner)! - rename schema & resolver apis for better auto-complete
+
+- [#166](https://github.com/tim-smart/sqlfx/pull/166) [`ba80891`](https://github.com/tim-smart/sqlfx/commit/ba80891e11f56323056ce55aa410f042c1af15c9) Thanks [@datner](https://github.com/datner)! - support schema R channel in client apis
+
+### Patch Changes
+
+- Updated dependencies [[`ba80891`](https://github.com/tim-smart/sqlfx/commit/ba80891e11f56323056ce55aa410f042c1af15c9), [`ba80891`](https://github.com/tim-smart/sqlfx/commit/ba80891e11f56323056ce55aa410f042c1af15c9)]:
+  - @sqlfx/sql@0.43.0
+
 ## 0.41.0
 
 ### Minor Changes
