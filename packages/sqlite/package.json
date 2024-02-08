@@ -37,13 +37,13 @@
     "@sqlfx/sql": "workspace:^"
   },
   "devDependencies": {
-    "@effect/schema": "^0.61.5",
-    "@sqlite.org/sqlite-wasm": "3.45.0-build1",
-    "@types/better-sqlite3": "^7.6.8",
-    "better-sqlite3": "^9.3.0",
-    "bun-types": "^1.0.25",
-    "effect": "^2.2.3",
-    "expo-sqlite": "^13.2.1",
+    "@effect/schema": "^0.61.7",
+    "@sqlite.org/sqlite-wasm": "3.45.1-build1",
+    "@types/better-sqlite3": "^7.6.9",
+    "better-sqlite3": "^9.4.0",
+    "bun-types": "^1.0.26",
+    "effect": "^2.2.5",
+    "expo-sqlite": "^13.2.2",
     "react-native-quick-sqlite": "^8.0.6"
   },
   "peerDependencies": {

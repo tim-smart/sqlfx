@@ -30,8 +30,8 @@
     "mariadb": "^3.2.3"
   },
   "devDependencies": {
-    "@effect/schema": "^0.61.5",
-    "effect": "^2.2.3"
+    "@effect/schema": "^0.61.7",
+    "effect": "^2.2.5"
   },
   "peerDependencies": {
     "effect": "^2.2.0"

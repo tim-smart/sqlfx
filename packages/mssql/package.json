@@ -30,9 +30,9 @@
     "tedious": "^16.6.1"
   },
   "devDependencies": {
-    "@effect/schema": "^0.61.5",
+    "@effect/schema": "^0.61.7",
     "@types/tedious": "^4.0.14",
-    "effect": "^2.2.3"
+    "effect": "^2.2.5"
   },
   "peerDependencies": {
     "effect": "^2.2.0"
