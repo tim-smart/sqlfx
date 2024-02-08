@@ -1,5 +1,14 @@
 # @sqlfx/sqlite
 
+## 0.43.2
+
+### Patch Changes
+
+- [`874e1b5`](https://github.com/tim-smart/sqlfx/commit/874e1b5584074d7667495e216141d0f201259e41) Thanks [@tim-smart](https://github.com/tim-smart)! - fix sql.schema\* types
+
+- Updated dependencies [[`874e1b5`](https://github.com/tim-smart/sqlfx/commit/874e1b5584074d7667495e216141d0f201259e41)]:
+  - @sqlfx/sql@0.43.2
+
 ## 0.43.1
 
 ### Patch Changes
