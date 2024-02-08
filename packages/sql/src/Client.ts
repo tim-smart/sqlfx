@@ -84,9 +84,7 @@ export interface Client extends Constructor {
     requestSchema: Schema.Schema<IR, II, IA>,
     resultSchema: Schema.Schema<AR, AI, A>,
     run: (_: II) => Effect.Effect<R, E, ReadonlyArray<unknown>>,
-  ): (
-    _: IA,
-  ) => Effect.Effect<R | IR | AR, E | SchemaError, ReadonlyArray<A>>
+  ): (_: IA) => Effect.Effect<R | IR | AR, E | SchemaError, ReadonlyArray<A>>
 
   /**
    * Run a sql query with a request schema that returns void.
