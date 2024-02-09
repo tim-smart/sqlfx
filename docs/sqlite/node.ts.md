@@ -33,7 +33,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: (options: SqliteNodeConfig) => Effect.Effect<Scope, never, SqliteClient>
+export declare const make: (options: SqliteNodeConfig) => Effect.Effect<SqliteClient, never, Scope>
 ```
 
 Added in v1.0.0
@@ -53,9 +53,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeLayer: (
-  config: Config.Config.Wrap<SqliteNodeConfig>
-) => Layer.Layer<never, ConfigError, SqliteClient>
+export declare const makeLayer: (config: Config.Config.Wrap<SqliteNodeConfig>) => Layer.Layer<SqliteClient, ConfigError>
 ```
 
 Added in v1.0.0

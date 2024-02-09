@@ -65,7 +65,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface ResultLengthMismatch extends Data.Case {
+export interface ResultLengthMismatch {
   readonly [SqlFxErrorId]: SqlFxErrorId
   readonly _tag: "ResultLengthMismatch"
   readonly expected: number
@@ -80,7 +80,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface SchemaError extends Data.Case {
+export interface SchemaError {
   readonly [SqlFxErrorId]: SqlFxErrorId
   readonly _tag: "SchemaError"
   readonly type: "request" | "result"
@@ -97,7 +97,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface SqlError extends Data.Case {
+export interface SqlError {
   readonly [SqlFxErrorId]: SqlFxErrorId
   readonly _tag: "SqlError"
   readonly message: string

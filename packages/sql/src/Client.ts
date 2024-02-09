@@ -63,7 +63,7 @@ export interface Client extends Constructor {
     fallback?: string,
   ) => (clauses: ReadonlyArray<string | Fragment>) => Fragment
 
-  readonly reserve: Effect.Effect<Scope, SqlError, Connection>
+  readonly reserve: Effect.Effect<Connection, SqlError, Scope>
 
   /**
    * With the given effect, ensure all sql queries are run in a transaction.
@@ -71,8 +71,8 @@ export interface Client extends Constructor {
    * Note: This will not include query run inside request resolvers.
    */
   withTransaction<R, E, A>(
-    self: Effect.Effect<R, E, A>,
-  ): Effect.Effect<R, E | SqlError, A>
+    self: Effect.Effect<A, E, R>,
+  ): Effect.Effect<A, E | SqlError, R>
 
   /**
    * Run a sql query with a request schema and a result schema.
@@ -81,18 +81,18 @@ export interface Client extends Constructor {
    * The result schema is used to validate the output of the query.
    */
   schema<IR, II, IA, AR, AI, A, R, E>(
-    requestSchema: Schema.Schema<IR, II, IA>,
-    resultSchema: Schema.Schema<AR, AI, A>,
-    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<unknown>>,
-  ): (_: IA) => Effect.Effect<R | IR | AR, E | SchemaError, ReadonlyArray<A>>
+    requestSchema: Schema.Schema<IA, II, IR>,
+    resultSchema: Schema.Schema<A, AI, AR>,
+    run: (_: II) => Effect.Effect<ReadonlyArray<unknown>, E, R>,
+  ): (_: IA) => Effect.Effect<ReadonlyArray<A>, E | SchemaError, R | IR | AR>
 
   /**
    * Run a sql query with a request schema that returns void.
    */
   schemaVoid<IR, II, IA, R, E>(
-    requestSchema: Schema.Schema<IR, II, IA>,
-    run: (_: II) => Effect.Effect<R, E, unknown>,
-  ): (_: IA) => Effect.Effect<R | IR, E | SchemaError, void>
+    requestSchema: Schema.Schema<IA, II, IR>,
+    run: (_: II) => Effect.Effect<unknown, E, R>,
+  ): (_: IA) => Effect.Effect<void, E | SchemaError, R | IR>
 
   /**
    * Run a sql query with a request schema and a result schema.
@@ -103,10 +103,10 @@ export interface Client extends Constructor {
    * Takes the first result of the query.
    */
   schemaSingle<IR, II, IA, AR, AI, A, R, E>(
-    requestSchema: Schema.Schema<IR, II, IA>,
-    resultSchema: Schema.Schema<AR, AI, A>,
-    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<unknown>>,
-  ): (_: IA) => Effect.Effect<R | IR | AR, E | SchemaError, A>
+    requestSchema: Schema.Schema<IA, II, IR>,
+    resultSchema: Schema.Schema<A, AI, AR>,
+    run: (_: II) => Effect.Effect<ReadonlyArray<unknown>, E, R>,
+  ): (_: IA) => Effect.Effect<A, E | SchemaError, R | IR | AR>
 
   /**
    * Run a sql query with a request schema and a result schema.
@@ -117,10 +117,10 @@ export interface Client extends Constructor {
    * Returns an Option of the first result of the query.
    */
   schemaSingleOption<IR, II, IA, AR, AI, A, R, E>(
-    requestSchema: Schema.Schema<IR, II, IA>,
-    resultSchema: Schema.Schema<AR, AI, A>,
-    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<unknown>>,
-  ): (_: IA) => Effect.Effect<R | IR | AR, E | SchemaError, Option<A>>
+    requestSchema: Schema.Schema<IA, II, IR>,
+    resultSchema: Schema.Schema<A, AI, AR>,
+    run: (_: II) => Effect.Effect<ReadonlyArray<unknown>, E, R>,
+  ): (_: IA) => Effect.Effect<Option<A>, E | SchemaError, R | IR | AR>
 
   /**
    * Create a resolver for a sql query with a request schema and a result schema.
@@ -136,11 +136,11 @@ export interface Client extends Constructor {
   resolver<T extends string, R, IR, II, IA, AR, AI, A, E>(
     tag: T,
     options: {
-      readonly request: Schema.Schema<IR, II, IA>
-      readonly result: Schema.Schema<AR, AI, A>
+      readonly request: Schema.Schema<IA, II, IR>
+      readonly result: Schema.Schema<A, AI, AR>
       readonly run: (
         requests: ReadonlyArray<II>,
-      ) => Effect.Effect<R, E, ReadonlyArray<unknown>>
+      ) => Effect.Effect<ReadonlyArray<unknown>, E, R>
     },
   ): Resolver<T, R | IR | AR, IA, A, E | ResultLengthMismatch>
 
@@ -158,9 +158,9 @@ export interface Client extends Constructor {
   resolverSingleOption<T extends string, R, IR, II, IA, AR, AI, A, E>(
     tag: T,
     options: {
-      readonly request: Schema.Schema<IR, II, IA>
-      readonly result: Schema.Schema<AR, AI, A>
-      readonly run: (request: II) => Effect.Effect<R, E, ReadonlyArray<unknown>>
+      readonly request: Schema.Schema<IA, II, IR>
+      readonly result: Schema.Schema<A, AI, AR>
+      readonly run: (request: II) => Effect.Effect<ReadonlyArray<unknown>, E, R>
     },
   ): Resolver<T, R | IR | AR, IA, Option<A>, E>
 
@@ -178,9 +178,9 @@ export interface Client extends Constructor {
   resolverSingle<T extends string, R, IR, II, IA, AR, AI, A, E>(
     tag: T,
     options: {
-      readonly request: Schema.Schema<IR, II, IA>
-      readonly result: Schema.Schema<AR, AI, A>
-      readonly run: (request: II) => Effect.Effect<R, E, ReadonlyArray<unknown>>
+      readonly request: Schema.Schema<IA, II, IR>
+      readonly result: Schema.Schema<A, AI, AR>
+      readonly run: (request: II) => Effect.Effect<ReadonlyArray<unknown>, E, R>
     },
   ): Resolver<T, R | IR | AR, IA, A, E>
 
@@ -197,10 +197,10 @@ export interface Client extends Constructor {
   resolverVoid<T extends string, R, IR, II, IA, E>(
     tag: T,
     options: {
-      readonly request: Schema.Schema<IR, II, IA>
+      readonly request: Schema.Schema<IA, II, IR>
       readonly run: (
         requests: ReadonlyArray<II>,
-      ) => Effect.Effect<R, E, unknown>
+      ) => Effect.Effect<unknown, E, R>
     },
   ): Resolver<T, R | IR, IA, void, E>
 
@@ -216,12 +216,12 @@ export interface Client extends Constructor {
   resolverId<T extends string, R, IR, II, IA, AR, AI, A, E>(
     tag: T,
     options: {
-      readonly id: Schema.Schema<IR, II, IA>
-      readonly result: Schema.Schema<AR, AI, A>
+      readonly id: Schema.Schema<IA, II, IR>
+      readonly result: Schema.Schema<A, AI, AR>
       readonly resultId: (_: AI) => IA
       readonly run: (
         requests: ReadonlyArray<II>,
-      ) => Effect.Effect<R, E, ReadonlyArray<unknown>>
+      ) => Effect.Effect<ReadonlyArray<unknown>, E, R>
     },
   ): Resolver<T, R | IR | AR, IA, Option<A>, E>
 
@@ -237,13 +237,13 @@ export interface Client extends Constructor {
   resolverIdMany<T extends string, R, IR, II, IA, AR, AI, A, E, K>(
     tag: T,
     options: {
-      readonly request: Schema.Schema<IR, II, IA>
+      readonly request: Schema.Schema<IA, II, IR>
       readonly requestId: (_: IA) => K
-      readonly result: Schema.Schema<AR, AI, A>
+      readonly result: Schema.Schema<A, AI, AR>
       readonly resultId: (_: AI) => K
       readonly run: (
         requests: ReadonlyArray<II>,
-      ) => Effect.Effect<R, E, ReadonlyArray<unknown>>
+      ) => Effect.Effect<ReadonlyArray<unknown>, E, R>
     },
   ): Resolver<T, R | IR | AR, IA, ReadonlyArray<A>, E>
 }
@@ -287,7 +287,7 @@ export const make: ({
  * @since 1.0.0
  */
 export interface Request<T extends string, I, E, A>
-  extends request.Request<SchemaError | E, A> {
+  extends request.Request<A, SchemaError | E> {
   readonly _tag: T
   readonly i0: I
 }
@@ -310,9 +310,9 @@ export interface ResolverBase<T extends string, R, I, A, E> {
   readonly makeExecute: (
     Resolver: RequestResolver.RequestResolver<any, never>,
     context?: Context<any>,
-  ) => (i0: I) => Effect.Effect<never, SchemaError | E, A>
-  readonly populateCache: (id: I, _: A) => Effect.Effect<never, never, void>
-  readonly invalidateCache: (id: I) => Effect.Effect<never, never, void>
+  ) => (i0: I) => Effect.Effect<A, SchemaError | E>
+  readonly populateCache: (id: I, _: A) => Effect.Effect<void>
+  readonly invalidateCache: (id: I) => Effect.Effect<void>
 }
 
 /**
@@ -321,7 +321,7 @@ export interface ResolverBase<T extends string, R, I, A, E> {
  */
 export interface ResolverWithExecute<T extends string, I, A, E>
   extends ResolverBase<T, never, I, A, E> {
-  readonly execute: (_: I) => Effect.Effect<never, SchemaError | E, A>
+  readonly execute: (_: I) => Effect.Effect<A, SchemaError | E>
 }
 
 /**

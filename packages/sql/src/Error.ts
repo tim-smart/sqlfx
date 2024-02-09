@@ -16,7 +16,7 @@ export type SqlFxErrorId = typeof SqlFxErrorId
 /**
  * @since 1.0.0
  */
-export interface SqlError extends Data.Case {
+export interface SqlError {
   readonly [SqlFxErrorId]: SqlFxErrorId
   readonly _tag: "SqlError"
   readonly message: string
@@ -46,7 +46,7 @@ export const SqlError = (message: string, error: unknown) =>
  * @category model
  * @since 1.0.0
  */
-export interface ResultLengthMismatch extends Data.Case {
+export interface ResultLengthMismatch {
   readonly [SqlFxErrorId]: SqlFxErrorId
   readonly _tag: "ResultLengthMismatch"
   readonly expected: number
@@ -67,7 +67,7 @@ export const ResultLengthMismatch = (expected: number, actual: number) =>
  * @category model
  * @since 1.0.0
  */
-export interface SchemaError extends Data.Case {
+export interface SchemaError {
   readonly [SqlFxErrorId]: SqlFxErrorId
   readonly _tag: "SchemaError"
   readonly type: "request" | "result"

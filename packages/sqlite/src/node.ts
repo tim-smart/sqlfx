@@ -63,7 +63,7 @@ export interface SqliteNodeConfig {
  */
 export const make = (
   options: SqliteNodeConfig,
-): Effect.Effect<Scope, never, SqliteClient> =>
+): Effect.Effect<SqliteClient, never, Scope> =>
   Effect.gen(function* (_) {
     const compiler = makeCompiler(options.transformQueryNames)
     const transformRows = Client.defaultTransforms(
@@ -138,10 +138,10 @@ export const make = (
 
       return identity<
         Connection & {
-          readonly export: Effect.Effect<never, SqlError, Uint8Array>
+          readonly export: Effect.Effect<Uint8Array, SqlError>
           readonly loadExtension: (
             path: string,
-          ) => Effect.Effect<never, SqlError, void>
+          ) => Effect.Effect<void, SqlError>
         }
       >({
         execute(statement) {
@@ -172,7 +172,7 @@ export const make = (
             catch: handleError,
           })
         },
-      })
+      });
     })
 
     const pool = yield* _(Pool.make({ acquire: makeConnection, size: 1 }))
@@ -198,6 +198,6 @@ export const make = (
  */
 export const makeLayer: (
   config: Config.Config.Wrap<SqliteNodeConfig>,
-) => Layer.Layer<never, ConfigError, SqliteClient> = (
+) => Layer.Layer<SqliteClient, ConfigError> = (
   config: Config.Config.Wrap<SqliteNodeConfig>,
 ) => Layer.scoped(tag, Effect.flatMap(Config.unwrap(config), make))

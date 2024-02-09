@@ -27,14 +27,14 @@
   "sideEffects": false,
   "dependencies": {
     "@sqlfx/sql": "workspace:^",
-    "tedious": "^16.6.1"
+    "tedious": "^16.7.0"
   },
   "devDependencies": {
-    "@effect/schema": "^0.61.7",
+    "@effect/schema": "^0.62.0",
     "@types/tedious": "^4.0.14",
-    "effect": "^2.2.5"
+    "effect": "^2.3.0"
   },
   "peerDependencies": {
-    "effect": "^2.2.0"
+    "effect": "^2.3.0"
   }
 }

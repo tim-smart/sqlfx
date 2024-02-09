@@ -66,7 +66,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: (options: MssqlClientConfig) => Effect.Effect<Scope, never, MssqlClient>
+export declare const make: (options: MssqlClientConfig) => Effect.Effect<MssqlClient, never, Scope>
 ```
 
 Added in v1.0.0
@@ -86,9 +86,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeLayer: (
-  config: Config.Config.Wrap<MssqlClientConfig>
-) => Layer.Layer<never, ConfigError, MssqlClient>
+export declare const makeLayer: (config: Config.Config.Wrap<MssqlClientConfig>) => Layer.Layer<MssqlClient, ConfigError>
 ```
 
 Added in v1.0.0
@@ -111,7 +109,7 @@ export interface MssqlClient extends Client.Client {
 
   readonly call: <I extends Record<string, Parameter<any>>, O extends Record<string, Parameter<any>>, A extends object>(
     procedure: ProcedureWithValues<I, O, A>
-  ) => Effect.Effect<never, SqlError, Procedure.Result<O, A>>
+  ) => Effect.Effect<Procedure.Result<O, A>, SqlError>
 }
 ```
 

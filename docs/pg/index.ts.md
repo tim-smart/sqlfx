@@ -66,7 +66,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: (options: PgClientConfig) => Effect.Effect<Scope, never, PgClient>
+export declare const make: (options: PgClientConfig) => Effect.Effect<PgClient, never, Scope>
 ```
 
 Added in v1.0.0
@@ -89,9 +89,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeLayer: (
-  config: Config.Config.Wrap<PgClientConfig>
-) => Layer.Layer<never, ConfigError, PgClient>
+export declare const makeLayer: (config: Config.Config.Wrap<PgClientConfig>) => Layer.Layer<PgClient, ConfigError>
 ```
 
 Added in v1.0.0

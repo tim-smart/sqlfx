@@ -1,9 +1,9 @@
-import { Tag } from "effect/Context"
+import { GenericTag } from "effect/Context"
 import * as Statement from "@sqlfx/sql/Statement"
 import type { SqliteClient } from "../Client.js"
 
 /** @internal */
-export const tag = Tag<SqliteClient>()
+export const tag = GenericTag<SqliteClient>("@services/tag")
 
 const escape = Statement.defaultEscape('"')
 

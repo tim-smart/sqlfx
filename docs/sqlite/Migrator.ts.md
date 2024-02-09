@@ -30,7 +30,7 @@ Added in v1.0.0
 ```ts
 export declare const makeLayer: (
   options: _.MigratorOptions
-) => Layer.Layer<SqliteClient, _.MigrationError | SqlError, never>
+) => Layer.Layer<never, _.MigrationError | SqlError, SqliteClient>
 ```
 
 Added in v1.0.0
@@ -42,7 +42,7 @@ Added in v1.0.0
 ```ts
 export declare const run: (
   options: _.MigratorOptions
-) => Effect.Effect<SqliteClient, SqlError | _.MigrationError, ReadonlyArray<readonly [id: number, name: string]>>
+) => Effect.Effect<ReadonlyArray<readonly [id: number, name: string]>, SqlError | _.MigrationError, SqliteClient>
 ```
 
 Added in v1.0.0

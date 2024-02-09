@@ -31,24 +31,22 @@ Added in v1.0.0
 
 ```ts
 export interface Connection {
-  readonly execute: <A extends object = Row>(
-    statement: Statement<A>
-  ) => Effect.Effect<never, SqlError, ReadonlyArray<A>>
+  readonly execute: <A extends object = Row>(statement: Statement<A>) => Effect.Effect<ReadonlyArray<A>, SqlError>
 
-  readonly executeStream: <A extends object = Row>(statement: Statement<A>) => Stream.Stream<never, SqlError, A>
+  readonly executeStream: <A extends object = Row>(statement: Statement<A>) => Stream.Stream<A, SqlError>
 
   readonly executeWithoutTransform: <A extends object = Row>(
     statement: Statement<A>
-  ) => Effect.Effect<never, SqlError, ReadonlyArray<A>>
+  ) => Effect.Effect<ReadonlyArray<A>, SqlError>
 
   readonly executeValues: <A extends object = Row>(
     statement: Statement<A>
-  ) => Effect.Effect<never, SqlError, ReadonlyArray<ReadonlyArray<Primitive>>>
+  ) => Effect.Effect<ReadonlyArray<ReadonlyArray<Primitive>>, SqlError>
 
   readonly executeRaw: <A extends object = Row>(
     sql: string,
     params?: ReadonlyArray<Primitive> | undefined
-  ) => Effect.Effect<never, SqlError, ReadonlyArray<A>>
+  ) => Effect.Effect<ReadonlyArray<A>, SqlError>
 }
 ```
 
@@ -87,7 +85,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Acquirer = Effect.Effect<Scope, SqlError, Connection>
+export type Acquirer = Effect.Effect<Connection, SqlError, Scope>
 ```
 
 Added in v1.0.0

@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "effect/Context"
+import { GenericTag } from "effect/Context"
 import * as Duration from "effect/Duration"
 import { pipe } from "effect/Function"
 import * as Config from "effect/Config"
@@ -44,7 +44,7 @@ export interface PgClient extends Client.Client {
  * @category tag
  * @since 1.0.0
  */
-export const tag = Tag<PgClient>()
+export const tag = GenericTag<PgClient>("@services/tag")
 
 /**
  * @category constructor
@@ -83,7 +83,7 @@ const escape = Statement.defaultEscape('"')
  */
 export const make = (
   options: PgClientConfig,
-): Effect.Effect<Scope, never, PgClient> =>
+): Effect.Effect<PgClient, never, Scope> =>
   Effect.gen(function* (_) {
     const compiler = makeCompiler(
       options.transformQueryNames,
@@ -142,12 +142,12 @@ export const make = (
       ) {}
 
       private run(query: PendingQuery<any> | PendingValuesQuery<any>) {
-        return Effect.async<never, SqlError, ReadonlyArray<any>>(resume => {
+        return Effect.async<ReadonlyArray<any>, SqlError>(resume => {
           query
             .then(_ => resume(Effect.succeed(_)))
             .catch(error => resume(Effect.fail(handleError(error))))
           return Effect.sync(() => query.cancel())
-        })
+        });
       }
 
       private runTransform(query: PendingQuery<any>) {
@@ -224,7 +224,7 @@ export const make = (
  */
 export const makeLayer: (
   config: Config.Config.Wrap<PgClientConfig>,
-) => Layer.Layer<never, ConfigError, PgClient> = (
+) => Layer.Layer<PgClient, ConfigError> = (
   config: Config.Config.Wrap<PgClientConfig>,
 ) => Layer.scoped(tag, Effect.flatMap(Config.unwrap(config), make))
 

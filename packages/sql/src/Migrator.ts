@@ -25,9 +25,8 @@ export interface MigratorOptions {
  * @since 1.0.0
  */
 export type Loader = Effect.Effect<
-  never,
-  MigrationError,
-  ReadonlyArray<ResolvedMigration>
+  ReadonlyArray<ResolvedMigration>,
+  MigrationError
 >
 
 /**
@@ -37,7 +36,7 @@ export type Loader = Effect.Effect<
 export type ResolvedMigration = readonly [
   id: number,
   name: string,
-  load: Effect.Effect<never, never, any>,
+  load: Effect.Effect<any>,
 ]
 
 /**
@@ -54,7 +53,7 @@ export interface Migration {
  * @category errors
  * @since 1.0.0
  */
-export interface MigrationError extends Data.Case {
+export interface MigrationError {
   readonly _tag: "MigrationError"
   readonly reason:
     | "bad-state"
@@ -87,18 +86,18 @@ export const make =
       sql: R,
       path: string,
       migrationsTable: string,
-    ) => Effect.Effect<never, MigrationError, void>
-    ensureTable: (sql: R, table: string) => Effect.Effect<never, SqlError, void>
-    lockTable?: (sql: R, table: string) => Effect.Effect<never, SqlError, void>
+    ) => Effect.Effect<void, MigrationError>
+    ensureTable: (sql: R, table: string) => Effect.Effect<void, SqlError>
+    lockTable?: (sql: R, table: string) => Effect.Effect<void, SqlError>
   }) =>
   ({
     loader,
     schemaDirectory,
     table = "sqlfx_migrations",
   }: MigratorOptions): Effect.Effect<
-    R,
+    ReadonlyArray<readonly [id: number, name: string]>,
     MigrationError | SqlError,
-    ReadonlyArray<readonly [id: number, name: string]>
+    R
   > =>
     Effect.gen(function* (_) {
       const sql = yield* _(getClient)
@@ -154,8 +153,7 @@ export const make =
                   ),
           ),
           Effect.filterOrFail(
-            (_): _ is Effect.Effect<never, never, unknown> =>
-              Effect.isEffect(_),
+            (_): _ is Effect.Effect<unknown> => Effect.isEffect(_),
             () =>
               MigrationError({
                 reason: "import-error",
@@ -167,7 +165,7 @@ export const make =
       const runMigration = (
         id: number,
         name: string,
-        effect: Effect.Effect<never, never, unknown>,
+        effect: Effect.Effect<unknown>,
       ) =>
         Effect.orDieWith(effect, _ =>
           MigrationError({

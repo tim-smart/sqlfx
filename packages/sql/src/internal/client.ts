@@ -1,5 +1,5 @@
 import * as Context from "effect/Context"
-import { Tag } from "effect/Context"
+import { GenericTag } from "effect/Context"
 import { pipe } from "effect/Function"
 import * as MutableMap from "effect/MutableHashMap"
 import * as Option from "effect/Option"
@@ -18,8 +18,9 @@ import * as SqlSchema from "../Schema.js"
 import * as Statement from "../Statement.js"
 
 /** @internal */
-export const TransactionConn =
-  Tag<readonly [conn: Connection, counter: number]>()
+export const TransactionConn = GenericTag<
+  readonly [conn: Connection, counter: number]
+>("@services/TransactionConn")
 
 /** @internal */
 export function make({
@@ -40,8 +41,8 @@ export function make({
     }),
   )
   const withTransaction = <R, E, A>(
-    effect: Effect.Effect<R, E, A>,
-  ): Effect.Effect<R, E | SqlError, A> =>
+    effect: Effect.Effect<A, E, R>,
+  ): Effect.Effect<A, E | SqlError, R> =>
     Effect.scoped(
       Effect.acquireUseRelease(
         pipe(
@@ -74,9 +75,9 @@ export function make({
     )
 
   function schema<IR, II, IA, AR, AI, A, R, E>(
-    requestSchema: Schema.Schema<IR, II, IA>,
-    resultSchema: Schema.Schema<AR, AI, A>,
-    run: (_: II) => Effect.Effect<IR | AR | R, E, ReadonlyArray<unknown>>,
+    requestSchema: Schema.Schema<IA, II, IR>,
+    resultSchema: Schema.Schema<A, AI, AR>,
+    run: (_: II) => Effect.Effect<ReadonlyArray<unknown>, E, IR | AR | R>,
   ) {
     const decodeResult = SqlSchema.decodeUnknown(
       Schema.array(resultSchema),
@@ -86,28 +87,28 @@ export function make({
 
     return (
       _: IA,
-    ): Effect.Effect<IR | AR | R, SchemaError | E, ReadonlyArray<A>> =>
+    ): Effect.Effect<ReadonlyArray<A>, SchemaError | E, IR | AR | R> =>
       pipe(encodeRequest(_), Effect.flatMap(run), Effect.flatMap(decodeResult))
   }
 
   function schemaVoid<IR, II, IA, R, E>(
-    requestSchema: Schema.Schema<IR, II, IA>,
-    run: (_: II) => Effect.Effect<R, E, unknown>,
+    requestSchema: Schema.Schema<IA, II, IR>,
+    run: (_: II) => Effect.Effect<unknown, E, R>,
   ) {
     const encodeRequest = SqlSchema.encode(requestSchema, "request")
-    return (_: IA): Effect.Effect<IR | R, SchemaError | E, void> =>
+    return (_: IA): Effect.Effect<void, SchemaError | E, IR | R> =>
       Effect.asUnit(Effect.flatMap(encodeRequest(_), run))
   }
 
   function schemaSingle<IR, II, IA, AR, AI, A, R, E>(
-    requestSchema: Schema.Schema<IR, II, IA>,
-    resultSchema: Schema.Schema<AR, AI, A>,
-    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<unknown>>,
+    requestSchema: Schema.Schema<IA, II, IR>,
+    resultSchema: Schema.Schema<A, AI, AR>,
+    run: (_: II) => Effect.Effect<ReadonlyArray<unknown>, E, R>,
   ) {
     const decodeResult = SqlSchema.decodeUnknown(resultSchema, "result")
     const encodeRequest = SqlSchema.encode(requestSchema, "request")
 
-    return (_: IA): Effect.Effect<IR | AR | R, SchemaError | E, A> =>
+    return (_: IA): Effect.Effect<A, SchemaError | E, IR | AR | R> =>
       pipe(
         encodeRequest(_),
         Effect.flatMap(run),
@@ -117,16 +118,16 @@ export function make({
   }
 
   function schemaSingleOption<IR, II, IA, AR, AI, A, R, E>(
-    requestSchema: Schema.Schema<IR, II, IA>,
-    resultSchema: Schema.Schema<AR, AI, A>,
-    run: (_: II) => Effect.Effect<R, E, ReadonlyArray<unknown>>,
+    requestSchema: Schema.Schema<IA, II, IR>,
+    resultSchema: Schema.Schema<A, AI, AR>,
+    run: (_: II) => Effect.Effect<ReadonlyArray<unknown>, E, R>,
   ) {
     const decodeResult = SqlSchema.decodeUnknown(resultSchema, "result")
     const encodeRequest = SqlSchema.encode(requestSchema, "request")
 
     return (
       _: IA,
-    ): Effect.Effect<IR | AR | R, SchemaError | E, Option.Option<A>> =>
+    ): Effect.Effect<Option.Option<A>, SchemaError | E, IR | AR | R> =>
       pipe(
         encodeRequest(_),
         Effect.flatMap(run),
@@ -143,7 +144,7 @@ export function make({
   const makeExecuteRequest =
     <E, A, RA>(
       Request: request.Request.Constructor<
-        request.Request<SchemaError | E, A> & { i0: RA }
+        request.Request<A, SchemaError | E> & { i0: RA }
       >,
     ) =>
     (
@@ -170,7 +171,7 @@ export function make({
   const makePopulateCache =
     <E, A, RA>(
       Request: request.Request.Constructor<
-        request.Request<SchemaError | E, A> & { i0: RA }
+        request.Request<A, SchemaError | E> & { i0: RA }
       >,
     ) =>
     (id: RA, _: A) =>
@@ -179,7 +180,7 @@ export function make({
   const makeInvalidateCache =
     <E, A, RA>(
       Request: request.Request.Constructor<
-        request.Request<SchemaError | E, A> & { i0: RA }
+        request.Request<A, SchemaError | E> & { i0: RA }
       >,
     ) =>
     (id: RA) =>
@@ -190,9 +191,9 @@ export function make({
   function resolverSingleOption<T extends string, R, IR, II, IA, AR, AI, A, E>(
     tag: T,
     options: {
-      readonly request: Schema.Schema<IR, II, IA>
-      readonly result: Schema.Schema<AR, AI, A>
-      readonly run: (request: II) => Effect.Effect<R, E, ReadonlyArray<unknown>>
+      readonly request: Schema.Schema<IA, II, IR>
+      readonly result: Schema.Schema<A, AI, AR>
+      readonly run: (request: II) => Effect.Effect<ReadonlyArray<unknown>, E, R>
     },
   ): Resolver<T, R | IR | AR, IA, Option.Option<A>, E> {
     const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
@@ -231,9 +232,9 @@ export function make({
   function resolverSingle<T extends string, R, IR, II, IA, AR, AI, A, E>(
     tag: T,
     options: {
-      readonly request: Schema.Schema<IR, II, IA>
-      readonly result: Schema.Schema<AR, AI, A>
-      readonly run: (request: II) => Effect.Effect<R, E, ReadonlyArray<unknown>>
+      readonly request: Schema.Schema<IA, II, IR>
+      readonly result: Schema.Schema<A, AI, AR>
+      readonly run: (request: II) => Effect.Effect<ReadonlyArray<unknown>, E, R>
     },
   ): Resolver<T, R | IR | AR, IA, A, E> {
     const Request = request.tagged<Request<T, IA, E, A>>(tag)
@@ -266,10 +267,10 @@ export function make({
   function resolverVoid<T extends string, R, IR, II, IA, E>(
     tag: T,
     options: {
-      readonly request: Schema.Schema<IR, II, IA>
+      readonly request: Schema.Schema<IA, II, IR>
       readonly run: (
         requests: ReadonlyArray<II>,
-      ) => Effect.Effect<R, E, unknown>
+      ) => Effect.Effect<unknown, E, R>
     },
   ): Resolver<T, R | IR, IA, void, E> {
     const Request = request.tagged<Request<T, IA, E, void>>(tag)
@@ -314,11 +315,11 @@ export function make({
   function resolver<T extends string, R, IR, II, IA, AR, AI, A, E>(
     tag: T,
     options: {
-      readonly request: Schema.Schema<IR, II, IA>
-      readonly result: Schema.Schema<AR, AI, A>
+      readonly request: Schema.Schema<IA, II, IR>
+      readonly result: Schema.Schema<A, AI, AR>
       readonly run: (
         requests: ReadonlyArray<II>,
-      ) => Effect.Effect<R, E, ReadonlyArray<unknown>>
+      ) => Effect.Effect<ReadonlyArray<unknown>, E, R>
     },
   ): Resolver<T, R | IR | AR, IA, A, E | ResultLengthMismatch> {
     const Request =
@@ -375,13 +376,13 @@ export function make({
   function resolverIdMany<T extends string, R, IR, II, IA, AR, AI, A, E, K>(
     tag: T,
     options: {
-      readonly request: Schema.Schema<IR, II, IA>
-      readonly result: Schema.Schema<AR, AI, A>
+      readonly request: Schema.Schema<IA, II, IR>
+      readonly result: Schema.Schema<A, AI, AR>
       readonly requestId: (_: IA) => K
       readonly resultId: (_: AI) => K
       readonly run: (
         requests: ReadonlyArray<II>,
-      ) => Effect.Effect<R, E, ReadonlyArray<unknown>>
+      ) => Effect.Effect<ReadonlyArray<unknown>, E, R>
     },
   ): Resolver<T, R | IR | AR, IA, ReadonlyArray<A>, E> {
     const Request = request.tagged<Request<T, IA, E, ReadonlyArray<A>>>(tag)
@@ -474,12 +475,12 @@ export function make({
   function resolverId<T extends string, R, IR, II, IA, AR, AI, A, E>(
     tag: T,
     options: {
-      readonly id: Schema.Schema<IR, II, IA>
-      readonly result: Schema.Schema<AR, AI, A>
+      readonly id: Schema.Schema<IA, II, IR>
+      readonly result: Schema.Schema<A, AI, AR>
       readonly resultId: (_: AI) => IA
       readonly run: (
         requests: ReadonlyArray<II>,
-      ) => Effect.Effect<R, E, ReadonlyArray<AI>>
+      ) => Effect.Effect<ReadonlyArray<AI>, E, R>
     },
   ): Resolver<T, R | IR | AR, IA, Option.Option<A>, E> {
     const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)

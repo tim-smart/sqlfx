@@ -51,7 +51,7 @@ export function isCustom<A extends Custom<any, any, any, any>>(
 
 /** @internal */
 export class StatementPrimitive<A>
-  extends Effectable.Class<never, SqlError, ReadonlyArray<A>>
+  extends Effectable.Class<ReadonlyArray<A>, SqlError>
   implements Statement<A>
 {
   get [FragmentId]() {
@@ -66,22 +66,21 @@ export class StatementPrimitive<A>
     super()
   }
 
-  get withoutTransform(): Effect.Effect<never, SqlError, ReadonlyArray<A>> {
+  get withoutTransform(): Effect.Effect<ReadonlyArray<A>, SqlError> {
     return Effect.scoped(
       Effect.flatMap(this.acquirer, _ => _.executeWithoutTransform<any>(this)),
     )
   }
 
-  get stream(): Stream.Stream<never, SqlError, A> {
+  get stream(): Stream.Stream<A, SqlError> {
     return Stream.unwrapScoped(
       Effect.map(this.acquirer, _ => _.executeStream<any>(this)),
     )
   }
 
   get values(): Effect.Effect<
-    never,
-    SqlError,
-    ReadonlyArray<ReadonlyArray<Primitive>>
+    ReadonlyArray<ReadonlyArray<Primitive>>,
+    SqlError
   > {
     return Effect.scoped(
       Effect.flatMap(this.acquirer, _ => _.executeValues<any>(this)),
@@ -91,7 +90,7 @@ export class StatementPrimitive<A>
   compile() {
     return this.compiler.compile(this)
   }
-  commit(): Effect.Effect<never, SqlError, ReadonlyArray<A>> {
+  commit(): Effect.Effect<ReadonlyArray<A>, SqlError> {
     return Effect.scoped(
       Effect.flatMap(this.acquirer, _ => _.execute(this as any) as any),
     )

@@ -54,7 +54,7 @@ export interface SqliteExpoClientConfig {
  */
 export const make = (
   options: SqliteExpoClientConfig,
-): Effect.Effect<Scope, never, SqliteClient> =>
+): Effect.Effect<SqliteClient, never, Scope> =>
   Effect.gen(function* (_) {
     const compiler = makeCompiler(options.transformQueryNames)
     const transformRows = Client.defaultTransforms(

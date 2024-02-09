@@ -42,14 +42,14 @@ export declare const make: <R extends Client>({
   lockTable
 }: {
   getClient: Effect.Effect<R, SqlError, R>
-  dumpSchema: (sql: R, path: string, migrationsTable: string) => Effect.Effect<never, MigrationError, void>
-  ensureTable: (sql: R, table: string) => Effect.Effect<never, SqlError, void>
-  lockTable?: ((sql: R, table: string) => Effect.Effect<never, SqlError, void>) | undefined
+  dumpSchema: (sql: R, path: string, migrationsTable: string) => Effect.Effect<void, MigrationError>
+  ensureTable: (sql: R, table: string) => Effect.Effect<void, SqlError>
+  lockTable?: ((sql: R, table: string) => Effect.Effect<void, SqlError>) | undefined
 }) => ({
   loader,
   schemaDirectory,
   table
-}: MigratorOptions) => Effect.Effect<R, SqlError | MigrationError, readonly (readonly [id: number, name: string])[]>
+}: MigratorOptions) => Effect.Effect<readonly (readonly [id: number, name: string])[], SqlError | MigrationError, R>
 ```
 
 Added in v1.0.0
@@ -71,7 +71,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface MigrationError extends Data.Case {
+export interface MigrationError {
   readonly _tag: "MigrationError"
   readonly reason: "bad-state" | "import-error" | "failed" | "duplicates" | "locked"
   readonly message: string
@@ -87,7 +87,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type Loader = Effect.Effect<never, MigrationError, ReadonlyArray<ResolvedMigration>>
+export type Loader = Effect.Effect<ReadonlyArray<ResolvedMigration>, MigrationError>
 ```
 
 Added in v1.0.0
@@ -125,7 +125,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type ResolvedMigration = readonly [id: number, name: string, load: Effect.Effect<never, never, any>]
+export type ResolvedMigration = readonly [id: number, name: string, load: Effect.Effect<any>]
 ```
 
 Added in v1.0.0

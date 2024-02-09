@@ -2,7 +2,7 @@
  * @since 1.0.0
  */
 import * as Chunk from "effect/Chunk"
-import { Tag } from "effect/Context"
+import { GenericTag } from "effect/Context"
 import * as Duration from "effect/Duration"
 import * as Config from "effect/Config"
 import type { ConfigError } from "effect/ConfigError"
@@ -41,7 +41,7 @@ export interface MysqlClient extends Client.Client {
  * @category tag
  * @since 1.0.0
  */
-export const tag = Tag<MysqlClient>()
+export const tag = GenericTag<MysqlClient>("@services/tag")
 
 /**
  * @category constructor
@@ -76,7 +76,7 @@ const escape = Statement.defaultEscape("`")
  */
 export const make = (
   options: MysqlClientConfig,
-): Effect.Effect<Scope, never, MysqlClient> =>
+): Effect.Effect<MysqlClient, never, Scope> =>
   Effect.gen(function* (_) {
     const compiler = makeCompiler(options.transformQueryNames)
 
@@ -193,7 +193,7 @@ export const make = (
  */
 export const makeLayer: (
   config: Config.Config.Wrap<MysqlClientConfig>,
-) => Layer.Layer<never, ConfigError, MysqlClient> = (
+) => Layer.Layer<MysqlClient, ConfigError> = (
   config: Config.Config.Wrap<MysqlClientConfig>,
 ) => Layer.scoped(tag, Effect.flatMap(Config.unwrap(config), make))
 

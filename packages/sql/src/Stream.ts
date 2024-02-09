@@ -17,15 +17,15 @@ export const asyncPauseResume = <R, E, A>(
     readonly fail: (error: E) => void
     readonly end: () => void
   }) => {
-    readonly onInterrupt: Effect.Effect<R, never, void>
-    readonly onPause: Effect.Effect<never, never, void>
-    readonly onResume: Effect.Effect<never, never, void>
+    readonly onInterrupt: Effect.Effect<void, never, R>
+    readonly onPause: Effect.Effect<void>
+    readonly onResume: Effect.Effect<void>
   },
   bufferSize = 16,
-): Stream.Stream<R, E, A> =>
+): Stream.Stream<A, E, R> =>
   Effect.all([
     Effect.acquireRelease(Queue.bounded<A>(bufferSize), Queue.shutdown),
-    Deferred.make<Option.Option<E>, never>(),
+    Deferred.make<never, Option.Option<E>>(),
     Effect.runtime<never>(),
   ]).pipe(
     Effect.flatMap(([queue, deferred, runtime]) => {
@@ -35,14 +35,14 @@ export const asyncPauseResume = <R, E, A>(
       )
       const take = Queue.takeBetween(queue, 1, bufferSize)
 
-      return Effect.async<R, Option.Option<E>, never>(cb => {
+      return Effect.async<never, Option.Option<E>, R>(cb => {
         const runFork = Runtime.runFork(runtime)
 
         // eslint-disable-next-line prefer-const
         let effects: {
-          readonly onInterrupt: Effect.Effect<R, never, void>
-          readonly onPause: Effect.Effect<never, never, void>
-          readonly onResume: Effect.Effect<never, never, void>
+          readonly onInterrupt: Effect.Effect<void, never, R>
+          readonly onPause: Effect.Effect<void>
+          readonly onResume: Effect.Effect<void>
         }
 
         const offer = (row: A) =>
@@ -69,7 +69,7 @@ export const asyncPauseResume = <R, E, A>(
             ),
           ),
         ),
-      )
+      );
     }),
     Stream.unwrapScoped,
   )

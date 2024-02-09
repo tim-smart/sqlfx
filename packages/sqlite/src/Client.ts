@@ -24,8 +24,8 @@ export {
  */
 export interface SqliteClient extends Client.Client {
   readonly config: unknown
-  readonly export: Effect.Effect<never, SqlError, Uint8Array>
-  readonly loadExtension: (path: string) => Effect.Effect<never, SqlError, void>
+  readonly export: Effect.Effect<Uint8Array, SqlError>
+  readonly loadExtension: (path: string) => Effect.Effect<void, SqlError>
 }
 
 /**

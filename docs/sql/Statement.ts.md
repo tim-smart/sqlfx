@@ -441,10 +441,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export interface Statement<A> extends Fragment, Equal, Effect<never, SqlError, ReadonlyArray<A>>, Pipeable {
-  readonly withoutTransform: Effect<never, SqlError, ReadonlyArray<A>>
-  readonly stream: Stream.Stream<never, SqlError, A>
-  readonly values: Effect<never, SqlError, ReadonlyArray<ReadonlyArray<Primitive>>>
+export interface Statement<A> extends Fragment, Effect<ReadonlyArray<A>, SqlError>, Pipeable {
+  readonly withoutTransform: Effect<ReadonlyArray<A>, SqlError>
+  readonly stream: Stream.Stream<A, SqlError>
+  readonly values: Effect<ReadonlyArray<ReadonlyArray<Primitive>>, SqlError>
   readonly compile: () => readonly [sql: string, params: ReadonlyArray<Primitive>]
 }
 ```

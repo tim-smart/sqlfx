@@ -66,7 +66,7 @@ export const asyncQuery: FiberRef.FiberRef<boolean> = globalValue(
  * @category fiber refs
  * @since 1.0.0
  */
-export const withAsyncQuery = <R, E, A>(effect: Effect.Effect<R, E, A>) =>
+export const withAsyncQuery = <R, E, A>(effect: Effect.Effect<A, E, R>) =>
   Effect.locally(effect, asyncQuery, true)
 
 /**
@@ -75,7 +75,7 @@ export const withAsyncQuery = <R, E, A>(effect: Effect.Effect<R, E, A>) =>
  */
 export const make = (
   options: SqliteRNClientConfig,
-): Effect.Effect<Scope, never, SqliteClient> =>
+): Effect.Effect<SqliteClient, never, Scope> =>
   Effect.gen(function* (_) {
     const compiler = makeCompiler(options.transformQueryNames)
     const transformRows = Client.defaultTransforms(
@@ -117,7 +117,7 @@ export const make = (
 
       return identity<
         Connection & {
-          readonly export: Effect.Effect<never, SqlError, Uint8Array>
+          readonly export: Effect.Effect<Uint8Array, SqlError>
         }
       >({
         execute(statement) {
@@ -145,7 +145,7 @@ export const make = (
           return Effect.dieMessage("executeStream not implemented")
         },
         export: Effect.dieMessage("export not implemented"),
-      })
+      });
     })
 
     const pool = yield* _(Pool.make({ acquire: makeConnection, size: 1 }))

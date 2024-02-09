@@ -41,9 +41,9 @@ export {
 export const run: (
   options: _.MigratorOptions,
 ) => Effect.Effect<
-  Sql.MysqlClient,
+  ReadonlyArray<readonly [id: number, name: string]>,
   SqlError | _.MigrationError,
-  ReadonlyArray<readonly [id: number, name: string]>
+  Sql.MysqlClient
 > = _.make({
   getClient: Sql.tag,
   ensureTable(sql, table) {
@@ -59,7 +59,7 @@ export const run: (
   dumpSchema(sql, path, table) {
     const mysqlDump = (args: Array<string>) =>
       Effect.map(
-        Effect.async<never, _.MigrationError, string>(resume => {
+        Effect.async<string, _.MigrationError>(resume => {
           execFile(
             "mysqldump",
             [
@@ -130,5 +130,5 @@ export const run: (
  */
 export const makeLayer = (
   options: _.MigratorOptions,
-): Layer.Layer<Sql.MysqlClient, _.MigrationError | SqlError, never> =>
+): Layer.Layer<never, _.MigrationError | SqlError, Sql.MysqlClient> =>
   Layer.effectDiscard(run(options))

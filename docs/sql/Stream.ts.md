@@ -30,12 +30,12 @@ export declare const asyncPauseResume: <R, E, A>(
     readonly fail: (error: E) => void
     readonly end: () => void
   }) => {
-    readonly onInterrupt: Effect.Effect<R, never, void>
-    readonly onPause: Effect.Effect<never, never, void>
-    readonly onResume: Effect.Effect<never, never, void>
+    readonly onInterrupt: Effect.Effect<void, never, R>
+    readonly onPause: Effect.Effect<void>
+    readonly onResume: Effect.Effect<void>
   },
   bufferSize?: number
-) => Stream.Stream<R, E, A>
+) => Stream.Stream<A, E, R>
 ```
 
 Added in v1.0.0

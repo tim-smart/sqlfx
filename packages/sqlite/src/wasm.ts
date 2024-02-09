@@ -71,7 +71,7 @@ const initEffect = Effect.runSync(
  */
 export const make = (
   options: SqliteWasmClientConfig,
-): Effect.Effect<Scope, never, SqliteClient> =>
+): Effect.Effect<SqliteClient, never, Scope> =>
   Effect.gen(function* (_) {
     const compiler = makeCompiler(options.transformQueryNames)
     const transformRows = Client.defaultTransforms(
@@ -121,7 +121,7 @@ export const make = (
 
       return identity<
         Connection & {
-          readonly export: Effect.Effect<never, SqlError, Uint8Array>
+          readonly export: Effect.Effect<Uint8Array, SqlError>
         }
       >({
         execute(statement) {
@@ -146,7 +146,7 @@ export const make = (
           try: () => sqlite3.capi.sqlite3_js_db_export(db.pointer),
           catch: handleError,
         }),
-      })
+      });
     })
 
     const pool = yield* _(Pool.make({ acquire: makeConnection, size: 1 }))

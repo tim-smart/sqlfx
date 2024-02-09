@@ -1,7 +1,6 @@
 /**
  * @since 1.0.0
  */
-import type { Equal } from "effect/Equal"
 import type { Pipeable } from "effect/Pipeable"
 import type { Effect } from "effect/Effect"
 import type * as Stream from "effect/Stream"
@@ -36,16 +35,11 @@ export interface Fragment {
  */
 export interface Statement<A>
   extends Fragment,
-    Equal,
-    Effect<never, SqlError, ReadonlyArray<A>>,
+    Effect<ReadonlyArray<A>, SqlError>,
     Pipeable {
-  readonly withoutTransform: Effect<never, SqlError, ReadonlyArray<A>>
-  readonly stream: Stream.Stream<never, SqlError, A>
-  readonly values: Effect<
-    never,
-    SqlError,
-    ReadonlyArray<ReadonlyArray<Primitive>>
-  >
+  readonly withoutTransform: Effect<ReadonlyArray<A>, SqlError>
+  readonly stream: Stream.Stream<A, SqlError>
+  readonly values: Effect<ReadonlyArray<ReadonlyArray<Primitive>>, SqlError>
   readonly compile: () => readonly [
     sql: string,
     params: ReadonlyArray<Primitive>,

@@ -62,7 +62,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: (options: MysqlClientConfig) => Effect.Effect<Scope, never, MysqlClient>
+export declare const make: (options: MysqlClientConfig) => Effect.Effect<MysqlClient, never, Scope>
 ```
 
 Added in v1.0.0
@@ -82,9 +82,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeLayer: (
-  config: Config.Config.Wrap<MysqlClientConfig>
-) => Layer.Layer<never, ConfigError, MysqlClient>
+export declare const makeLayer: (config: Config.Config.Wrap<MysqlClientConfig>) => Layer.Layer<MysqlClient, ConfigError>
 ```
 
 Added in v1.0.0

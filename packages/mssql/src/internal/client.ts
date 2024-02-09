@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-extra-semi */
-import { Tag } from "effect/Context"
+import { GenericTag, type Tag } from "effect/Context"
 import * as Duration from "effect/Duration"
 import { identity, pipe } from "effect/Function"
 import * as Option from "effect/Option"
@@ -23,17 +23,17 @@ import * as transform from "@sqlfx/sql/Transform"
 import * as Tedious from "tedious"
 
 /** @internal */
-export const tag = Tag<MssqlClient>()
+export const tag = GenericTag<MssqlClient>("@services/tag")
 
 interface MssqlConnection extends Connection {
   readonly call: (
     procedure: ProcedureWithValues<any, any, any>,
-  ) => Effect.Effect<never, SqlError, any>
+  ) => Effect.Effect<any, SqlError>
 
-  readonly begin: Effect.Effect<never, SqlError, void>
-  readonly commit: Effect.Effect<never, SqlError, void>
-  readonly savepoint: (name: string) => Effect.Effect<never, SqlError, void>
-  readonly rollback: (name?: string) => Effect.Effect<never, SqlError, void>
+  readonly begin: Effect.Effect<void, SqlError>
+  readonly commit: Effect.Effect<void, SqlError>
+  readonly savepoint: (name: string) => Effect.Effect<void, SqlError>
+  readonly rollback: (name?: string) => Effect.Effect<void, SqlError>
 }
 
 const TransactionConn = Client.TransactionConnection as unknown as Tag<
@@ -44,7 +44,7 @@ const TransactionConn = Client.TransactionConnection as unknown as Tag<
 /** @internal */
 export const make = (
   options: MssqlClientConfig,
-): Effect.Effect<Scope, never, MssqlClient> =>
+): Effect.Effect<MssqlClient, never, Scope> =>
   Effect.gen(function* (_) {
     const parameterTypes = options.parameterTypes ?? defaultParameterTypes
     const compiler = makeCompiler(options.transformQueryNames)
@@ -54,7 +54,7 @@ export const make = (
     ).array
 
     // eslint-disable-next-line prefer-const
-    let pool: Pool.Pool<SqlError, MssqlConnection>
+    let pool: Pool.Pool<MssqlConnection, SqlError>
 
     const makeConnection = Effect.gen(function* (_) {
       const conn = new Tedious.Connection({
@@ -86,7 +86,7 @@ export const make = (
       yield* _(Effect.addFinalizer(() => Effect.sync(() => conn.close())))
 
       yield* _(
-        Effect.async<never, SqlError, void>(resume => {
+        Effect.async<void, SqlError>(resume => {
           conn.connect(err => {
             if (err) {
               resume(Effect.fail(SqlError(err.message, err)))
@@ -103,7 +103,7 @@ export const make = (
         transform = true,
         rowsAsArray = false,
       ) =>
-        Effect.async<never, SqlError, any>(resume => {
+        Effect.async<any, SqlError>(resume => {
           const req = new Tedious.Request(sql, (error, _rowCount, result) => {
             if (error) {
               resume(Effect.fail(SqlError(error.message, error)))
@@ -143,7 +143,7 @@ export const make = (
         })
 
       const runProcedure = (procedure: ProcedureWithValues<any, any, any>) =>
-        Effect.async<never, SqlError, any>(resume => {
+        Effect.async<any, SqlError>(resume => {
           const result: Record<string, any> = {}
 
           const req = new Tedious.Request(
@@ -207,7 +207,7 @@ export const make = (
         call: procedure => {
           return runProcedure(procedure)
         },
-        begin: Effect.async<never, SqlError, void>(resume => {
+        begin: Effect.async<void, SqlError>(resume => {
           conn.beginTransaction(err => {
             if (err) {
               resume(Effect.fail(SqlError(err.message, err)))
@@ -216,7 +216,7 @@ export const make = (
             }
           })
         }),
-        commit: Effect.async<never, SqlError, void>(resume => {
+        commit: Effect.async<void, SqlError>(resume => {
           conn.commitTransaction(err => {
             if (err) {
               resume(Effect.fail(SqlError(err.message, err)))
@@ -226,7 +226,7 @@ export const make = (
           })
         }),
         savepoint: (name: string) =>
-          Effect.async<never, SqlError, void>(resume => {
+          Effect.async<void, SqlError>(resume => {
             // eslint-disable-next-line no-extra-semi
             ;(conn.saveTransaction as any)((err: Error) => {
               if (err) {
@@ -237,7 +237,7 @@ export const make = (
             }, name)
           }),
         rollback: (name?: string) =>
-          Effect.async<never, SqlError, void>(resume => {
+          Effect.async<void, SqlError>(resume => {
             ;(conn.rollbackTransaction as any)((err: Error) => {
               if (err) {
                 resume(Effect.fail(SqlError(err.message, err)))
@@ -249,7 +249,7 @@ export const make = (
       })
 
       yield* _(
-        Effect.async<never, unknown, never>(resume => {
+        Effect.async<never, unknown>(resume => {
           conn.on("error", _ => resume(Effect.fail(_)))
         }),
         Effect.catchAll(() => Pool.invalidate(pool, connection)),
@@ -270,8 +270,8 @@ export const make = (
     )
 
     const withTransaction = <R, E, A>(
-      effect: Effect.Effect<R, E, A>,
-    ): Effect.Effect<R, E | SqlError, A> =>
+      effect: Effect.Effect<A, E, R>,
+    ): Effect.Effect<A, E | SqlError, R> =>
       Effect.scoped(
         Effect.acquireUseRelease(
           pipe(
@@ -329,7 +329,7 @@ export const make = (
 /** @internal */
 export const makeLayer: (
   config: Config.Config.Wrap<MssqlClientConfig>,
-) => Layer.Layer<never, ConfigError, MssqlClient> = (
+) => Layer.Layer<MssqlClient, ConfigError> = (
   config: Config.Config.Wrap<MssqlClientConfig>,
 ) => Layer.scoped(tag, Effect.flatMap(Config.unwrap(config), make))
 

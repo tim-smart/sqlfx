@@ -31,7 +31,7 @@ Added in v1.0.0
 ```ts
 export declare const makeLayer: (
   options: _.MigratorOptions
-) => Layer.Layer<Pg.PgClient, _.MigrationError | SqlError, never>
+) => Layer.Layer<never, _.MigrationError | SqlError, Pg.PgClient>
 ```
 
 Added in v1.0.0
@@ -43,7 +43,7 @@ Added in v1.0.0
 ```ts
 export declare const run: (
   options: _.MigratorOptions
-) => Effect.Effect<Pg.PgClient, SqlError | _.MigrationError, ReadonlyArray<readonly [id: number, name: string]>>
+) => Effect.Effect<ReadonlyArray<readonly [id: number, name: string]>, SqlError | _.MigrationError, Pg.PgClient>
 ```
 
 Added in v1.0.0

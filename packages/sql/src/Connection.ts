@@ -1,7 +1,7 @@
 /**
  * @since 1.0.0
  */
-import { Tag } from "effect/Context"
+import { GenericTag } from "effect/Context"
 import type * as Effect from "effect/Effect"
 import type { Scope } from "effect/Scope"
 import type * as Stream from "effect/Stream"
@@ -15,24 +15,24 @@ import type { Primitive, Statement } from "./Statement.js"
 export interface Connection {
   readonly execute: <A extends object = Row>(
     statement: Statement<A>,
-  ) => Effect.Effect<never, SqlError, ReadonlyArray<A>>
+  ) => Effect.Effect<ReadonlyArray<A>, SqlError>
 
   readonly executeStream: <A extends object = Row>(
     statement: Statement<A>,
-  ) => Stream.Stream<never, SqlError, A>
+  ) => Stream.Stream<A, SqlError>
 
   readonly executeWithoutTransform: <A extends object = Row>(
     statement: Statement<A>,
-  ) => Effect.Effect<never, SqlError, ReadonlyArray<A>>
+  ) => Effect.Effect<ReadonlyArray<A>, SqlError>
 
   readonly executeValues: <A extends object = Row>(
     statement: Statement<A>,
-  ) => Effect.Effect<never, SqlError, ReadonlyArray<ReadonlyArray<Primitive>>>
+  ) => Effect.Effect<ReadonlyArray<ReadonlyArray<Primitive>>, SqlError>
 
   readonly executeRaw: <A extends object = Row>(
     sql: string,
     params?: ReadonlyArray<Primitive> | undefined,
-  ) => Effect.Effect<never, SqlError, ReadonlyArray<A>>
+  ) => Effect.Effect<ReadonlyArray<A>, SqlError>
 }
 
 /**
@@ -43,14 +43,14 @@ export namespace Connection {
    * @category model
    * @since 1.0.0
    */
-  export type Acquirer = Effect.Effect<Scope, SqlError, Connection>
+  export type Acquirer = Effect.Effect<Connection, SqlError, Scope>
 }
 
 /**
  * @category tag
  * @since 1.0.0
  */
-export const Connection = Tag<Connection>()
+export const Connection = GenericTag<Connection>("@services/Connection")
 
 /**
  * @category model

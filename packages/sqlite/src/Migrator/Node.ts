@@ -39,9 +39,9 @@ export {
 export const run: (
   options: _.MigratorOptions,
 ) => Effect.Effect<
-  SqliteClient,
+  ReadonlyArray<readonly [id: number, name: string]>,
   SqlError | _.MigrationError,
-  ReadonlyArray<readonly [id: number, name: string]>
+  SqliteClient
 > = _.make({
   getClient: internal.tag,
   ensureTable(sql, table) {
@@ -57,7 +57,7 @@ export const run: (
     Effect.gen(function* ($) {
       const sqliteDump = (args: Array<string>) =>
         Effect.map(
-          Effect.async<never, _.MigrationError, string>(resume => {
+          Effect.async<string, _.MigrationError>(resume => {
             execFile(
               "sqlite3",
               [(sql.config as SqliteNodeConfig).filename, ...args],
@@ -116,5 +116,5 @@ export const run: (
  */
 export const makeLayer = (
   options: _.MigratorOptions,
-): Layer.Layer<SqliteClient, _.MigrationError | SqlError, never> =>
+): Layer.Layer<never, _.MigrationError | SqlError, SqliteClient> =>
   Layer.effectDiscard(run(options))

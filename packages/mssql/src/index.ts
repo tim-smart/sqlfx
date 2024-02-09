@@ -54,7 +54,7 @@ export interface MssqlClient extends Client.Client {
     A extends object,
   >(
     procedure: ProcedureWithValues<I, O, A>,
-  ) => Effect.Effect<never, SqlError, Procedure.Result<O, A>>
+  ) => Effect.Effect<Procedure.Result<O, A>, SqlError>
 }
 
 /**
@@ -96,7 +96,7 @@ export interface MssqlClientConfig {
  */
 export const make: (
   options: MssqlClientConfig,
-) => Effect.Effect<Scope, never, MssqlClient> = internal.make
+) => Effect.Effect<MssqlClient, never, Scope> = internal.make
 
 /**
  * @category constructor
@@ -104,7 +104,7 @@ export const make: (
  */
 export const makeLayer: (
   config: Config.Config.Wrap<MssqlClientConfig>,
-) => Layer.Layer<never, ConfigError, MssqlClient> = internal.makeLayer
+) => Layer.Layer<MssqlClient, ConfigError> = internal.makeLayer
 
 /**
  * @category constructor

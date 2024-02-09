@@ -36,7 +36,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: (options: SqliteRNClientConfig) => Effect.Effect<Scope, never, SqliteClient>
+export declare const make: (options: SqliteRNClientConfig) => Effect.Effect<SqliteClient, never, Scope>
 ```
 
 Added in v1.0.0
@@ -56,7 +56,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeLayer: (config: SqliteRNClientConfig) => Layer.Layer<never, never, SqliteClient>
+export declare const makeLayer: (config: SqliteRNClientConfig) => Layer.Layer<SqliteClient, never, never>
 ```
 
 Added in v1.0.0
@@ -78,7 +78,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const withAsyncQuery: <R, E, A>(effect: Effect.Effect<R, E, A>) => Effect.Effect<R, E, A>
+export declare const withAsyncQuery: <R, E, A>(effect: Effect.Effect<A, E, R>) => Effect.Effect<A, E, R>
 ```
 
 Added in v1.0.0
