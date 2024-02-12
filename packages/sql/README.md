@@ -103,6 +103,100 @@ export const makePersonService = Effect.gen(function* (_) {
 })
 ```
 
+## Building queries
+
+### Safe interpolation
+
+```ts
+import * as Effect from "effect/Effect"
+import * as Pg from "@sqlfx/pg"
+
+export const make = (limit: number) =>
+  Effect.gen(function* (_) {
+    const sql = yield* _(Pg.tag)
+
+    const statement = sql`SELECT * FROM people LIMIT ${limit}`
+    // e.g. SELECT * FROM people LIMIT ?
+  })
+```
+
+### Unsafe interpolation
+
+```ts
+import * as Effect from "effect/Effect"
+import * as Pg from "@sqlfx/pg"
+
+type OrderBy = "id" | "created_at" | "updated_at"
+type SortOrder = "ASC" | "DESC"
+
+export const make = (orderBy: OrderBy, sortOrder: SortOrder) =>
+  Effect.gen(function* (_) {
+    const sql = yield* _(Pg.tag)
+
+    const statement = sql`SELECT * FROM people ORDER BY ${sql(orderBy)} ${sql.unsafe(sortOrder)}`
+    // e.g. SELECT * FROM people ORDER BY `id` ASC
+  })
+```
+
+### Where clause combinators
+
+#### AND
+
+```ts
+import * as Effect from "effect/Effect"
+import * as Pg from "@sqlfx/pg"
+
+export const make = (names: string[], cursor: string) =>
+  Effect.gen(function* (_) {
+    const sql = yield* _(Pg.tag)
+
+    const statement = sql`SELECT * FROM people WHERE ${sql.and([
+      sql`name IN ${sql(names)}`,
+      sql`created_at < ${sql(cursor)}`,
+    ])}`
+    // SELECT * FROM people WHERE (name IN ? AND created_at < ?)
+  })
+```
+
+#### OR
+
+```ts
+import * as Effect from "effect/Effect"
+import * as Pg from "@sqlfx/pg"
+
+export const make = (names: string[], cursor: Date) =>
+  Effect.gen(function* (_) {
+    const sql = yield* _(Pg.tag)
+
+    const statement = sql`SELECT * FROM people WHERE ${sql.or([
+      sql`name IN ${sql(names)}`,
+      sql`created_at < ${sql(cursor)}`,
+    ])}`
+    // SELECT * FROM people WHERE (name IN ? OR created_at < ?)
+  })
+```
+
+#### Mixed
+
+```ts
+import * as Effect from "effect/Effect"
+import * as Pg from "@sqlfx/pg"
+
+export const make = (names: string[], afterCursor: Date, beforeCursor: Date) =>
+  Effect.gen(function* (_) {
+    const sql = yield* _(Pg.tag)
+
+    const statement = sql`SELECT * FROM people WHERE ${sql.or([
+      sql`name IN ${sql(names)}`,
+      sql.and([
+        `created_at >${sql(afterCursor)}`,
+        `created_at < ${sql(beforeCursor)}`,
+      ]),
+    ])}`
+    // SELECT * FROM people WHERE (name IN ? OR (created_at > ? AND created_at < ?))
+  })
+```
+
 ## Migrations
 
 A `Migrator` module is provided, for running migrations.
