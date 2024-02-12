@@ -69,7 +69,7 @@ export const asyncPauseResume = <R, E, A>(
             ),
           ),
         ),
-      );
+      )
     }),
     Stream.unwrapScoped,
   )

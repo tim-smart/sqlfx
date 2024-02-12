@@ -145,7 +145,7 @@ export const make = (
           return Effect.dieMessage("executeStream not implemented")
         },
         export: Effect.dieMessage("export not implemented"),
-      });
+      })
     })
 
     const pool = yield* _(Pool.make({ acquire: makeConnection, size: 1 }))

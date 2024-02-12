@@ -147,7 +147,7 @@ export const make = (
             .then(_ => resume(Effect.succeed(_)))
             .catch(error => resume(Effect.fail(handleError(error))))
           return Effect.sync(() => query.cancel())
-        });
+        })
       }
 
       private runTransform(query: PendingQuery<any>) {

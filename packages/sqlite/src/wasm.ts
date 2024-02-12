@@ -146,7 +146,7 @@ export const make = (
           try: () => sqlite3.capi.sqlite3_js_db_export(db.pointer),
           catch: handleError,
         }),
-      });
+      })
     })
 
     const pool = yield* _(Pool.make({ acquire: makeConnection, size: 1 }))
