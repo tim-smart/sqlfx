@@ -1,5 +1,11 @@
 # @sqlfx/sql
 
+## 0.44.1
+
+### Patch Changes
+
+- [`afff0f4`](https://github.com/tim-smart/sqlfx/commit/afff0f4047ab3adc4921e371ae661eceff2962eb) Thanks [@tim-smart](https://github.com/tim-smart)! - use postgres parameter for sql.array
+
 ## 0.44.0
 
 ### Minor Changes
