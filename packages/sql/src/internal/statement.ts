@@ -416,7 +416,9 @@ class CompilerImpl implements Compiler {
                 segment.value.length,
               ),
               segment.value.map(record =>
-                keys.map(key => extractPrimitive(record[key], this.onCustom)),
+                keys.map(key =>
+                  extractPrimitive(record[key], this.onCustom, placeholder),
+                ),
               ),
             )
             sql += s
@@ -436,6 +438,7 @@ class CompilerImpl implements Compiler {
                   extractPrimitive(
                     segment.value[i]?.[keys[j]] ?? null,
                     this.onCustom,
+                    placeholder,
                   ),
                 )
               }
@@ -453,7 +456,11 @@ class CompilerImpl implements Compiler {
             const [s, b] = this.onRecordUpdateSingle(
               keys.map(this.onIdentifier),
               keys.map(key =>
-                extractPrimitive(segment.value[key], this.onCustom),
+                extractPrimitive(
+                  segment.value[key],
+                  this.onCustom,
+                  placeholder,
+                ),
               ),
             )
             sql += s
@@ -467,7 +474,11 @@ class CompilerImpl implements Compiler {
                 sql += `, ${column} = ${placeholder()}`
               }
               binds.push(
-                extractPrimitive(segment.value[keys[i]], this.onCustom),
+                extractPrimitive(
+                  segment.value[keys[i]],
+                  this.onCustom,
+                  placeholder,
+                ),
               )
             }
           }
@@ -484,7 +495,9 @@ class CompilerImpl implements Compiler {
             segment.alias,
             generateColumns(keys, this.onIdentifier),
             segment.value.map(record =>
-              keys.map(key => extractPrimitive(record?.[key], this.onCustom)),
+              keys.map(key =>
+                extractPrimitive(record?.[key], this.onCustom, placeholder),
+              ),
             ),
           )
           sql += s
@@ -625,11 +638,12 @@ function extractPrimitive(
     type: Custom<string, unknown, unknown>,
     placeholder: () => string,
   ) => readonly [sql: string, binds: ReadonlyArray<Primitive>],
+  placeholder: () => string,
 ): Primitive {
   if (isFragment(value)) {
     const head = value.segments[0]
     if (head._tag === "Custom") {
-      const compiled = onCustom(head, () => "")
+      const compiled = onCustom(head, placeholder)
       return compiled[1][0] ?? null
     } else if (head._tag === "Parameter") {
       return head.value
