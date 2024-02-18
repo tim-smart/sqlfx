@@ -2678,7 +2678,7 @@ packages:
     resolution: {integrity: sha512-bOhuFnlRaS7CU33+rFFIWdcET/Vkyn1vsN8BYFwCDEF5P1fVVvYN7bFOsQLTMD3nvi35C1AGmtqUr/Wfv8Xaow==}
     engines: {node: '>=12'}
     dependencies:
-      '@expo/spawn-async': 1.5.0
+      '@expo/spawn-async': 1.7.2
       exec-async: 2.2.0
     dev: true
 
@@ -2686,7 +2686,7 @@ packages:
     resolution: {integrity: sha512-LKdo/6y4W7llZ6ghsg1kdx2CeH/qR/c6QI/JI8oPUvppsZoeIYjSkdflce978fAMfR8IXoi0wt0jA2w0kWpwbg==}
     dependencies:
       '@expo/json-file': 8.3.0
-      '@expo/spawn-async': 1.5.0
+      '@expo/spawn-async': 1.7.2
       ansi-regex: 5.0.1
       chalk: 4.1.2
       find-up: 5.0.0
@@ -11900,7 +11900,7 @@ packages:
     engines: {node: '>=12.20'}
     dev: true
 
-github.com/effect-ts/markdown-toc/4bfeb0f140105440ea0d12df2fa23199cc3ec1d5:
+  github.com/effect-ts/markdown-toc/4bfeb0f140105440ea0d12df2fa23199cc3ec1d5:
     resolution: {tarball: https://codeload.github.com/effect-ts/markdown-toc/tar.gz/4bfeb0f140105440ea0d12df2fa23199cc3ec1d5}
     name: markdown-toc
     version: 1.2.0
@@ -11920,3 +11920,24 @@ github.com/effect-ts/markdown-toc/4bfeb0f140105440ea0d12df2fa23199cc3ec1d5:
       repeat-string: 1.6.1
       strip-color: 0.1.0
     dev: true
+
+github.com/effect-ts/markdown-toc/4bfeb0f140105440ea0d12df2fa23199cc3ec1d5:
+  resolution: {tarball: https://codeload.github.com/effect-ts/markdown-toc/tar.gz/4bfeb0f140105440ea0d12df2fa23199cc3ec1d5}
+  name: markdown-toc
+  version: 1.2.0
+  engines: {node: '>=0.10.0'}
+  hasBin: true
+  dependencies:
+    concat-stream: 1.6.2
+    diacritics-map: 0.1.0
+    gray-matter: 3.1.1
+    lazy-cache: 2.0.2
+    list-item: 1.1.1
+    markdown-link: 0.1.1
+    minimist: 1.2.8
+    mixin-deep: 1.3.2
+    object.pick: 1.3.0
+    remarkable: 1.7.4
+    repeat-string: 1.6.1
+    strip-color: 0.1.0
+  dev: true
