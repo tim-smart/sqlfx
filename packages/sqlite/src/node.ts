@@ -172,7 +172,7 @@ export const make = (
             catch: handleError,
           })
         },
-      });
+      })
     })
 
     const pool = yield* _(Pool.make({ acquire: makeConnection, size: 1 }))
