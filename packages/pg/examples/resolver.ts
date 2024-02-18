@@ -3,6 +3,7 @@ import * as Config from "effect/Config"
 import * as Effect from "effect/Effect"
 import * as Schema from "@effect/schema/Schema"
 import * as Pg from "@sqlfx/pg"
+import { Console } from "effect"
 
 class Person extends Schema.Class<Person>()({
   id: Schema.number,
@@ -26,7 +27,18 @@ const program = Effect.gen(function* (_) {
     id: Schema.number,
     result: Person,
     resultId: _ => _.id,
-    run: ids => sql`SELECT * FROM people WHERE id IN ${sql(ids)}`,
+    run: ids =>
+      sql`SELECT * FROM people WHERE id IN ${sql(ids)}`.pipe(
+        Effect.tap(Console.log),
+      ),
+  })
+
+  const GetByName = sql.resolverIdMany("GetPersonByName", {
+    request: Schema.string,
+    requestId: _ => _,
+    result: Person,
+    resultId: _ => _.name,
+    run: ids => sql`SELECT * FROM people WHERE name IN ${sql(ids)}`,
   })
 
   const inserted = yield* _(
@@ -43,6 +55,16 @@ const program = Effect.gen(function* (_) {
     yield* _(
       Effect.all(
         [GetById.execute(inserted[0].id), GetById.execute(inserted[1].id)],
+        { batching: true },
+      ),
+    ),
+  )
+
+  console.log(
+    yield* _(
+      Effect.forEach(
+        ["John Doe", "Joe Bloggs", "John Doe"],
+        id => GetByName.execute(id),
         { batching: true },
       ),
     ),
