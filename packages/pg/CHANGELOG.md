@@ -1,5 +1,14 @@
 # @sqlfx/pg
 
+## 0.44.2
+
+### Patch Changes
+
+- [`b0bf5f0`](https://github.com/tim-smart/sqlfx/commit/b0bf5f01e6a0219b2f816b93bde2cce08c005de0) Thanks [@tim-smart](https://github.com/tim-smart)! - fix resolverId & resolverIdMany for duplicate requests
+
+- Updated dependencies [[`b0bf5f0`](https://github.com/tim-smart/sqlfx/commit/b0bf5f01e6a0219b2f816b93bde2cce08c005de0)]:
+  - @sqlfx/sql@0.44.2
+
 ## 0.44.1
 
 ### Patch Changes
