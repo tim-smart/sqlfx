@@ -1,9 +1,8 @@
-import { pipe } from "effect/Function"
-import * as Config from "effect/Config"
-import * as Effect from "effect/Effect"
 import * as Schema from "@effect/schema/Schema"
 import * as Pg from "@sqlfx/pg"
-import { Console } from "effect"
+import * as Config from "effect/Config"
+import * as Effect from "effect/Effect"
+import { pipe } from "effect/Function"
 
 class Person extends Schema.Class<Person>()({
   id: Schema.number,
@@ -27,10 +26,7 @@ const program = Effect.gen(function* (_) {
     id: Schema.number,
     result: Person,
     resultId: _ => _.id,
-    run: ids =>
-      sql`SELECT * FROM people WHERE id IN ${sql(ids)}`.pipe(
-        Effect.tap(Console.log),
-      ),
+    run: ids => sql`SELECT * FROM people WHERE id IN ${sql(ids)}`,
   })
 
   const GetByName = sql.resolverIdMany("GetPersonByName", {
