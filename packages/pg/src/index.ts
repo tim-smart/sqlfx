@@ -120,7 +120,7 @@ export const make = (
       database: options.database,
       username: options.username,
       password: options.password ? Secret.value(options.password) : undefined,
-      fetch_types: options.fetchTypes,
+      fetch_types: options.fetchTypes ?? true,
       debug: options.debug,
     }
 
@@ -265,7 +265,23 @@ export const makeCompiler = (
           ]
         }
         case "PgArray": {
-          return [`ARRAY [${type.i0.map(placeholder).join(",")}]`, type.i0]
+          const param = pg.array(type.i0 as any) as any
+          const first = type.i0[0]
+          switch (typeof first) {
+            case "boolean": {
+              param.type = 1000
+              break
+            }
+            case "number": {
+              param.type = 1022
+              break
+            }
+            default: {
+              param.type = 1009
+              break
+            }
+          }
+          return [placeholder(), [param]]
         }
       }
     },

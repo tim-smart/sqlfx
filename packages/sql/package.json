@@ -1,6 +1,6 @@
 {
   "name": "@sqlfx/sql",
-  "version": "0.44.0",
+  "version": "0.44.1",
   "description": "",
   "publishConfig": {
     "access": "public",
@@ -34,8 +34,8 @@
   "keywords": [],
   "sideEffects": false,
   "devDependencies": {
-    "@effect/schema": "^0.62.0",
-    "effect": "^2.3.0"
+    "@effect/schema": "^0.62.8",
+    "effect": "^2.3.7"
   },
   "peerDependencies": {
     "@effect/schema": "^0.62.0",

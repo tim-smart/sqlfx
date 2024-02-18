@@ -57,8 +57,8 @@ describe("pg", () => {
     const [query, params] = compiler.compile(
       sql`SELECT ${sql.array([1, 2, 3])}`,
     )
-    expect(query).toEqual(`SELECT ARRAY [$1,$2,$3]`)
-    expect(params).toEqual([1, 2, 3])
+    expect(query).toEqual(`SELECT $1`)
+    expect((params[0] as any).value).toEqual([1, 2, 3])
   })
 
   it("transform nested", () => {
@@ -134,5 +134,19 @@ describe("pg", () => {
     )
     assert.lengthOf(params, 3)
     expect((params[2] as any).type).toEqual(3802)
+  })
+
+  it("insert array", () => {
+    const [query, params] = sql`INSERT INTO people ${sql.insert({
+      name: "Tim",
+      age: 10,
+      array: sql.array([1, 2, 3]),
+    })}`.compile()
+    assert.strictEqual(
+      query,
+      'INSERT INTO people ("name","age","array") VALUES ($1,$2,$3)',
+    )
+    assert.lengthOf(params, 3)
+    expect((params[2] as any).type).toEqual(1022)
   })
 })

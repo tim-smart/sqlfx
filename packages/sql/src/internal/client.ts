@@ -1,19 +1,18 @@
+import * as Schema from "@effect/schema/Schema"
 import * as Context from "effect/Context"
 import { GenericTag } from "effect/Context"
-import { pipe } from "effect/Function"
-import * as MutableMap from "effect/MutableHashMap"
-import * as Option from "effect/Option"
-import * as ROA from "effect/ReadonlyArray"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
 import * as FiberRef from "effect/FiberRef"
+import { pipe } from "effect/Function"
+import * as Option from "effect/Option"
+import * as ROA from "effect/ReadonlyArray"
 import * as request from "effect/Request"
 import * as RequestResolver from "effect/RequestResolver"
-import * as Schema from "@effect/schema/Schema"
 import type { Client, Request, Resolver } from "../Client.js"
 import type { Connection } from "../Connection.js"
-import { ResultLengthMismatch } from "../Error.js"
 import type { SchemaError, SqlError } from "../Error.js"
+import { ResultLengthMismatch } from "../Error.js"
 import * as SqlSchema from "../Schema.js"
 import * as Statement from "../Statement.js"
 
@@ -390,67 +389,41 @@ export function make({
       Schema.array(options.request),
       "request",
     )
-    const decodeResult = SqlSchema.decodeUnknown(options.result, "result")
+    const decodeResults = SqlSchema.decodeUnknown(
+      Schema.array(options.result),
+      "result",
+    )
     const Resolver = RequestResolver.makeBatched(
       (requests: Array<Request<T, IA, E, ReadonlyArray<A>>>) =>
         pipe(
-          Effect.all({
-            results: Effect.flatMap(
-              encodeRequests(requests.map(_ => _.i0)),
-              options.run,
-            ),
-            requestsMap: Effect.sync(() =>
-              requests.reduce(
-                (acc, request) =>
-                  MutableMap.set(acc, options.requestId(request.i0), [
-                    request,
-                    [],
-                  ]),
-                MutableMap.empty<
-                  K,
-                  readonly [Request<T, IA, E, ReadonlyArray<A>>, Array<A>]
-                >(),
-              ),
-            ),
-          }),
-          Effect.tap(({ requestsMap, results }) =>
-            Effect.forEach(
-              results,
-              result => {
-                const id = options.resultId(result as any)
-                const req = MutableMap.get(requestsMap, id)
-
-                if (req._tag === "None") {
-                  return Effect.unit
+          Effect.flatMap(encodeRequests(requests.map(_ => _.i0)), options.run),
+          Effect.flatMap(results => {
+            const resultsMap = new Map<K, Array<A>>()
+            return Effect.map(decodeResults(results), decoded => {
+              decoded.forEach((result, i) => {
+                const id = options.resultId(results[i] as AI)
+                if (resultsMap.has(id)) {
+                  resultsMap.get(id)!.push(result)
+                } else {
+                  resultsMap.set(id, [result])
                 }
-
-                return pipe(
-                  decodeResult(result),
-                  Effect.tap(result =>
-                    Effect.sync(() => {
-                      req.value[1].push(result)
-                    }),
-                  ),
-                  Effect.catchAll(error =>
-                    Effect.zipRight(
-                      Effect.sync(() => MutableMap.remove(requestsMap, id)),
-                      request.fail(req.value[0], error),
-                    ),
-                  ),
-                )
-              },
-              { concurrency: "unbounded", discard: true },
-            ),
-          ),
-          Effect.tap(({ requestsMap }) =>
+              })
+              return resultsMap
+            })
+          }),
+          Effect.tap(results =>
             Effect.forEach(
-              requestsMap,
-              ([, [req, results]]) => request.succeed(req, results),
+              requests,
+              req => {
+                const id = options.requestId(req.i0)
+                const result = results.get(id)
+                return request.succeed(req, result ?? [])
+              },
               { discard: true },
             ),
           ),
-          Effect.catchAll(error =>
-            Effect.forEach(requests, req => request.fail(req, error as any), {
+          Effect.catchAllCause(error =>
+            Effect.forEach(requests, req => request.failCause(req, error), {
               discard: true,
             }),
           ),
@@ -485,55 +458,41 @@ export function make({
   ): Resolver<T, R | IR | AR, IA, Option.Option<A>, E> {
     const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
     const encodeRequests = SqlSchema.encode(Schema.array(options.id), "request")
-    const decodeResult = SqlSchema.decodeUnknown(options.result, "result")
+    const decodeResults = SqlSchema.decodeUnknown(
+      Schema.array(options.result),
+      "result",
+    )
     const Resolver = RequestResolver.makeBatched(
       (requests: Array<Request<T, IA, E, Option.Option<A>>>) =>
         pipe(
-          Effect.all({
-            results: Effect.flatMap(
-              encodeRequests(requests.map(_ => _.i0)),
-              options.run,
-            ),
-            requestsMap: Effect.sync(() =>
-              requests.reduce(
-                (acc, request) => acc.set(request.i0, request),
-                new Map<IA, Request<T, IA, E, Option.Option<A>>>(),
-              ),
-            ),
+          Effect.flatMap(encodeRequests(requests.map(_ => _.i0)), options.run),
+          Effect.flatMap(results => {
+            const resultsMap = new Map<IA, A>()
+            return Effect.map(decodeResults(results), decoded => {
+              decoded.forEach((result, i) => {
+                const id = options.resultId(results[i])
+                resultsMap.set(id, result)
+              })
+              return resultsMap
+            })
           }),
-          Effect.tap(({ requestsMap, results }) =>
+          Effect.tap(results =>
             Effect.forEach(
-              results,
-              result => {
-                const id = options.resultId(result)
-                const req = requestsMap.get(id)
+              requests,
+              req => {
+                const id = req.i0
+                const result = results.get(id)
 
-                if (!req) {
-                  return Effect.unit
-                }
-
-                requestsMap.delete(id)
-
-                return pipe(
-                  decodeResult(result),
-                  Effect.flatMap(result =>
-                    request.succeed(req, Option.some(result)),
-                  ),
-                  Effect.catchAll(error => request.fail(req, error as any)),
+                return request.succeed(
+                  req,
+                  result !== undefined ? Option.some(result) : Option.none(),
                 )
               },
-              { concurrency: "unbounded", discard: true },
-            ),
-          ),
-          Effect.tap(({ requestsMap }) =>
-            Effect.forEach(
-              requestsMap.values(),
-              req => request.succeed(req, Option.none()),
               { discard: true },
             ),
           ),
-          Effect.catchAll(error =>
-            Effect.forEach(requests, req => request.fail(req, error as any), {
+          Effect.catchAllCause(error =>
+            Effect.forEach(requests, req => request.failCause(req, error), {
               discard: true,
             }),
           ),

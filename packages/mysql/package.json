@@ -1,6 +1,6 @@
 {
   "name": "@sqlfx/mysql",
-  "version": "0.43.0",
+  "version": "0.43.1",
   "description": "",
   "publishConfig": {
     "access": "public",
@@ -30,8 +30,8 @@
     "mariadb": "^3.2.3"
   },
   "devDependencies": {
-    "@effect/schema": "^0.62.0",
-    "effect": "^2.3.0"
+    "@effect/schema": "^0.62.8",
+    "effect": "^2.3.7"
   },
   "peerDependencies": {
     "effect": "^2.3.0"
