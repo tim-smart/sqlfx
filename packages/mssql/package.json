@@ -1,6 +1,6 @@
 {
   "name": "@sqlfx/mssql",
-  "version": "0.42.2",
+  "version": "0.43.0",
   "description": "",
   "publishConfig": {
     "access": "public",
