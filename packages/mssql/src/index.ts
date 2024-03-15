@@ -17,6 +17,8 @@ import type { SqlError } from "@sqlfx/sql/Error"
 import type * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
 import * as Tedious from "tedious"
+import type { DataType } from "tedious/lib/data-type.js"
+import type { ParameterOptions } from "tedious/lib/request.js"
 
 const TYPES = Tedious.TYPES
 
@@ -43,9 +45,9 @@ export interface MssqlClient extends Client.Client {
   readonly config: MssqlClientConfig
 
   readonly param: (
-    type: Tedious.TediousType,
+    type: DataType,
     value: Statement.Primitive,
-    options?: Tedious.ParameterOptions,
+    options?: ParameterOptions,
   ) => Statement.Fragment
 
   readonly call: <
@@ -69,7 +71,7 @@ export const tag: Tag<MssqlClient, MssqlClient> = internal.tag
  */
 export interface MssqlClientConfig {
   readonly domain?: string
-  readonly server?: string
+  readonly server: string
   readonly instanceName?: string
   readonly encrypt?: boolean
   readonly trustServer?: boolean
@@ -84,7 +86,7 @@ export interface MssqlClientConfig {
   readonly maxConnections?: number
   readonly connectionTTL?: DurationInput
 
-  readonly parameterTypes?: Record<Statement.PrimitiveKind, Tedious.TediousType>
+  readonly parameterTypes?: Record<Statement.PrimitiveKind, DataType>
 
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
@@ -117,7 +119,5 @@ export const makeCompiler: (
 /**
  * @since 1.0.0
  */
-export const defaultParameterTypes: Record<
-  Statement.PrimitiveKind,
-  Tedious.TediousType
-> = internal.defaultParameterTypes
+export const defaultParameterTypes: Record<Statement.PrimitiveKind, DataType> =
+  internal.defaultParameterTypes

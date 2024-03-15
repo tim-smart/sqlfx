@@ -6,7 +6,8 @@ import type { Pipeable } from "effect/Pipeable"
 import { pipeArguments } from "effect/Pipeable"
 import * as Parameter from "./Parameter.js"
 import type { Row } from "@sqlfx/sql/Connection"
-import type * as Tedious from "tedious"
+import type { ParameterOptions } from "tedious/lib/request.js"
+import type { DataType } from "tedious/lib/data-type.js"
 
 /**
  * @category type id
@@ -104,10 +105,10 @@ export const make = (name: string): Procedure<{}, {}> => {
  */
 export const param =
   <A>() =>
-  <N extends string, T extends Tedious.TediousType>(
+  <N extends string, T extends DataType>(
     name: N,
     type: T,
-    options?: Tedious.ParameterOptions,
+    options?: ParameterOptions,
   ) =>
   <
     I extends Record<string, Parameter.Parameter<any>>,
@@ -128,10 +129,10 @@ export const param =
  */
 export const outputParam =
   <A>() =>
-  <N extends string, T extends Tedious.TediousType>(
+  <N extends string, T extends DataType>(
     name: N,
     type: T,
-    options?: Tedious.ParameterOptions,
+    options?: ParameterOptions,
   ) =>
   <
     I extends Record<string, Parameter.Parameter<any>>,

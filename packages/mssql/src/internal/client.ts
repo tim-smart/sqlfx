@@ -21,6 +21,8 @@ import type { Primitive as _Primitive } from "@sqlfx/sql/Statement"
 import * as Statement from "@sqlfx/sql/Statement"
 import * as transform from "@sqlfx/sql/Transform"
 import * as Tedious from "tedious"
+import type { DataType } from "tedious/lib/data-type.js"
+import type { ParameterOptions } from "tedious/lib/request.js"
 
 /** @internal */
 export const tag = GenericTag<MssqlClient>("@services/tag")
@@ -71,9 +73,8 @@ export const make = (
           encrypt: options.encrypt ?? false,
         },
         server: options.server,
-        domain: options.domain,
         authentication: {
-          type: options.authType ?? "default",
+          type: (options.authType as any) ?? "default",
           options: {
             userName: options.username,
             password: options.password
@@ -111,7 +112,7 @@ export const make = (
             }
 
             if (rowsAsArray) {
-              result = result.map(row => row.map((_: any) => _.value))
+              result = result.map((row: any) => row.map((_: any) => _.value))
             } else {
               result = rowsToObjects(result)
 
@@ -310,9 +311,9 @@ export const make = (
         withTransaction,
 
         param: (
-          type: Tedious.TediousType,
+          type: DataType,
           value: Statement.Primitive,
-          options: Tedious.ParameterOptions = {},
+          options: ParameterOptions = {},
         ) => mssqlParam(type, value, options),
 
         call: <
@@ -357,19 +358,17 @@ export const makeCompiler = (transform?: (_: string) => string) => {
 }
 
 /** @internal */
-export const defaultParameterTypes: Record<
-  Statement.PrimitiveKind,
-  Tedious.TediousType
-> = {
-  string: Tedious.TYPES.VarChar,
-  number: Tedious.TYPES.Int,
-  bigint: Tedious.TYPES.BigInt,
-  boolean: Tedious.TYPES.Bit,
-  Date: Tedious.TYPES.DateTime,
-  Uint8Array: Tedious.TYPES.VarBinary,
-  Int8Array: Tedious.TYPES.VarBinary,
-  null: Tedious.TYPES.Null,
-}
+export const defaultParameterTypes: Record<Statement.PrimitiveKind, DataType> =
+  {
+    string: Tedious.TYPES.VarChar,
+    number: Tedious.TYPES.Int,
+    bigint: Tedious.TYPES.BigInt,
+    boolean: Tedious.TYPES.Bit,
+    Date: Tedious.TYPES.DateTime,
+    Uint8Array: Tedious.TYPES.VarBinary,
+    Int8Array: Tedious.TYPES.VarBinary,
+    null: Tedious.TYPES.Bit,
+  }
 
 // compiler helpers
 
@@ -409,9 +408,9 @@ type MssqlCustom = MssqlParam
 interface MssqlParam
   extends Statement.Custom<
     "MssqlParam",
-    Tedious.TediousType,
+    DataType,
     Statement.Primitive,
-    Tedious.ParameterOptions
+    ParameterOptions
   > {}
 
 const mssqlParam = Statement.custom<MssqlParam>("MssqlParam")

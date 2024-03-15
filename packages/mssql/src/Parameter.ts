@@ -2,7 +2,8 @@
  * @since 1.0.0
  */
 import { identity } from "effect/Function"
-import type * as Tedious from "tedious"
+import type { DataType } from "tedious/lib/data-type.js"
+import type { ParameterOptions } from "tedious/lib/request.js"
 
 /**
  * @category type id
@@ -24,8 +25,8 @@ export interface Parameter<A> {
   readonly [ParameterId]: (_: never) => A
   readonly _tag: "Parameter"
   readonly name: string
-  readonly type: Tedious.TediousType
-  readonly options: Tedious.ParameterOptions
+  readonly type: DataType
+  readonly options: ParameterOptions
 }
 
 /**
@@ -34,8 +35,8 @@ export interface Parameter<A> {
  */
 export const make = <A>(
   name: string,
-  type: Tedious.TediousType,
-  options: Tedious.ParameterOptions = {},
+  type: DataType,
+  options: ParameterOptions = {},
 ): Parameter<A> => ({
   [ParameterId]: identity,
   _tag: "Parameter",

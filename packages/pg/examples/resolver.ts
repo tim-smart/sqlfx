@@ -4,13 +4,16 @@ import * as Config from "effect/Config"
 import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 
-class Person extends Schema.Class<Person>()({
+class Person extends Schema.Class<Person>("Person")({
   id: Schema.number,
   name: Schema.string,
   createdAt: Schema.DateFromSelf,
 }) {}
 
-const InsertPersonSchema = pipe(Person.struct, Schema.omit("id", "createdAt"))
+const InsertPersonSchema = pipe(
+  Schema.struct(Person.fields),
+  Schema.omit("id", "createdAt"),
+)
 
 const program = Effect.gen(function* (_) {
   const sql = yield* _(Pg.tag)
