@@ -3,7 +3,13 @@ import * as _ from "@sqlfx/mssql"
 import * as Statement from "@sqlfx/sql/Statement"
 import { describe, expect, it } from "vitest"
 
-const sql = Effect.runSync(Effect.scoped(_.make({})))
+const sql = Effect.runSync(
+  Effect.scoped(
+    _.make({
+      server: "",
+    }),
+  ),
+)
 const compiler = _.makeCompiler()
 
 describe("mssql", () => {
