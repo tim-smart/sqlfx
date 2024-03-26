@@ -56,6 +56,11 @@
       "@sqlfx/mysql/*": ["./packages/mysql/src/*.ts"],
       "@sqlfx/mysql": ["./packages/mysql/src/index.ts"],
 
+      "@sqlfx/mysql2/test/*": ["./packages/mysql2/test/*.ts"],
+      "@sqlfx/mysql2/examples/*": ["./packages/mysql2/examples/*.ts"],
+      "@sqlfx/mysql2/*": ["./packages/mysql2/src/*.ts"],
+      "@sqlfx/mysql2": ["./packages/mysql2/src/index.ts"],
+
       "@sqlfx/sqlite/test/*": ["./packages/sqlite/test/*.ts"],
       "@sqlfx/sqlite/examples/*": ["./packages/sqlite/examples/*.ts"],
       "@sqlfx/sqlite/*": ["./packages/sqlite/src/*.ts"],

@@ -5,6 +5,7 @@
     { "path": "packages/pg" },
     { "path": "packages/mssql" },
     { "path": "packages/mysql" },
+    { "path": "packages/mysql2" },
     { "path": "packages/sqlite" }
   ]
 }
