@@ -1,24 +1,25 @@
 /**
  * @since 1.0.0
  */
-import * as Chunk from "effect/Chunk"
-import { GenericTag } from "effect/Context"
-import * as Duration from "effect/Duration"
-import * as Config from "effect/Config"
-import type { ConfigError } from "effect/ConfigError"
-import * as Secret from "effect/Secret"
-import * as Effect from "effect/Effect"
-import * as Layer from "effect/Layer"
-import type { Scope } from "effect/Scope"
-import { pipe } from "effect/Function"
-import * as Stream from "effect/Stream"
 import * as Client from "@sqlfx/sql/Client"
 import type { Connection } from "@sqlfx/sql/Connection"
 import { SqlError } from "@sqlfx/sql/Error"
-import { asyncPauseResume } from "@sqlfx/sql/Stream"
 import * as Statement from "@sqlfx/sql/Statement"
+import { asyncPauseResume } from "@sqlfx/sql/Stream"
 import * as transform from "@sqlfx/sql/Transform"
-import * as Mysql from "mariadb"
+import * as Chunk from "effect/Chunk"
+import * as Config from "effect/Config"
+import type { ConfigError } from "effect/ConfigError"
+import { GenericTag } from "effect/Context"
+import * as Duration from "effect/Duration"
+import * as Effect from "effect/Effect"
+import { pipe } from "effect/Function"
+import * as Layer from "effect/Layer"
+import type { Scope } from "effect/Scope"
+import * as Secret from "effect/Secret"
+import * as Stream from "effect/Stream"
+import type * as MysqlSync from "mysql2"
+import * as Mysql from "mysql2/promise"
 
 export {
   /**
@@ -41,7 +42,7 @@ export interface MysqlClient extends Client.Client {
  * @category tag
  * @since 1.0.0
  */
-export const tag = GenericTag<MysqlClient>("sqlfx/mysql/MysqlClient")
+export const tag = GenericTag<MysqlClient>("sqlfx/mysql2/MysqlClient")
 
 /**
  * @category constructor
@@ -62,7 +63,7 @@ export interface MysqlClientConfig {
   readonly maxConnections?: number
   readonly connectionTTL?: Duration.DurationInput
 
-  readonly poolConfig?: Mysql.PoolConfig
+  readonly poolConfig?: Mysql.PoolOptions
 
   readonly transformResultNames?: (str: string) => string
   readonly transformQueryNames?: (str: string) => string
@@ -95,9 +96,17 @@ export const make = (
         method: "execute" | "query" = "execute",
       ) {
         const result = Effect.tryPromise({
-          try: () => this.conn[method]({ sql, rowsAsArray }, values),
+          try: () =>
+            this.conn[method]<Array<Mysql.RowDataPacket>>(
+              { sql, rowsAsArray },
+              values,
+            ),
           catch: error => SqlError((error as any).message, error),
-        })
+        }).pipe(
+          Effect.map(
+            ([rowDataPackets]) => rowDataPackets as ReadonlyArray<any>,
+          ),
+        )
 
         if (transform && !rowsAsArray && options.transformResultNames) {
           return Effect.map(result, transformRows)
@@ -125,7 +134,7 @@ export const make = (
         const [sql, params] = compiler.compile(statement)
 
         const stream =
-          "queryStream" in this.conn
+          "connection" in this.conn
             ? queryStream(this.conn, sql, params)
             : pipe(
                 acquireConn,
@@ -169,7 +178,7 @@ export const make = (
         try: () => pool.getConnection(),
         catch: error => SqlError((error as any).message, error),
       }),
-      conn => Effect.promise(() => conn.release()),
+      conn => Effect.sync(() => conn.release()),
     )
 
     const transactionAcquirer = Effect.map(
@@ -215,7 +224,9 @@ function queryStream(
   params?: ReadonlyArray<any>,
 ) {
   return asyncPauseResume<never, SqlError, any>(emit => {
-    const query = conn.queryStream(sql, params)
+    const query = ((conn as any).connection as MysqlSync.PoolConnection)
+      .query(sql, params)
+      .stream()
     query.on("error", error => emit.fail(SqlError(error.message, error)))
     query.on("data", emit.single)
     query.on("end", () => emit.end())

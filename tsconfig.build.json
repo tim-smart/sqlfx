@@ -5,6 +5,7 @@
     { "path": "packages/pg/tsconfig.build.json" },
     { "path": "packages/mssql/tsconfig.build.json" },
     { "path": "packages/mysql/tsconfig.build.json" },
+    { "path": "packages/mysql2/tsconfig.build.json" },
     { "path": "packages/sqlite/tsconfig.build.json" }
   ]
 }

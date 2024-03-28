@@ -25,7 +25,7 @@ import type { DataType } from "tedious/lib/data-type.js"
 import type { ParameterOptions } from "tedious/lib/request.js"
 
 /** @internal */
-export const tag = GenericTag<MssqlClient>("@services/tag")
+export const tag = GenericTag<MssqlClient>("sqlfx/MssqlClient")
 
 interface MssqlConnection extends Connection {
   readonly call: (
