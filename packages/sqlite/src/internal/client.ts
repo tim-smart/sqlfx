@@ -3,7 +3,7 @@ import * as Statement from "@sqlfx/sql/Statement"
 import type { SqliteClient } from "../Client.js"
 
 /** @internal */
-export const tag = GenericTag<SqliteClient>("@services/tag")
+export const tag = GenericTag<SqliteClient>("sqlfx/sqlite/SqliteClient")
 
 const escape = Statement.defaultEscape('"')
 

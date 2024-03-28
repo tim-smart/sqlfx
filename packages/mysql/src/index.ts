@@ -41,7 +41,7 @@ export interface MysqlClient extends Client.Client {
  * @category tag
  * @since 1.0.0
  */
-export const tag = GenericTag<MysqlClient>("@services/tag")
+export const tag = GenericTag<MysqlClient>("sqlfx/mysql/MysqlClient")
 
 /**
  * @category constructor

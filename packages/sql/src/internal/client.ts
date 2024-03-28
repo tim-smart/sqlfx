@@ -19,7 +19,7 @@ import * as Statement from "../Statement.js"
 /** @internal */
 export const TransactionConn = GenericTag<
   readonly [conn: Connection, counter: number]
->("@services/TransactionConn")
+>("sqlfx/sql/TransactionConn")
 
 /** @internal */
 export function make({

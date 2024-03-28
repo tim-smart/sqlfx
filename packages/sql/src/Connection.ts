@@ -50,7 +50,7 @@ export namespace Connection {
  * @category tag
  * @since 1.0.0
  */
-export const Connection = GenericTag<Connection>("@services/Connection")
+export const Connection = GenericTag<Connection>("sqlfx/sql/Connection")
 
 /**
  * @category model
