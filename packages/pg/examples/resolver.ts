@@ -5,13 +5,13 @@ import * as Effect from "effect/Effect"
 import { pipe } from "effect/Function"
 
 class Person extends Schema.Class<Person>("Person")({
-  id: Schema.number,
-  name: Schema.string,
+  id: Schema.Number,
+  name: Schema.String,
   createdAt: Schema.DateFromSelf,
 }) {}
 
 const InsertPersonSchema = pipe(
-  Schema.struct(Person.fields),
+  Schema.Struct(Person.fields),
   Schema.omit("id", "createdAt"),
 )
 
@@ -26,14 +26,14 @@ const program = Effect.gen(function* (_) {
   })
 
   const GetById = sql.resolverId("GetPersonById", {
-    id: Schema.number,
+    id: Schema.Number,
     result: Person,
     resultId: _ => _.id,
     run: ids => sql`SELECT * FROM people WHERE id IN ${sql(ids)}`,
   })
 
   const GetByName = sql.resolverIdMany("GetPersonByName", {
-    request: Schema.string,
+    request: Schema.String,
     requestId: _ => _,
     result: Person,
     resultId: _ => _.name,

@@ -87,7 +87,7 @@ const program = Effect.gen(function* (_) {
           Effect.zipRight(
             Effect.catchAllCause(
               sql.withTransaction(Effect.die("fail")),
-              _ => Effect.unit,
+              _ => Effect.void,
             ),
           ),
           Effect.zipRight(
