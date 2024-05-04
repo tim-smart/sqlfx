@@ -34,8 +34,8 @@
   "keywords": [],
   "sideEffects": false,
   "devDependencies": {
-    "@effect/schema": "^0.64.4",
-    "effect": "^2.4.7"
+    "@effect/schema": "^0.66.14",
+    "effect": "^3.1.2"
   },
   "peerDependencies": {
     "@effect/schema": "^0.64.4",

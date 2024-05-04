@@ -27,11 +27,11 @@
   "sideEffects": false,
   "dependencies": {
     "@sqlfx/sql": "workspace:^",
-    "mysql2": "^3.9.3"
+    "mysql2": "^3.9.7"
   },
   "devDependencies": {
-    "@effect/schema": "^0.64.4",
-    "effect": "^2.4.7"
+    "@effect/schema": "^0.66.14",
+    "effect": "^3.1.2"
   },
   "peerDependencies": {
     "effect": "^2.4.7"
