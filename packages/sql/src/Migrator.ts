@@ -6,7 +6,7 @@ import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
 import * as Effect from "effect/Effect"
 import * as Order from "effect/Order"
-import * as ReadonlyArray from "effect/ReadonlyArray"
+import * as ReadonlyArray from "effect/Array"
 import type { Client } from "./Client.js"
 import type { SqlError } from "./Error.js"
 
@@ -79,7 +79,7 @@ export const make =
     dumpSchema,
     ensureTable,
     getClient,
-    lockTable = () => Effect.unit,
+    lockTable = () => Effect.void,
   }: {
     getClient: Effect.Effect<R, SqlError, R>
     dumpSchema: (

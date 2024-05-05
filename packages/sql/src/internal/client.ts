@@ -6,7 +6,7 @@ import * as Exit from "effect/Exit"
 import * as FiberRef from "effect/FiberRef"
 import { pipe } from "effect/Function"
 import * as Option from "effect/Option"
-import * as ROA from "effect/ReadonlyArray"
+import * as ROA from "effect/Array"
 import * as request from "effect/Request"
 import * as RequestResolver from "effect/RequestResolver"
 import type { Client, Request, Resolver } from "../Client.js"
@@ -65,7 +65,7 @@ export function make({
         ([conn, id], exit) =>
           Exit.isSuccess(exit)
             ? id > 0
-              ? Effect.unit
+              ? Effect.void
               : Effect.orDie(conn.executeRaw(commit))
             : id > 0
               ? Effect.orDie(conn.executeRaw(rollbackSavepoint(`sqlfx${id}`)))
@@ -79,7 +79,7 @@ export function make({
     run: (_: II) => Effect.Effect<ReadonlyArray<unknown>, E, IR | AR | R>,
   ) {
     const decodeResult = SqlSchema.decodeUnknown(
-      Schema.array(resultSchema),
+      Schema.Array(resultSchema),
       "result",
     )
     const encodeRequest = SqlSchema.encode(requestSchema, "request")
@@ -96,7 +96,7 @@ export function make({
   ) {
     const encodeRequest = SqlSchema.encode(requestSchema, "request")
     return (_: IA): Effect.Effect<void, SchemaError | E, IR | R> =>
-      Effect.asUnit(Effect.flatMap(encodeRequest(_), run))
+      Effect.asVoid(Effect.flatMap(encodeRequest(_), run))
   }
 
   function schemaSingle<IR, II, IA, AR, AI, A, R, E>(
@@ -274,7 +274,7 @@ export function make({
   ): Resolver<T, R | IR, IA, void, E> {
     const Request = request.tagged<Request<T, IA, E, void>>(tag)
     const encodeRequests = SqlSchema.encode(
-      Schema.array(options.request),
+      Schema.Array(options.request),
       "request",
     )
     const Resolver = RequestResolver.makeBatched(
@@ -324,7 +324,7 @@ export function make({
     const Request =
       request.tagged<Request<T, IA, E | ResultLengthMismatch, A>>(tag)
     const encodeRequests = SqlSchema.encode(
-      Schema.array(options.request),
+      Schema.Array(options.request),
       "request",
     )
     const decodeResult = SqlSchema.decodeUnknown(options.result, "result")
@@ -386,11 +386,11 @@ export function make({
   ): Resolver<T, R | IR | AR, IA, ReadonlyArray<A>, E> {
     const Request = request.tagged<Request<T, IA, E, ReadonlyArray<A>>>(tag)
     const encodeRequests = SqlSchema.encode(
-      Schema.array(options.request),
+      Schema.Array(options.request),
       "request",
     )
     const decodeResults = SqlSchema.decodeUnknown(
-      Schema.array(options.result),
+      Schema.Array(options.result),
       "result",
     )
     const Resolver = RequestResolver.makeBatched(
@@ -457,9 +457,9 @@ export function make({
     },
   ): Resolver<T, R | IR | AR, IA, Option.Option<A>, E> {
     const Request = request.tagged<Request<T, IA, E, Option.Option<A>>>(tag)
-    const encodeRequests = SqlSchema.encode(Schema.array(options.id), "request")
+    const encodeRequests = SqlSchema.encode(Schema.Array(options.id), "request")
     const decodeResults = SqlSchema.decodeUnknown(
-      Schema.array(options.result),
+      Schema.Array(options.result),
       "result",
     )
     const Resolver = RequestResolver.makeBatched(

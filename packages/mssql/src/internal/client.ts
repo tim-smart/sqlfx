@@ -92,7 +92,7 @@ export const make = (
             if (err) {
               resume(Effect.fail(SqlError(err.message, err)))
             } else {
-              resume(Effect.unit)
+              resume(Effect.void)
             }
           })
         }),
@@ -213,7 +213,7 @@ export const make = (
             if (err) {
               resume(Effect.fail(SqlError(err.message, err)))
             } else {
-              resume(Effect.unit)
+              resume(Effect.void)
             }
           })
         }),
@@ -222,7 +222,7 @@ export const make = (
             if (err) {
               resume(Effect.fail(SqlError(err.message, err)))
             } else {
-              resume(Effect.unit)
+              resume(Effect.void)
             }
           })
         }),
@@ -233,7 +233,7 @@ export const make = (
               if (err) {
                 resume(Effect.fail(SqlError(err.message, err)))
               } else {
-                resume(Effect.unit)
+                resume(Effect.void)
               }
             }, name)
           }),
@@ -243,7 +243,7 @@ export const make = (
               if (err) {
                 resume(Effect.fail(SqlError(err.message, err)))
               } else {
-                resume(Effect.unit)
+                resume(Effect.void)
               }
             }, name)
           }),
@@ -293,7 +293,7 @@ export const make = (
           ([conn, id], exit) =>
             Exit.isSuccess(exit)
               ? id > 0
-                ? Effect.unit
+                ? Effect.void
                 : Effect.orDie(conn.commit)
               : Effect.orDie(conn.rollback(id > 0 ? `sqlfx${id}` : undefined)),
         ),

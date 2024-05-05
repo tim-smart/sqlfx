@@ -47,7 +47,7 @@ export const asyncPauseResume = <R, E, A>(
 
         const offer = (row: A) =>
           Queue.isFull(queue).pipe(
-            Effect.tap(full => (full ? effects.onPause : Effect.unit)),
+            Effect.tap(full => (full ? effects.onPause : Effect.void)),
             Effect.zipRight(Queue.offer(queue, row)),
             Effect.zipRight(effects.onResume),
           )
