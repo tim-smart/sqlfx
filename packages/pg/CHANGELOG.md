@@ -1,5 +1,16 @@
 # @sqlfx/pg
 
+## 0.47.0
+
+### Minor Changes
+
+- [#181](https://github.com/tim-smart/sqlfx/pull/181) [`df96ae2`](https://github.com/tim-smart/sqlfx/commit/df96ae2be3e95e3f3b1931037c763f72fab6ec25) Thanks [@jmatsushita](https://github.com/jmatsushita)! - Upgraded to effect@3.1.2 and @effect/schema@0.66.14
+
+### Patch Changes
+
+- Updated dependencies [[`df96ae2`](https://github.com/tim-smart/sqlfx/commit/df96ae2be3e95e3f3b1931037c763f72fab6ec25)]:
+  - @sqlfx/sql@0.47.0
+
 ## 0.46.1
 
 ### Patch Changes
